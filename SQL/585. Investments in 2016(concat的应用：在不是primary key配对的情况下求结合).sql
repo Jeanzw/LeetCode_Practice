@@ -1,0 +1,11 @@
+select sum(TIV_2016) as TIV_2016 from insurance
+where TIV_2015 IN (select TIV_2015 from insurance group by TIV_2015 having count(*) >1)
+and
+concat(LAT,LON) IN (select concat(LAT,LON) from insurance group by LAT,LON having count(*)=1)
+
+/*or*/
+
+select round(sum(TIV_2016),2) as TIV_2016 from Insurance
+where TIV_2015 in (select TIV_2015 from insurance group by TIV_2015 having count(TIV_2015) > 1)
+and concat(LAT,LON) not in   /*我们这里就是要将两个维度放在一起考虑的，所以这里一定要用concat将他们两个给组合到一起*/
+(select concat(LAT,LON) from insurance group by LAT,LON having count(concat(LAT,LON)) > 1)
