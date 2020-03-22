@@ -19,3 +19,10 @@ and Driver_Id in (select Users_Id from Users where Banned != 'Yes')
 and Request_at BETWEEN '2013-10-01' AND '2013-10-03'
 
 group by Request_at
+
+
+
+
+
+
+这里我们需要注意的是一定要是case when Status != 'completed' then 1 else 0 end，因为calcelled by可以是client也可以是driver，如果用calcelled那么就会比较麻烦
