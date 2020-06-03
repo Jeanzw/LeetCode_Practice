@@ -10,9 +10,16 @@ limit 1
 
 
 /* Write your T-SQL query statement below */
-select ifnull(Salary,null) as SecondHighestSalary from 
-(select Salary,rank() over (order by Salary desc) as ranking from Employee)e
-where ranking = 2
+select Salary as SecondHighestSalary from
+(select Salary, rank() over (order by Salary desc) as rnk from Employee) tmp
+where rnk = 2
+--上面这个情况是属于我们可以保证肯定有2nd的数。但是如果没有2nd呢？那么我们需要输出的是null，但是上面输出的是[]
+--如果要达到上面的情况，我是觉得完全可以用case
+select max(Salary) as SecondHighestSalary    --这里我们将Salary变成max()
+from (SELECT salary, dense_rank() over(order by salary desc) as myrank
+from Employee
+) e
+where myrank = 2;
 
 
 #reference:
