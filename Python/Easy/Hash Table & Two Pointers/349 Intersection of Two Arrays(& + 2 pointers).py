@@ -18,8 +18,6 @@ for i in nums1:
 print(res)
 
 
-
-
 #大神思路：
 #直接将nums1和nums2变成set，然后求其交集
 nums1 = [1,2,2,1]

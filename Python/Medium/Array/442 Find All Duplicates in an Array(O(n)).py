@@ -1,12 +1,17 @@
-l = [4,3,2,7,8,2,3,1]
-coll = set()
-duplicate = []
-for i in l:
-    if i not in coll:
-        coll.add(i)
-    else:
-        duplicate.append(i)
-print(duplicate)
+# 此题难点在于题干中一句：Could you do it without extra space and in O(n) runtime?
+# 我最开始的思路在于，创建两个list，第一个list存储的是出现过一次的数字，而第二个list里面存储的是已经在第一个list已有的数字，也就是deplicate
+# 问题在于，这样子相当于我不仅仅在跑原list，我还在跑第一个list，那么就不符合题干中的意思，所以就出现timeout的问题
+
+class Solution:
+    def findDuplicates(self, nums: List[int]) -> List[int]:
+        coll = set()
+        duplicate = []
+        for i in nums:
+            if i not in coll:
+                coll.add(i)
+            else:
+                duplicate.append(i)
+        return duplicate
 
 
 

@@ -25,3 +25,17 @@ class Solution:
                 residual[target - val] = index
             else:
                 return [index,residual[val]]
+
+
+# 重做这道题目的时候，我的思路是这样的：
+# 我们先一个个遍历这个list，然后用target去减去这个数得到余数，再遍历剩下的数，如果有等于余数的数存在，那么就是他了
+# 因为题目说了，真相只有一个，所以我们不需要考虑多种情况了
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        for i in range(len(nums)):
+            # print(nums[i])
+            res_num = target - nums[i]
+            # print(res_num)
+            for j in range(i+1,len(nums)):
+                if nums[j] == res_num:
+                    return i,j

@@ -22,4 +22,12 @@ join Department d
 on e.DepartmentId = d.Id)a
 where rnk = 1
 
-/*注意这里的join是内链接而不是left join，因为我们不能保证Employee这一张表中所有的人都只是在这两个部门里面
+-- 注意这里的join是内链接而不是left join，因为我们不能保证Employee这一张表中所有的人都只是在这两个部门里面
+-- 题目给了这么一个例子：也就是说我的department里面是什么都没有的
+-- {"headers": {"Employee": ["Id", "Name", "Salary", "DepartmentId"], "Department": ["Id", "Name"]}, 
+--     "rows": {"Employee": [[1, "Joe", 10000, 1]],                   "Department": []}}
+-- 那么我们如果用的是left JOIN那么其实还是会返回：
+-- {"headers": ["Department", "Employee", "Salary"], "values": [[null, "Joe", 10000]]}
+-- 这个并不是我们想要的，我们希望得到的是：
+-- {"headers": ["Department", "Employee", "Salary"], "values": []}
+-- 所以只能用inner join
