@@ -1,3 +1,7 @@
+# 此题思路：
+# 这道题的关键在于找到这个规律，也就是matrix[i][j] = matrix[i + 1][j + 1] 不然做不出来
+
+
 class Solution:
     def isToeplitzMatrix(self, matrix: List[List[int]]) -> bool:
         group = {}
@@ -37,3 +41,16 @@ class Solution:
                             return False
                 
                 return True
+
+# 思路2  ->  将解法展开方便理解：
+class Solution:
+    def isToeplitzMatrix(self, matrix: List[List[int]]) -> bool:
+        row = len(matrix)
+        # print(row)
+        col = len(matrix[0])
+        # print(col)
+        for i in range(row - 1):   #切记一定要是row - 1，因为不然等到扫到最后一个的时候，系统是会提醒matrix[i + 1][j + 1]已经超出了边界了
+            for j in range(col - 1):
+                if matrix[i][j] != matrix[i + 1][j + 1]:  #这里我们用！=先去判断不属于的情况
+                    return False
+        return True  #这里的return True一定要放到外头，因为这里的true我们是要保证所有的matrix[i][j] = matrix[i + 1][j + 1]的情况才可以
