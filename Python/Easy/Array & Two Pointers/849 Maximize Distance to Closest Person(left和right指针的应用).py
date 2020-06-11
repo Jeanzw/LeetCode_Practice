@@ -1,31 +1,3 @@
-seats = [1,0,0,0,1,0,1]
-occu = []
-for i in range(len(seats)):
-    print(i)
-    if seats[i] == 1:
-        occu.append(i)
-print(occu)
-#上面步骤就是说我们把已经坐了人的index给记录下来
-
-can_seat = []
-for j in range(len(occu) - 1):
-    #print(occu[j])
-    for q in range(occu[j],occu[j + 1]):
-        if occu[j] != q:
-            #print(q)
-            can_seat.append(q)
-#我们将没有坐人的index给记录下来
-
-if occu == [0]:  #我们来考虑00001这种情况
-    can_seat = len(seats) - 1
-
-print(can_seat)
-#我们上面的步骤是错误的：
-#我们只是把坐人以及没有坐人的index给记录下来，但是我们并没有来看其之间的距离是多少
-
-
-
-#Gang的思路：
 #其实整个字符串只有三种组成：
 #1.  100000
 #2.  000001
@@ -38,6 +10,7 @@ class Solution(object):
         """
         dist = 0
         i=0  #这里相当于是index
+        # 首先我们来看第二种情况
         while i < len(seats) and seats[i] != 1:  #这里我们其实就是在扫为0的数字，其实就是第二种情况
             i +=1  #如果没有1出现，那么就一直往右边扫，直到扫到了1，那么距离就是第一个0到第一个1出现的距离
             #这里的i既可以作为index，也可以作为距离的计数
