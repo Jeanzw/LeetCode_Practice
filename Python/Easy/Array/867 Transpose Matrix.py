@@ -5,6 +5,8 @@ R = len(A)     #如此知道有多少列
 C = len(A[0])  #如此知道新的矩阵中有多少元素，即有多少行
 transpose = []
 for c in range(C):
+    # 我们之所以在先扫列再扫行，那是因为我们其实是对于列一行行扫，然后使其变成行的然后存储到new_Row里面的
+    # 因为我们是以row为单位存储的，所以必须先扫列，再存储到行里面
     newRow = []
     for r in range(R):
         newRow.append(A[r][c])
