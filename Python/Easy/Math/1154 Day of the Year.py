@@ -1,3 +1,11 @@
+# 这道题的思路：
+# 1. 将年月日拆开
+# 2. 考虑一般情况下二月份是28天时的天数情况
+# 3. 考虑闰年的情况
+# 4. map(int, date.split('-'))  -> 拆年月日
+# 5. sum(cnt[:m - 1]) -> 来统计除了该月之前的数量加和
+
+
 #https://geekpy.github.io/2018/08/12/python_time/
 #https://geekpy.github.io/2018/08/25/python_time2/
 #https://geekpy.github.io/2019/03/02/pythontime3/
@@ -15,10 +23,12 @@ def ordinalOfDate(self, date):
 #上面是用了library，但是我们如果不用library：
 class Solution:
     def dayOfYear(self, date: str) -> int:
-        cnt = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        cnt = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] #这个是每个月一共有多少天
         y, m, d = map(int, date.split('-'))
-        days = sum(cnt[:m - 1]) + d
-        if m > 2:
+        days = sum(cnt[:m - 1]) + d  #截止到这一步，我们基本能够把正常年份的情况给搞定了
+
+        #但是我们知道，我们上面的2月份其实并没有考虑闰年的情况，所以接下来我们要考虑的就是闰年与否
+        if m > 2:  
             if y % 400 == 0: days += 1
             if y % 100 == 0: return days
             if y % 4 == 0: days += 1
@@ -32,5 +42,3 @@ class Solution:
         import datetime 
         date = datetime.datetime.strptime(date, '%Y-%m-%d')
         return date.timetuple().tm_yday  #d.timetuple().tm_yday    # 获取在一年中的第几天
-
-
