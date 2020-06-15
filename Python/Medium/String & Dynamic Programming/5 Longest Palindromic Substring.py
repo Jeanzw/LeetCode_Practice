@@ -1,3 +1,10 @@
+# 此题的思路其实很简单：
+# 我们先从整体开始一个个元素往后扫，设为i
+# 然后每一轮继续顺着i + 1 往后扫设为j，知道扫到和自己一样的元素
+# 然后把[i:j + 1] 取出来，判断是否是paalindromic substring，判断方式就是[::-1]是否和原本的一致
+# 如果一致，那么替换掉原本的res，如果不是那么继续扫
+
+
 class Solution:
     def longestPalindrome(self, s: str) -> str:
         if len(s) == 0:
