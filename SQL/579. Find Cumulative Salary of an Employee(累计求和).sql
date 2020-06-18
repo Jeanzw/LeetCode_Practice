@@ -24,5 +24,5 @@ select
     sum(Salary) over (partition by Id order by Month asc rows between 2 preceding and current row) Salary
 
 from Employee E
-where Month <> ( select max(Month) from Employee EE where E.Id = EE.Id group by EE.Id  )
+where Month != ( select max(Month) from Employee EE where E.Id = EE.Id group by EE.Id  )
 order by Id asc, Month desc
