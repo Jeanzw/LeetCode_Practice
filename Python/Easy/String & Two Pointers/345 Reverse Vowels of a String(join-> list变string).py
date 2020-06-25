@@ -20,18 +20,19 @@ print(res)
 
 
 
-
-#Gang的思路，直接就是前后一起扫，用left和right来作为index
 class Solution:
     def reverseVowels(self, s: str) -> str:
-        vowel = 'aeiouAEIOU'
-        i=0
-        j=len(s)-1
-        while i<j:
-            while s[i] not in vowel and i<=j: #这里一定要写i<=j，不然i会继续扫，然后就会越界
-                i += 1
-            while s[j] not in vowel and i<=j:
-                j -=1 
-            if i<j:
-                s[i], s[j] = s[j], s[i]
-        return s
+        s = list(s)
+        v = 'aeiouAEIOU'
+        l = 0
+        r = len(s) - 1
+        while l < r:
+            if s[l] not in v:
+                l += 1
+            if s[r] not in v:
+                r -= 1
+            if s[l] in v and s[r] in v:
+                s[l], s[r] = s[r], s[l]
+                l+=1  #此处一定要在前后走一遭，不然就会陷入死循环了
+                r-=1
+        return "".join(s)

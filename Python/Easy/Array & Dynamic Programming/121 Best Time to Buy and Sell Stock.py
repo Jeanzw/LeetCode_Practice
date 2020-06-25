@@ -1,3 +1,8 @@
+# 此题思路：
+# 1.只要后一个比我们指定的数字大，那么我们当作卖掉，也就是 大的数 - 小的数
+# 2.如果后面的数比我们原本的数小，那么直接换掉我们原本的数
+
+
 prices = [7,6,4,3,1]
 profit = []
 for i in range(len(prices)):
@@ -36,4 +41,3 @@ class Solution:
             min_price = min(min_price,prices[i])
         
         return max_profit
-
