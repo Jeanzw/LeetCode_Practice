@@ -1,3 +1,5 @@
+-- 之所以我们需要在on的时候颠来倒去那是因为我们知识要抽出a的内容
+
 select distinct a.* from stadium a
  join stadium b
  join stadium c
