@@ -29,7 +29,7 @@ print(loc)
         #list.append(i)
 #print(list)
 
-#我们下面输出s_list所有的index就用range来试
+#我们下面输出 s_list所有的index就用range来试
 line = []
 for q in range(len(s_list)):  #这里我们相当于是抽取index以及value
         #print(q)
