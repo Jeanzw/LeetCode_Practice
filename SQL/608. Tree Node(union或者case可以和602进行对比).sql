@@ -31,9 +31,9 @@ order by a.id
 /*凑出来的表格如下
 a.id	a.p_id	b.p_id	b.id
 1	    Null 	1	    2
-1		NULL    1	    3
-2	    1	    2	    4
-2		1       2	    5
+1	    NULL    1	    3
+2	    1	      2	    4
+2	    1       2	    5
 3	    1	    Null	
 4	    2	    Null	
 5	    2	    Null
