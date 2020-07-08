@@ -1,3 +1,8 @@
+# 此题的思路就是：
+# 我们先把每个字母最后一次出现的index给找出来
+# 然后当我们扫S的时候，判断所处的字母是否是最后一个字母出现的index
+# 如果是，那么就放到list里面
+
 class Solution:
     def partitionLabels(self, S: str) -> List[int]:
         last = {c: i for i, c in enumerate(S)}  #这里其实我们就是把所有字母的最后一个出现的index给弄出来，因为弄出了字典的形式，所以就可以避免重复的情况了，抽出来的肯定是最后一个出现的位置
