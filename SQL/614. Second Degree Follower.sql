@@ -9,3 +9,10 @@ select a.follower,count(distinct b.follower) as num from follow a
 join follow b
 on a.follower = b.followee
 group by b.followee
+
+
+-- 其实这一道题目根本不需要join就可以做出来，首先我们要找出follower里面存在follower的
+-- 那么我们直接在followee里面找就好了，只要我们确保其在follower里面
+select followee as follower,count(distinct follower) as num from follow
+where followee in (select follower from follow)
+group by 1
