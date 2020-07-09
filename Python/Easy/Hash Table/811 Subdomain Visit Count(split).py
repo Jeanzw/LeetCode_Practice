@@ -1,3 +1,9 @@
+# 这一道题的思路：
+# 我们先把数字和string给分开
+# 然后将string以.为间隔分开
+# 然后将这两者储存到dic里面
+# 从dic里面抽内容组成list
+
 class Solution:
     def subdomainVisits(self, cpdomains: List[str]) -> List[str]:
         dic = {}
