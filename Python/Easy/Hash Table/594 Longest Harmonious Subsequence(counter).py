@@ -4,6 +4,7 @@ class Solution:
         cnt = Counter(nums)
         #print(cnt)
         cnt = sorted(cnt.items())  #此处我们的想法其实就是，让key从小到大进行排序，而后我们只要将相差为1的key的value相加，然后就是长度了，然后取最长的组合
+        # 这样子处理之后其实cnt就变成了一个二维数组
         #print(cnt)
         ans = 0
         for i in range(1,len(cnt)):

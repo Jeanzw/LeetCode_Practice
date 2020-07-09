@@ -13,3 +13,18 @@ FROM student
 ) AS SOURCE
 GROUP BY continentorder
 )temp
+
+
+-- 另外一种解法：
+select min(America) as America, min(Asia) as Asia, min(Europe) as Europe from  
+--其实这里无所谓max还是min，最后都是可以得到一样的结果，因为这里我们其实知识想要抽出下面case的内容而已
+    (select 
+        row,
+        case when continent = 'America' then name else null end as America,
+        case when continent = 'Asia' then name else null end as Asia,
+        case when continent = 'Europe' then name else null end as Europe
+    from
+        (select *,
+        row_number() over(partition by continent order by name) as row
+        from student) t1) t2
+group by row;
