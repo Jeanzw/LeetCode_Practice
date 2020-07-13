@@ -59,4 +59,13 @@ where customer_id not in
  where cc.customer_id is null)
 
 
+-- 其实这道题目想明白了就很简单
+-- 首先，我们一定要保证Customer这张表的product_key是在Product里面的，那么就完成了where product_key in (select product_key from Product)
+-- 接着，只要product_key在product里面，那么我们这个时候保证数量一致就没有问题
+select customer_id from
+(select customer_id,count(distinct product_key) as n from Customer
+where product_key in (select product_key from Product)
+group by 1 
+having n = (select count(distinct product_key) from Product))tmp
+
 
