@@ -6,6 +6,7 @@ SELECT
  from seat,
  (select count(*) as counts from seat) as temp
  order by id
+--  这里计算id有多少只能写subquery，而不能用max(id)
 
 
 /*
