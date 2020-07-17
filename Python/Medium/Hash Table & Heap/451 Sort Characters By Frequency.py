@@ -1,3 +1,6 @@
+# 这里的思路就是，我们不能直接对字典进行排序
+# 那么我们就创建另外一个key和val对调的字典来供我们了解到底最多的字母是什么
+
 class Solution:
     def frequencySort(self, s: str) -> str:
         from collections import Counter
