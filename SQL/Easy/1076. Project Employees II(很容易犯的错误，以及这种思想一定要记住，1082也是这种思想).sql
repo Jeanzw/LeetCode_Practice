@@ -1,4 +1,9 @@
-/*这道题我最开始好像一直想要用max(count(*))这样的方式来计算count最大者，这样是不对的，做不出来的*/
+-- 这道题我最开始好像一直想要用max(count(*))这样的方式来计算count最大者，这样是不对的，做不出来的
+-- 但是就算是以下做法也是错的，因为可能好几个的project的人数都是一样的
+-- select count(*) from Project
+-- group by project_id
+-- order by count(distinct employee_id) desc limit 1
+
 select project_id from Project 
 group by project_id
 having count(*) =

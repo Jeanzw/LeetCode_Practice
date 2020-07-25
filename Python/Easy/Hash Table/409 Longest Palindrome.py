@@ -1,3 +1,6 @@
+# 其实这一道题的关键在于，这是一道计算题
+# 我们需要知道最后的这一个公式，那么才可以得到阶梯的方法len(s) - odds + (odds > 0)
+
 from collections import Counter
 s = "abccccdd"
 dic = Counter(s)  #使用Counter模块统计一段句子里面所有字符出现次数
