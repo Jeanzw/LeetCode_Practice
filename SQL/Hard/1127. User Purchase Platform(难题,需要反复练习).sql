@@ -48,48 +48,6 @@ JOIN
 接下来我们只需要将上两步left join就可以了
 
 */
-
-
-
-SELECT a.spend_date, b.platform, 
-    IFNULL(c.total_amount, 0) total_amount,
-    IFNULL(c.total_users, 0) total_users
-FROM 
-
-
-    (SELECT DISTINCT spend_date FROM Spending) a
-JOIN
-    (SELECT "desktop" AS platform UNION SELECT "mobile" UNION SELECT "both") b
-
-
-LEFT JOIN
-
-
-(
-    SELECT spend_date, platform, total_amount, COUNT(distinct user_id) total_users
-    FROM (
-        SELECT
-            user_id,
-            spend_date,
-            (CASE WHEN count(*) = 2 THEN "both" 
-                ELSE platform END) platform,
-            SUM(amount) as total_amount
-        FROM Spending
-        GROUP BY user_id, spend_date
-    ) p
-    GROUP BY spend_date, platform
-) c
-
-
-ON a.spend_date = c.spend_date AND b.platform = c.platform
-
-
-
-
-
-
-
-
  
 SELECT 
     p.spend_date,
@@ -104,6 +62,8 @@ FROM
     UNION
     SELECT DISTINCT(spend_date), 'both' platform FROM Spending
 ) p 
+
+--接下来的logic的目的其实就是很正常的的找出我们result想要的内容
 LEFT JOIN (
     SELECT
         spend_date,
