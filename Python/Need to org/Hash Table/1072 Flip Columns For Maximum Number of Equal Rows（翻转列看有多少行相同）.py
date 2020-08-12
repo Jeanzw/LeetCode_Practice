@@ -13,7 +13,7 @@ class Solution:
         return max(cache.values())
 #这里的意思其实就是
 # [1,0,0,1,0]                                      [0,0,0,0,0]  // all-0s
-# [1,0,0,1,0]  after flipping 0-th and 4-th rows   [0,0,0,0,0]  // all-0s
+# [1,0,0,1,0]  after flipping 0-th and 4-th columns[0,0,0,0,0]  // all-0s
 # [1,0,1,1,1] -----------------------------------> [0,0,1,0,1]
 # [0,1,1,0,1]                                      [1,1,1,1,1]  // all-1s
 # [1,0,0,1,1]                                      [0,0,0,0,1]

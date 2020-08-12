@@ -5,7 +5,7 @@ sum(case when type = 'chargeback' then 1 else 0 end) as chargeback_count,
 sum(case when type = 'chargeback' then amount else 0 end) as chargeback_amount 
 from 
 (
-(select date_format(trans_date,'%Y-%m') as month, country,amount,'approved' as type from Transactions where state = 'approved')
+(select date_format(trans_date,'%Y-%m') as month,  country,amount,'approved' as type from Transactions where state = 'approved')
 
 union all
 
