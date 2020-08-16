@@ -57,3 +57,11 @@ from
 where
   r1.manager_id = 1 and r3.employee_id != 1
 ;
+
+
+
+-- 我再一次做的时候，则直接用left join去做
+select a.employee_id from Employees a
+left join Employees b on a.manager_id = b.employee_id
+left join Employees c on b.manager_id = c.employee_id
+where c.manager_id = 1 and a.employee_id != 1
