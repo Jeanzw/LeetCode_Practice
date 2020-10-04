@@ -1,18 +1,19 @@
 #这里其实就是要2,3,5依次粉墨登场，比如说当我num//2余数为0，那么求整后的数就应该赋值给num，再看看继续2,3,5这样子
 #这样子循环下去，到最后肯定num = 1
-num = 8
-list = [2,3,5]
-if num <= 0:
-    print(False)
-else:    
-    for i in list:
-        while num % i == 0:
-            num //= i
-    
-    if num == 1:  #这里无论num原本就是1还是说通过整除后得到的是1都会经过这一步的判断
-        print(True)
-    else:
-        print(False)  
+class Solution:
+    def isUgly(self, num: int) -> bool:
+        list = [2,3,5]
+        if num <= 0:
+            return False
+        else:
+            for i in list:
+                while num % i == 0:
+                    num //= i
+        
+        if num == 1: #这里无论num原本就是1还是说通过整除后得到的是1都会经过这一步的判断
+            return True
+        else: 
+            return False
 
 
 
