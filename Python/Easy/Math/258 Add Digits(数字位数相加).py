@@ -1,17 +1,15 @@
 #我这里的思路是，把数字变成字符串然后就可以一个个抽出来数字，然后再转换为数字
-n = 21
-s = str(n)
-l = len(s)
-if n < 10:
-    sum = n
-while n >=10:
-    sum = 0
-    for i in str(n):
-        sum += int(i)
-    n = sum
-print(n)
-
-print(123/10)
+class Solution:
+    def addDigits(self, num: int) -> int:
+        if num < 10:
+            return num
+        while num >= 10:
+            sum = 0
+            for i in str(num):
+                sum += int(i)
+            num = sum
+        return num
+            
 
 
 #下面是张刚的思路，直接用求余和求整来判断
