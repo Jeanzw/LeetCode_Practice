@@ -19,11 +19,16 @@ print(m)
 
 
 #如果我们不用min()找到最小值，而是用sort找到最小值也是可以的
-list.sort()
-res = 0
-for i in list:
-    res += i - list[0]  #这里其实我们用list.sort()已经将list里面的元素从小到大进行排序了
-print(res)
+class Solution:
+    def minMoves(self, nums: List[int]) -> int:
+        nums.sort()
+        # print(nums)
+        res = 0
+        for i in nums:
+            res += i - nums[0] #这里其实我们用list.sort()已经将list里面的元素从小到大进行排序了
+        return res
+
+
 
 
 
