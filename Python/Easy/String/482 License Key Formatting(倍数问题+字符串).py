@@ -11,7 +11,7 @@ class Solution:
             if cnt % K == 0 and ans:  #当确保字符串不是空，并且我们数的字符已经是等于K的时候，就可以加入-
                 ans += '-'
         
-        if ans and ans[-1] == '-':
+        if ans and ans[-1] == '-': #我们这里相当于做了一个判断，也就是如果最后一个是‘-’那么如何办，如果不是那么又如何处理
             return ans[-2::-1]
         else:
             return ans[::-1]
