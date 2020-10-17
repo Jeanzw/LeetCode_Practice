@@ -6,12 +6,14 @@ print(str1)
 #上面的就是list 和 string得相互转换
 
 #方法1：切片法
-list1 = []
-for i in list:
-    list1.append(i[::-1])
-print(list1)
-res = ' '.join(list1)
-print(res)
+class Solution:
+    def reverseWords(self, s: str) -> str:
+        l = s.split(' ')
+        print(l)
+        result = []
+        for i in l:
+            result.append(i[::-1])
+        return ' '.join(result)
 
 
 #方法2：reverse()函数
