@@ -2,19 +2,19 @@ A = 'abcde'
 B = 'abced'
 
 #思路1：直接进行字符串的拼接
-for i in range(len(A)):
-    behind = A[i:]
-    front = A[:i]
-    new_word = behind + front
-    #print(behind)
-    #print(front)
-    #print(behind + front)
-    if new_word == B:
-        print(True)
-if A == B == '':
-    print(True)
-else:
-    print(False)
+class Solution:
+    def rotateString(self, A: str, B: str) -> bool:
+        for i in range(len(A)):
+            behind = A[:i]
+            after = A[i:]
+            new_word = after + behind
+            # print(new_word)
+            if new_word == B:
+                return True
+        if A == B == '':
+            return True
+        else:
+            return False
 
 
 
