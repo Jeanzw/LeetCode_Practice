@@ -45,7 +45,7 @@ class Solution(object):
         :type words: List[str]
         :rtype: str
         """
-        #words = xxx
+        # words = xxx
         words.sort(key = lambda x: len(x),reverse = True)  #这里相当于是将words这个列表里头的values按照长度从大到小进行排序
         res = “”
         for word in words:
