@@ -43,7 +43,7 @@ class Solution:
         lets.sort(key = lambda x:(' '.join(x.split()[1:]),x.split()[0]))  
         #这里的意思就是：我们既要对后面的内容x.split()[1:]进行排序，也对identifier进行排序x.split()[0]
         print(lets)
-        return lets + digsn
+        return lets + digs
         
 #python排序函数sort()与sorted()区别：https://blog.csdn.net/zyl1042635242/article/details/43115675
 #sort会对原来的内容进行改动，而sorted不会
