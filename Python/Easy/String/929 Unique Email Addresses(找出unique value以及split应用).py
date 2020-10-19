@@ -16,6 +16,8 @@ new_email = pd.unique(new_email).tolist()
 print(len(new_email))
 
 
+
+
 #可是如果我们不把生成的新邮箱地址放在list里面，而放在set里面，那么python就会自动生成unique value
 email = ["test.email+alex@leetcode.com","test.e.mail+bob.cathy@leetcode.com","testemail+david@lee.tcode.com"]
 new_email = set()
