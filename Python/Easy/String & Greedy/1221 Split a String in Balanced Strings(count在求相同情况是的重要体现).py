@@ -2,7 +2,7 @@
 #而我们要找的也是balanced strings，那么其实小的balanced strings加在一起一定就会组成原本的string了
 #那么我们其实去计算L和R的个数就好了，一旦两者相等的时候就是balanced strings，那么就可以在balanced string的个数上加上1
 #由于这里并没有要求一定是对称的，只是要求数量一样即可，所以只需要考虑数字个数就好
-s = "LLLLRRRR"
+# s = "LLLLRRRR"
 class Solution:
     def balancedStringSplit(self, s: str) -> int:
         l_count = 0
@@ -13,7 +13,7 @@ class Solution:
                 l_count += 1
             else:
                 r_count += 1
-            if l_count == r_count and l_count != 0:
+            if l_count == r_count:
                 res += 1
         return res
 
