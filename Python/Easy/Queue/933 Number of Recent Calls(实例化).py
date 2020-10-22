@@ -5,15 +5,11 @@ class RecentCounter(object):
         #而这里调用了一个实例，那么就相当于是会记住每一次调用的内容
 
     def ping(self, t):
-        """
-        :type t: int
-        :rtype: int
-        ""”
-       self.nums.append(t)
-       index = -1
-       for i in range(len(self.nums)):
-           if t-self.nums[i]>3000:
-               index = i
+        self.nums.append(t)
+        index = -1
+        for i in range(len(self.nums)):
+            if t-self.nums[i]>3000:
+                index = i
         self.nums = self.nums[index+1:]
         return len(self.nums)
 

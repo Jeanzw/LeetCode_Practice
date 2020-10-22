@@ -72,14 +72,19 @@ class KthLargest:
 
     def __init__(self, k: int, nums: List[int]):
         self.hlist = nums  #由于是实例化，所以要用self，不然在下面add（）这一个definition里面就没有办法调用了
+        # 而这里的hlist其实是没有任何意义的，只是起个名字
         heapq.heapify(self.hlist)   #将上面的list弄成heap的形式
         self.k = k   #告诉python我们要拿最大k的值
         while len(self.hlist) > k:
-            heapq.heappop(self.hlist) #如果长度大于k，那么我们直接把长于k的别的值给pop掉，这样保证我们的heap里面就是只有k个元素
-        
+            heapq.heappop(self.hlist) #如果原始长度大于k，那么我们直接把长于k的别的值给pop掉，这样保证我们的heap里面就是只有k个元素
+        # 以上操作我觉得其实是做一个准备工作
+        # 也就是说，先把heap list给设置好，这里使用了heapq.heapify()
+        # 而后也告诉了python我们的k是多少
+        # 同时用一个while循环告诉python，我们需要的长度是怎样的，而多余的就用heapq.heappop()给踢掉
+        # 以上操作其实就决定了我们整个heap的结构了
 
     def add(self, val: int) -> int:
-        heapq.heappush(self.hlist,val)  #将val给添加进来
+        heapq.heappush(self.hlist,val)  #将val给添加到self.hlist来
         if len(self.hlist) <= self.k:
             return self.hlist[0]  #如果我们原本里面的元素就是比k要少或者就是等于k，那么无论如何都会返回第一个
         #否则，我们要把多出来的部分的最小值继续pop掉
