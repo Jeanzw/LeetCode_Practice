@@ -3,7 +3,7 @@ class Solution:
         dict = {}
         max_len = start = 0
         for i, v in enumerate(s):
-            print(i,v)
+            # print(i,v)
             if v in dict:
                 end = dict[v] + 1
                 if end > start:
