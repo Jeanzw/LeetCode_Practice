@@ -1,14 +1,14 @@
 -- 下面这一个代码是我自己写的，相当于我们先把各个player_id的最小日期求出来，然后找和最小日期相差天数只有一天的日期和player_id，计算出来当做分子top，然后再计算有多少个player_id当做分母，然后在最开头用分子除以分母
-select round(top/bottom,2) as fraction from
+with firstlogin as
+(select player_id, min(event_date) as first_login 
+from Activity group by 1)
+,top as
+(select count(distinct a.player_id) as top from Activity a 
+inner join firstlogin f on a.player_id = f.player_id and datediff(a.event_date,first_login) = 1)
+,bottom as 
+(select count(distinct player_id) as bottom from Activity)
 
-(
-select count(distinct a.player_id) as top from Activity a inner join
-(select player_id,min(event_date) as min_date from Activity
-group by player_id)b
-on a.player_id = b.player_id and a.event_date - 1 = b.min_date
-    ) c,
-
-(select count(distinct player_id) as bottom from Activity)d
+select round(top/bottom,2) as fraction from top,bottom
 
 
 -- 我们现在把上面的这一个解法做一个拆解如此便于我们更好理解该题：
