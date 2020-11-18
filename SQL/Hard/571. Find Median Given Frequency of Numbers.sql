@@ -1,7 +1,7 @@
 -- 这道题和569有一点像
 select avg(Number*1.0) as median from
 -- 先将前后的rnk给选出来
-SELECT Number, Frequency,
+(SELECT Number, Frequency,
              SUM(Frequency) OVER (ORDER BY Number ASC) rk1,
              SUM(Frequency) OVER (ORDER BY Number DESC) rk2
              FROM Numbers)tmp
