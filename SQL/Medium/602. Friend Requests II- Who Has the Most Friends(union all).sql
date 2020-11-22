@@ -16,3 +16,13 @@ union all
 select accepter_id as id from request_accepted) as new
 group by id
 order by count(*) desc limit 1
+
+
+
+
+select id,count(*) as num from
+(select requester_id as id from request_accepted
+union all
+select accepter_id as id from request_accepted)tmp
+group by 1
+order by 2 desc limit 1
