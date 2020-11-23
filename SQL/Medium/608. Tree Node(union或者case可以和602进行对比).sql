@@ -21,6 +21,9 @@ order by id
 
 
 /*用case来解题*/
+-- 我们这里用第一个表的id和第二个表的p_id是因为，我们其实要考虑这个id是否是在p_id里面的
+
+
 select distinct a.id,
 (case when a.p_id is not null and b.id is not null then 'Inner'
       when a.p_id is not null and b.id is null then 'Leaf' 
@@ -38,3 +41,21 @@ a.id	a.p_id	b.p_id	b.id
 4	    2	    Null	
 5	    2	    Null
 */	
+
+
+
+-- 对于第三次做的时候，我还是选择了用case when而不是union all的方式
+-- 我们的目的其实就是，如果p_id是null，那么肯定就是Root
+-- 如果id这个数字在p_id里面，同时其p_id不是null，那么就是Leaf
+-- 如果id这个数字不在p_id里面，同时其p_id不是null，那么就是Inner
+-- 在这个基础上，我们首先开一个temp view，然后把p_id给抽出来
+-- 在case when的时候，我们就针对上面讨论的Root，Leaf和Inner分别讨论
+with p_type as
+(select p_id from tree where p_id is not null)
+
+
+select id,
+case when p_id is null then 'Root'
+    when id not in (select p_id from p_type) and p_id is not null then 'Leaf'
+    else 'Inner' end as Type 
+    from tree
