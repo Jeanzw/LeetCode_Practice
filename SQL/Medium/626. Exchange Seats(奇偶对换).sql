@@ -1,12 +1,12 @@
-SELECT
-(case 
- when mod(id,2) != 0 and id != counts then id + 1
- when mod(id,2) != 0 and id = counts then id
- else id -1 end) as id, student
- from seat,
- (select count(*) as counts from seat) as temp
- order by id
+select
+case when mod(id,2) != 0 and id != cnts then id + 1
+     when mod(id,2) != 0 and id = cnts then id
+     else id - 1 end as id,
+     student from seat,
+     (select count(*) as cnts from seat) b
+     order by id
 --  这里计算id有多少只能写subquery，而不能用max(id)
+-- 我们这里需要另外开一个subquery来计算到底总共有多少行
 
 
 /*
