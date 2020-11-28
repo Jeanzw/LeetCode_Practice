@@ -6,6 +6,20 @@ having min(sale_date) >= '2019-01-01'
        max(sale_date) <='2019-03-31'
 
 
+
+-- 后来一次写，我是用了cte，从而会比较清楚
+with product_in_spring_2019 as
+(select product_id, min(sale_date) as min_date,max(sale_date) as max_date from Sales
+group by 1
+having min_date >= '2019-01-01' and max_date <= '2019-03-31')
+-- 找出product_id是在这个时间范围内的
+
+select product_id, product_name from Product
+where product_id in (select product_id from product_in_spring_2019)
+-- 直接从Product表中抽出上面cte找到的id
+-- 这样做的好处就是：我们不需要使用任何的join
+
+
 -- 或者用逆向思维，就是先找到不在这去见之类的产品，然后找除了上面找到的产品外别的产品
 select distinct s.product_id, product_name from Sales s
 left join Product p
