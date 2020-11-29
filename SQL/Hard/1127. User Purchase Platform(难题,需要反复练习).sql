@@ -48,7 +48,52 @@ JOIN
 接下来我们只需要将上两步left join就可以了
 
 */
- 
+--  最后我还是改成了下面的这种形式，这个是最符合我们讨论过程的时候写的逻辑的query了
+
+
+select 
+    p.spend_date,
+    p.platform,
+    ifnull(total_amount,0) as total_amount,
+    ifnull(total_users,0) as total_users 
+from
+(SELECT DISTINCT(spend_date), 'desktop' platform FROM Spending
+    UNION
+    SELECT DISTINCT(spend_date), 'mobile' platform FROM Spending
+    UNION
+    SELECT DISTINCT(spend_date), 'both' platform FROM Spending)p
+
+left join
+
+--接下来的logic的目的其实就是很正常的的找出我们result想要的内容
+
+(    SELECT 
+    spend_date,
+    platform,
+    SUM(total_amount) AS total_amount,
+    COUNT(DISTINCT user_id) AS total_users 
+FROM
+
+(select 
+user_id,
+spend_date,
+(case when count(*) = 1 then platform 
+      when count(*) = 2 then 'both' end) as platform,
+      sum(amount) as total_amount
+      from Spending
+      group by user_id,spend_date)tmp
+
+GROUP BY spend_date,platform
+order by spend_date) o
+on p.platform = o.platform and p.spend_date = o.spend_date
+
+
+
+----------------------------------------------------------------------------------------
+
+
+
+
 SELECT 
     p.spend_date,
     p.platform,
