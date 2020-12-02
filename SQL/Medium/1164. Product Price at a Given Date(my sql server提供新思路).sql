@@ -28,3 +28,24 @@ select product_id, new_price price, change_date, rank() over (partition by produ
 where change_date <= '2019-08-16'
 ) A where Ranking = 1)
 
+
+
+-- 上面的做法是用union all来将所有选手回到局内
+-- 但其实大可不必
+with raw as
+(select product_id, new_price as price from
+(select 
+*,
+rank() over (partition by product_id order by change_date desc) as rnk
+from Products
+where change_date <= '2019-08-16')tmp
+where rnk = 1)
+-- 上面的cte先将我们可以处理的内容抽出来
+
+select 
+distinct p.product_id,
+ifnull(price,10) as price
+from Products p
+left join raw r on p.product_id = r.product_id
+-- 然后利用原表Products将所有的product_id抽出来成为一列
+-- 然后将cte重的内容与之join即可
