@@ -11,3 +11,19 @@ having sum(b.weight)<=1000
 所以抽出来的内容会是前三排的
 而我最后用一个order by就是抽取最后一个turn也就是我们想要的内容*/
 order by a.turn desc limit 1)
+
+
+
+-- 下面这种方法应该更容易理解：
+-- 我们用一个sum() over来统计重量
+-- 然后只要保证这个统计的重量是小于1000的
+-- 接着我们按照turn来排名，取1个就好
+select person_name from
+(select 
+    person_id,
+    person_name,
+    turn,
+    sum(weight) over (order by turn) as sum_weight
+    from Queue)tmp
+    where sum_weight <=1000
+    order by turn desc limit 1

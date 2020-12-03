@@ -16,3 +16,26 @@ on a.player_id = b.player_id
 group by a.player_id,group_id) c
 where rank = 1
 group by group_id
+
+
+-- 下面的做法比较简便
+with player_score as
+(select 
+    first_player as id, 
+    first_score as score
+    from Matches
+union all
+select 
+    second_player as id, 
+    second_score as score
+    from Matches)
+-- 我上面用一个union all来将所有的player对应得到的分数求出来
+
+select group_id,id as player_id from
+(select id, group_id,
+rank() over (partition by group_id order by sum(score) desc,player_id) as rnk 
+from player_score
+left join Players on Players.player_id = player_score.id
+group by 1,2)tmp
+where rnk = 1
+-- 下面就是来看他们分数总和以及在各自group的排名
