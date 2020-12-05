@@ -58,6 +58,16 @@ where
   r1.manager_id = 1 and r3.employee_id != 1
 ;
 
+-- 其实对于上面这种做法，我们还可以逆向来，但是原理是一样的
+-- 也就是说，我们从下级往上推，只要保证最后能够推到Boss那里即可
+select distinct a.employee_id from Employees a
+join Employees b on b.employee_id = a.manager_id
+join Employees c on c.employee_id = b.manager_id
+join Employees d on d.employee_id = c.manager_id
+where d.employee_id = 1 and a.employee_id != 1
+
+
+
 
 
 -- 我再一次做的时候，则直接用left join去做
