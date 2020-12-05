@@ -8,3 +8,14 @@ where month(day) = 11
 group by 1) a
          left join Countries b
          on a.country_id = b.country_id
+
+
+-- 我第二次做的时候直接把avg在case when里面计算了
+select  
+    country_name, 
+    case when avg(weather_state) <= 15 then 'Cold'
+    when avg(weather_state) >= 25 then 'Hot' else 'Warm'
+    end as weather_type from Weather w
+    left join Countries c on w.country_id = c.country_id
+    where date_format(day,'%Y-%m') = '2019-11'
+    group by 1
