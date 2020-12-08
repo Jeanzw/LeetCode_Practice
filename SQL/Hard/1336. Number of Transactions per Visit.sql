@@ -31,6 +31,8 @@ select c.Number as transactions_count,isnull(b.visits_count,0) as visits_count
 from c left join b on c.Number=b.transactions_count
 
 
+
+
 -- 另一种发发生成transactions_count从0到最大值的过程
 -- 用row_number，然后union all 0
 with sub1 as
@@ -41,10 +43,22 @@ from Visits a
 left join Transactions b on a.user_id = b.user_id and a.visit_date = b.transaction_date
 group by a.user_id, a.visit_date)tmp
 group by times)
+-- 最里面的subquery：相当于查看在visit中到底有多少人做过transaction
+-- 上面这一步其实是很基础的就是用case when求有多少transaction有多少visit
 
-SELECT rank as transactions_count, COALESCE(visits_count,0) visits_count
+
+
+-- 这道题最有意思的是下面的步骤
+-- 也就是我先把Transaction这张表排序
+-- 我们最后的表Result其实transactions_count其实也是一个排序，但是Result这张表的排序怎么都不可能多于Transactions这张表的排序
+-- 基于上面这个事实，我们先对Transations这张表排序，而后保证这个排序是小于我们上面计算的transactions count的最大值即可
+SELECT rank as transactions_count, ifnull(visits_count,0) visits_count
 FROM (SELECT ROW_NUMBER() OVER (ORDER BY transaction_date) rank FROM Transactions UNION SELECT 0) sub2
 LEFT JOIN sub1
 ON sub2.rank = sub1.transactions_count
 WHERE rank <= (SELECT MAX(transactions_count) FROM sub1)
 ORDER BY 1
+
+
+-- 这里涉及一个知识点：ROW_NUMBER, RANK, DENSE_RANK的区别：
+-- https://blog.csdn.net/yjgithub/article/details/76136737
