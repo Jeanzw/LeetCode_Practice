@@ -20,3 +20,11 @@ from Customers as c
     having tot > 1) as o
 where c.customer_id = o.customer_id
 ORDER BY customer_id
+
+
+-- 另一种做法
+select o.customer_id,customer_name from Orders o left join Customers c on o.customer_id = c.customer_id
+where product_name in ('A','B')  --这里是保证customer买了A和B
+and o.customer_id not in (select customer_id from Orders where product_name = 'C')  --这里保证了customer买了C
+group by 1
+having count(distinct product_name) = 2

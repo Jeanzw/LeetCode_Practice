@@ -1,3 +1,6 @@
+-- 关于datediff:https://docs.microsoft.com/en-us/sql/t-sql/functions/datediff-transact-sql?view=sql-server-ver15
+
+
 SELECT a.product_id, b.product_name, a.report_year, a.total_amount
 FROM (
     SELECT product_id, '2018' AS report_year,
