@@ -31,8 +31,10 @@ ORDER BY a.product_id, a.report_year
 select cast(P.product_id as varchar) PRODUCT_ID, product_name PRODUCT_NAME, report_year REPORT_YEAR, amount TOTAL_AMOUNT from Product P
 left join
 
-(select product_id, '2018' report_year, (1+datediff(day, period_start, (case when period_end < '2019-01-01' then period_end else '2018-12-31' end) )) average_daily_sales amount
+(select product_id, '2018' report_year, (1+datediff(day, period_start, (case when period_end < '2019-01-01' then period_end else '2018-12-31' end) )) * average_daily_sales amount
 from Sales
+-- 在这里，因为我们永远需要包含当天，所以我们需要加上1
+-- 同时在这一步是很可能amount为负数的，因为对于period_start是2019年的，那么计算date_diff就是负数
 union all
 select product_id, '2019' report_year,
 (1+datediff(day, (case when period_start < '2019-01-01' then '2019-01-01' else period_start end), (case when period_end < '2020-01-01' then period_end else '2019-12-31' end) ))* average_daily_sales amount

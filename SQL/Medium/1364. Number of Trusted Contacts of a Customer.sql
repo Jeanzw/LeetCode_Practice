@@ -22,3 +22,26 @@ join customers c on c.customer_id = i.user_id
 left join Contacts cont on cont.user_id = c.customer_id
 group by i.invoice_id
 order by i.invoice_id
+
+
+-- 之后的做法：
+-- 我们首先判断Contacts这张表到底哪些是trust的哪些不是
+-- 而后再进行常规操作
+with trust as
+(select 
+    user_id,
+    contact_name,
+    case when customer_name is not null then 'trusted' else 'untrusted' end as trust_or_not
+from Contacts c left join Customers cu on c.contact_name = cu.customer_name)
+
+select 
+invoice_id,
+customer_name,
+price,
+count(contact_name) as contacts_cnt,
+sum(case when trust_or_not = 'trusted' then 1 else 0 end) as trusted_contacts_cnt
+from Invoices i 
+left join Customers c on i.user_id = c.customer_id
+left join trust t on i.user_id = t.user_id
+group by 1,2,3
+order by 1
