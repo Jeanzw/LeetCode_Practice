@@ -12,12 +12,16 @@ select callee_id as id, duration from Calls
     having avg(duration) >
     (select avg(duration) from Calls)
 
+
+
 -- 特别好的解法
 SELECT Country.name AS country
 FROM Person JOIN Calls ON Calls.caller_id = Person.id OR Calls.callee_id = Person.id
 JOIN Country ON Country.country_code = LEFT(Person.phone_number, 3)
 GROUP BY Country.name
 HAVING AVG(duration) > (SELECT AVG(duration) FROM Calls)
+
+
 
 -- 还可以的解法：这些其实都是在对Calls这张表如何处理来做文章
 SELECT
@@ -34,3 +38,19 @@ GROUP BY
  co.name
 HAVING
  AVG(duration) > (SELECT AVG(duration) FROM calls)
+
+
+--  后来重新做的方法：
+with country_duration as
+(select caller_id as id, duration from Calls
+union all
+ select callee_id as id, duration from Calls
+)
+, country_person as
+(select id,c.name as country from Person p left join Country c on left(phone_number,3) = country_code)
+
+
+select country from country_duration cd
+left join country_person cp on cd.id = cp.id
+group by 1
+having avg(duration) > (select avg(duration) from Calls)

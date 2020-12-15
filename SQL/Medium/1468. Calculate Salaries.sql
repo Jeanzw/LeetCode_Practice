@@ -30,3 +30,21 @@ from salaries s inner join
 (select company_id, max(salary) max_sal from salaries group by company_id) x
 
 on s.company_id = x.company_id;
+
+
+-- 后来自己写的：
+with company_max_salary as
+(select company_id, max(salary) as max_salary from Salaries group by 1)
+-- 先求出每家公司最大的salary
+
+select 
+    s.company_id,
+    employee_id,
+    employee_name,
+    round((salary 
+    - 
+    case when max_salary < 1000 then 0
+    when max_salary between 1000 and 10000 then salary * 0.24
+    else salary * 0.49 end),0) as salary
+    from Salaries s 
+    left join company_max_salary c on s.company_id = c.company_id
