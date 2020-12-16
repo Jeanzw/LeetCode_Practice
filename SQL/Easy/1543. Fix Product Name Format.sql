@@ -1,5 +1,5 @@
 -- 其实这道题的关键就在于如何删减空格
-
+-- SQL 中的TRIM 函数是用来移除掉一个字串中的字头或字尾。 最常见的用途是移除字首或字尾的空白。 这个函数在不同的资料库中有不同的名称： MySQL: TRIM( ), RTRIM( ), LTRIM( )
 SELECT LOWER(TRIM(product_name)) product_name, DATE_FORMAT(sale_date, "%Y-%m") sale_date, count(sale_id) total
 FROM sales
 GROUP BY 1, 2
