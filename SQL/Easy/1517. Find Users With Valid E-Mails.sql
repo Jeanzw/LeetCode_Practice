@@ -20,5 +20,7 @@
 -- 5. Everything else, like @leetcode.com refers to exact match.
 
 
+-- https://blog.csdn.net/weixin_40417658/article/details/78132084
+
 select * from Users 
 where regexp_like(mail, '^[A-Za-z]+[A-Za-z0-9\_\.\-]*@leetcode.com')
