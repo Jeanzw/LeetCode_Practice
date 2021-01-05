@@ -12,3 +12,39 @@ SET M=N-1;
       --我们这里相当于先把前M给砍掉，然后取1个，那么这个就是第N个了
   );
 END
+
+
+
+
+-- 下面这种方式就是不需要variable
+CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+-- # DECLARE M INT;
+-- # SET M = N - 1;
+  RETURN (
+      # Write your MySQL query statement below.
+      SELECT e1.Salary
+      FROM (SELECT DISTINCT Salary FROM Employee) e1
+      WHERE (SELECT COUNT(*) FROM (SELECT DISTINCT Salary FROM Employee) e2 WHERE e2.Salary > e1.Salary) = N - 1      
+      
+      LIMIT 1
+      
+  );
+END
+
+
+
+-- 下面这种方式却是最容易理解的
+-- 用一个dense_rank来帮助我们排序，同时不需要任何的variable
+CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+  RETURN (
+      # Write your MySQL query statement below.
+      select distinct Salary
+      from 
+      (select DENSE_RANK() over (order by Salary desc) as r, Salary
+        from Employee
+       ) as t
+      where r =N
+  );
+END

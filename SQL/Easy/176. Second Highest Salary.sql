@@ -1,12 +1,13 @@
 # Write your MySQL query statement below
 select max(Salary) as SecondHighestSalary from Employee 
 where Salary < (select max(Salary) from Employee)
---此处是一定要用max的，而不能
+--此处是一定要用max或者min
 select Salary as SecondHighestSalary from Employee
 where Salary < (select max(Salary) from Employee)
 order by salary desc
 limit 1
 --因为这样如果我们只有一个数，其实返回的是一个[],但是我们想要的是如果只有一个数，那么返回的是null
+-- 为了达到上面的目的，我们需要对最后得出的数进行一个处理，比如说max或者min
 
 
 /* Write your T-SQL query statement below */
@@ -20,6 +21,19 @@ from (SELECT salary, dense_rank() over(order by salary desc) as myrank
 from Employee
 ) e
 where myrank = 2;
+
+
+-- 另外官方是给了这么一个方法
+-- 在这里涉及offset的用法：https://www.jianshu.com/p/efecd0b66c55
+SELECT
+    (SELECT DISTINCT
+            Salary
+        FROM
+            Employee
+        ORDER BY Salary DESC
+        LIMIT 1 OFFSET 1) AS SecondHighestSalary
+
+
 
 
 #reference:
