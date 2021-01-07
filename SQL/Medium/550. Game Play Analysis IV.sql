@@ -1,3 +1,21 @@
+-- N次做之后的方式
+-- 我们先找出最小的event date
+-- 然后将其和原表join起来，找出
+with first_login as
+(select player_id, min(event_date) as login from Activity group by 1)
+
+select 
+round(sum(case when datediff(a.event_date,b.login) = 1 then 1 else 0 end)
+/
+count(distinct a.player_id),2) as fraction
+from Activity a
+ left join first_login b 
+ on a.player_id = b.player_id 
+
+
+
+
+
 -- 下面这一个代码是我自己写的，相当于我们先把各个player_id的最小日期求出来，然后找和最小日期相差天数只有一天的日期和player_id，计算出来当做分子top，然后再计算有多少个player_id当做分母，然后在最开头用分子除以分母
 with firstlogin as
 (select player_id, min(event_date) as first_login 

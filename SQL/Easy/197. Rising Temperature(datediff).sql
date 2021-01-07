@@ -5,6 +5,18 @@ and a.Temperature>b.Temperature
 -- https://www.w3school.com.cn/sql/func_datediff_mysql.asp
 
 
+
+-- 下面那种解法的解释错了，不是因为不能用left join，而是因为date function用错了
+-- 我们不应该用Id来做定位，因为可能存在下面那个例子就是虽然12-16是12-15的第二天，但是12-16的Id比12-15要小的情况
+-- 我们唯一能够比较昨天和今年的就只有recordDate
+-- 那么在这种情况下当然是可以用left join的
+select a.Id from Weather a
+left join Weather b 
+on datediff(a.recordDate,b.recordDate) = 1 
+where a.Temperature > b. Temperature
+
+
+
 -- 这里是不能用left join的，因为这样其实当第一天的温度是最大的时候：
 -- {"headers": {"Weather": ["Id", "RecordDate", "Temperature"]}, 
 --   "rows": {"Weather": [[1, "2000-12-16", 3], [2, "2000-12-15", -1]]}}
