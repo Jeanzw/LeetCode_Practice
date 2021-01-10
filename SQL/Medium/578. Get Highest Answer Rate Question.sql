@@ -26,3 +26,11 @@ from survey_log
 where action != 'skip'
 group by 1)tmp
 order by ratio desc limit 1
+
+
+-- 又一次做的时候我直接不用case when了
+select 
+    question_id as survey_log
+    from survey_log
+    group by 1
+    order by count(answer_id)/count(question_id) desc limit 1
