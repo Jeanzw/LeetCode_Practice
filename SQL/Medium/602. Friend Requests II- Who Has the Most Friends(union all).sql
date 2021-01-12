@@ -9,6 +9,12 @@ https://juejin.im/post/5c131ee4e51d45404123d572
 从效率上说，UNION ALL 要比UNION快很多
 所以，如果可以确认合并的两个结果集中不包含重复数据且不需要排序时的话，那么就使用UNION ALL。
 */
+
+
+
+-- 我们之所以可以直接用limit这是因为题目中说了：It is guaranteed there is only 1 people having the most friends.
+-- 如果没有说这一句话，那么我们是不能这么做的，只能先求出count最大的数，然后让我们的数和他的数一致
+-- 或者直接用dense_rank
 select id, count(*) as num
 from
 (select requester_id as id from request_accepted
