@@ -1,3 +1,11 @@
+/*
+这道题的思路：
+1.首先，我们按照continent划分对人按照人名进行排序
+2.我们将排序的内容直接做成表格，这里需要用到case when，同时我们是按照这个排序进行分行的，所以对continent的case when需要用到max来进行处理，这样子才可以用group by
+3.抽出来continent即可
+*/
+
+
 SELECT America, Asia, Europe
 FROM(
 /*这一部分最后一定要group by continentorder，这样子才可以把同样等级的（第一序列）的给排到一起*/
