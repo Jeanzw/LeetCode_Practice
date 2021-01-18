@@ -9,6 +9,22 @@ case when mod(id,2) != 0 and id != cnts then id + 1
 -- 我们这里需要另外开一个subquery来计算到底总共有多少行
 
 
+-- 我是真的不太想再纠结subquery的问题了，所以直接用cte来解决
+-- 这里其实我们纠结的点在：到底整个id list是奇数还是偶数，如果是偶数，那么什么都不需要犹豫，但是如果是奇数，最后一个位置是不变的
+-- 那么我们纠结点在于奇数的问题，那么在case when我们不必去考虑偶数问题，因为偶数无论如何都是id - 1的情况
+-- 那么对于奇数的情况，我们要讨论的就是：到底最后一个位置是否是奇数
+with num_seats as
+(select count(id) as cnt from seat)
+
+select 
+case when mod(id,2) != 0 and id != cnt then id + 1
+when mod(id,2) != 0 and id = cnt then id
+else id - 1 end as id, 
+student
+from seat,num_seats
+order by 1
+
+
 /*
 这一道题如果写成下面这种情况那么就有问题了
 select 
