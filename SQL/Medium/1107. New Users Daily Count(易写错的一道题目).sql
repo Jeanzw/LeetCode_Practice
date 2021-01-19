@@ -20,3 +20,12 @@ group by 1
     having min_log  >= '2019-04-01'
 )
 group by 1
+
+-- 下面是新做的答案：
+-- 我们不用In来解题，直接划定范围，然后开始计数
+select first_login as login_date, count(distinct user_id) as user_count from
+(select user_id,min(activity_date) as first_login from Traffic
+where activity = 'login'
+group by 1
+having datediff('2019-06-30',min(activity_date)) <= 90)tmp
+group by 1
