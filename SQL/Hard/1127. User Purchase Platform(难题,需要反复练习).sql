@@ -127,3 +127,53 @@ LEFT JOIN (
 ) t
 ON p.platform=t.platform AND p.spend_date=t.spend_date
 GROUP BY spend_date, platform
+
+
+
+
+---------------------------------------------------------------------------------------
+-- 再一次做的时候可以自己写出来，不过需要有些观念有改变的地方
+
+
+with spend_date as
+(select distinct spend_date from Spending)
+,platform as
+(select 'mobile' as platform
+union all
+ select 'desktop' as platform
+union all
+ select 'both' as platform
+)
+, date_platform as
+(select * from spend_date,platform)
+-- 我在上面两个cte相当于是建立了一个框架，可以让我保证拥有原表中所有的时间，同时有三列platform与之对应
+
+
+, both_purchase as
+(select user_id, spend_date,'both' as platform,sum(amount) as amount, count(distinct platform) as n from Spending
+group by 1,2,3
+having n = 2)
+-- 这里我相当于是先把both的给抽出来
+
+,purchase as
+(select user_id, spend_date,platform,sum(amount) as amount from Spending
+where (user_id,spend_date) not in (select user_id,spend_date from both_purchase)
+ group by 1,2,3
+ 
+ union all
+ 
+ select user_id,spend_date,platform,amount from both_purchase
+ 
+)
+-- 然后用union all将single purchase和both purhcase的放在一起
+-- 其实这里我们是可以直接用case when来将其分开的，这也就是我想的有点纰漏的地方
+
+select 
+    dp.spend_date,
+    dp.platform, 
+    ifnull(sum(amount),0) as total_amount,
+    count(distinct user_id) as total_users
+from date_platform dp
+left join purchase p on dp.spend_date = p.spend_date and dp.platform = p.platform
+group by 1,2
+-- 而最后就是很简单的left join了
