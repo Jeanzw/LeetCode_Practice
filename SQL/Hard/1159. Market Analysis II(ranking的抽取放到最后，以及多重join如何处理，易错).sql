@@ -47,3 +47,29 @@ with raw_data as
 select user_id as seller_id,
 case when fav is null then 'no' else fav end as '2nd_item_fav_brand'
 from Users u 
+
+
+
+-- 我再一次做的时候相当于是把有2nd和没有2nd的分开来看
+with rank_sell as
+(select 
+*,
+rank() over(partition by seller_id order by order_date) as rnk
+from Orders)
+-- 上面是先把原数据处理一下，都附上排名
+
+select 
+user_id as seller_id, 'no' as 2nd_item_fav_brand
+from Users
+where user_id not in (select seller_id from rank_sell where rnk = 2)
+-- 上面是讨论没有rank = 2的情况
+union all
+
+select 
+rs.seller_id,
+case when i.item_brand = favorite_brand then 'yes' else 'no' end as 2nd_item_fav_brand
+from rank_sell rs
+left join Items i on rs.item_id = i.item_id
+left join Users u on rs.seller_id = u.user_id
+where rnk = 2
+-- 下面就是有rank = 2 的情况，这个时候就是来看join的熟悉度的问题了

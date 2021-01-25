@@ -49,3 +49,27 @@ from Products p
 left join raw r on p.product_id = r.product_id
 -- 然后利用原表Products将所有的product_id抽出来成为一列
 -- 然后将cte重的内容与之join即可
+
+
+
+
+
+-- 我再一次做的时候：
+with price as
+(select 
+    product_id,
+    new_price,
+    rank() over (partition by product_id order by change_date desc) as rnk 
+    from Products
+where change_date <= '2019-08-16')
+, product as
+(select distinct product_id from Products)
+-- 上面我们先把price符合条件的抽出来，然后利用product建立一张表
+
+select 
+p.product_id,
+ifnull(pp.new_price,10) as price
+from Product p
+left join price pp on p.product_id = pp.product_id and rnk = 1
+-- 然后将两张表join起来
+-- 这里注意如果我们的rnk = 1是在where处join，那么其实不会有productid = 3的情况，只有将其放在join里面，那么对于productid = 3的情况会出现，但是是null
