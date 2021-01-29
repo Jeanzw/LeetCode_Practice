@@ -40,7 +40,7 @@ Players p1
 ON sc.player = p1.player_id
 WHERE ( sc.score,p1.group_id) IN
 
-#其实我下面的这一部分都是为了提供一个条件，就是我抽出最高的score,然后让上面抽出的内容满足下面的条件就好
+-- #其实我下面的这一部分都是为了提供一个条件，就是我抽出最高的score,然后让上面抽出的内容满足下面的条件就好
 
 (SELECT MAX(sc.score) as score ,p1.group_id  #我们之所以不抽出player_id因为可能会有同分数的情况，那么我们在之后再讨论
 FROM
@@ -53,7 +53,7 @@ UNION ALL
 ) sco
 GROUP BY sco.player ) sc
 
-#既然我们已经把Matches表格里面的player_id和对应战绩弄出来，那么我们其实就可以和players表格合并了
+-- #既然我们已经把Matches表格里面的player_id和对应战绩弄出来，那么我们其实就可以和players表格合并了
 LEFT JOIN
 Players p1
 ON sc.player = p1.player_id   #在下面有GROUP BY p1.group_id 之前都是正常的合并，但是因为我要从中选出最高的分数和对应的group_id所以我们需要在下面加一个group
@@ -72,3 +72,22 @@ select group_id, player_id from (
 	group by ps.player_id order by group_id, score desc, player_id) top_scores
 group by group_id
 
+
+
+-- 或者直接用rank来看排序的情况
+with raw_data as
+(select first_player as id,first_score as score from Matches
+union all
+select second_player as id,second_score as score from Matches)
+, player_team as
+(select id,group_id,rank() over (partition by group_id order by score desc, id) as rnk from
+(select 
+id,
+group_id,
+sum(score) as score 
+from  raw_data r
+left join Players p on r.id = p.player_id
+group by 1,2)tmp)
+
+select group_id,id as player_id from player_team
+where rnk = 1
