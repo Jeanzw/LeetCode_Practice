@@ -19,3 +19,15 @@ select
     count(distinct sub_id) as number_of_comments from post p
     left join comments c on p.id = c.parent_id
     group by 1
+
+
+-- 又一次做的，我把null的处理放到了最后
+with post as
+(select distinct sub_id from Submissions where parent_id is null)
+,comment as
+(select parent_id, count(distinct sub_id) as number_of_comments from Submissions
+group by 1)
+
+select p.sub_id as post_id,ifnull(number_of_comments,0) as number_of_comments  from post p
+left join comment c on p.sub_id = c.parent_id
+order by 1
