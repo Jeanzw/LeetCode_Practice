@@ -23,7 +23,6 @@ with frame as
 group by 1,2)
 -- 把课程数量给统计起来
 
--- 
 select 
 f.student_id,
 f.student_name,
@@ -35,3 +34,20 @@ and f.subject_name = e.subject_name
 order by 1,3
 
 
+
+
+-- 再一次做的时候
+with frame_work as
+(select * from Students,Subjects)
+
+select 
+fw.student_id, 
+fw.student_name, 
+fw.subject_name,
+count(e.subject_name) as attended_exams  --这里是很容易出错的点，如果我们用count(*)那么没有参加过任何考试的也会被计作1因为这是按照行数来计数的
+-- 而我们这里用count(e.subject_name)，那么如果连不上显示的是null的是不会被计数的
+from frame_work fw
+left join Examinations e on fw.student_id = e.student_id
+and fw.subject_name = e.subject_name
+group by 1,2,3
+order by 1,3
