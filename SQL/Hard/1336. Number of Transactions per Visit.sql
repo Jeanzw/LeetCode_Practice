@@ -33,6 +33,7 @@ from c left join b on c.Number=b.transactions_count
 
 
 
+
 -- 另一种发发生成transactions_count从0到最大值的过程
 -- 用row_number，然后union all 0
 with sub1 as
@@ -45,8 +46,6 @@ group by a.user_id, a.visit_date)tmp
 group by times)
 -- 最里面的subquery：相当于查看在visit中到底有多少人做过transaction
 -- 上面这一步其实是很基础的就是用case when求有多少transaction有多少visit
-
-
 
 -- 这道题最有意思的是下面的步骤
 -- 也就是我先把Transaction这张表排序
