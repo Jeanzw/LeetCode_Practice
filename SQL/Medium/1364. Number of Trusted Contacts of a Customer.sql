@@ -45,3 +45,28 @@ left join Customers c on i.user_id = c.customer_id
 left join trust t on i.user_id = t.user_id
 group by 1,2,3
 order by 1
+
+
+-- 另一种做法
+with cnt as
+(select 
+user_id,
+count(distinct contact_name) as contacts_cnt,
+count(customer_name) as trusted_contacts_cnt
+from
+Contacts co
+left join Customers c 
+on co.contact_name = c.customer_name and co.contact_email = c.email
+group by 1)
+
+
+select 
+invoice_id,
+customer_name,
+price,
+ifnull(contacts_cnt,0) as contacts_cnt,
+ifnull(trusted_contacts_cnt,0) as trusted_contacts_cnt
+from Invoices i 
+left join Customers c on i.user_id = c.customer_id
+left join cnt on i.user_id = cnt.user_id
+order by 1

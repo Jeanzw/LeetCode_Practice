@@ -30,3 +30,18 @@ select activity from Friends
 group by 1
 having count(*) != (select max_num from max_num)
 and count(*) != (select min_num from min_num)
+
+
+-- 也可以用到Activity这张表来进行筛选：
+with max_activity as
+(select activity from Friends group by 1
+ having count(*) =
+    (select count(*) as max_num from Friends group by activity order by max_num desc limit 1))
+,min_activity as
+(select activity from Friends group by 1
+ having count(*) =
+    (select count(*) as min_num from Friends group by activity order by min_num limit 1))
+    
+select name as activity from Activities
+where name not in (select * from max_activity)
+and name not in (select * from min_activity)
