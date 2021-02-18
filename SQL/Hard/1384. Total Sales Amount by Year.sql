@@ -50,3 +50,63 @@ from Sales) T
 on P.product_id = T.product_id
 where amount >0
 order by cast(P.product_id as varchar), report_year
+
+
+-- 之后再一次做，就是用比较基础的知识来做：
+with rawdata as
+(select product_id,
+'2018' as report_year,
+case when year(period_start) = 2018 and year(period_end) = 2018 then
+(datediff(period_end,period_start)+1) * average_daily_sales 
+when year(period_start) = 2018 and year(period_end) != 2018 then
+(datediff(date('2018-12-31'),period_start)+1) * average_daily_sales 
+end as total_amount from Sales
+group by 1,2
+-- 我们上面先找出2018年的，然后用case when分类讨论
+-- 这里可能存在的情况：
+    -- 1. start 和 end全部都在2018
+    -- 2. start在2018，end在之后的年份
+
+union all
+
+select product_id,
+'2019' as report_year,
+case when year(period_start) = 2019 and year(period_end) = 2019 then
+(datediff(period_end,period_start)+1) * average_daily_sales 
+when year(period_start) = 2019 and year(period_end) > 2019 then
+(datediff(date('2019-12-31'),period_start)+1) * average_daily_sales 
+when year(period_start) = 2018 and year(period_end) = 2019 then
+(datediff(period_end,date('2019-01-01'))+1) * average_daily_sales
+when year(period_start) = 2018 and year(period_end) > 2019 then
+(datediff(date('2019-12-31'),date('2019-01-01'))+1) * average_daily_sales
+end as total_amount from Sales
+group by 1,2
+-- 我们上面先找出2019年的，然后用case when分类讨论
+-- 这里可能存在的情况：
+    -- 1. start 和 end全部都在2019
+    -- 2. start在2018，end在2020
+    -- 3. start在2018，end在2019
+    -- 4. start在2019，end在2020
+
+union all
+
+select product_id,
+'2020' as report_year,
+case when year(period_start) = 2020 and year(period_end) = 2020 then
+(datediff(period_end,period_start)+1) * average_daily_sales 
+when year(period_start) <2020 and year(period_end) = 2020 then
+(datediff(period_end,date('2020-01-01'))+1) * average_daily_sales 
+end as total_amount from Sales
+group by 1,2)
+-- 最后找出2020年的，然后用case when分类讨论
+-- 这里可能存在的情况：
+    -- 1. start 和 end全部都在2020
+    -- 2. start在2018或者2019，end在2020
+
+
+
+
+select r.product_id,product_name,report_year,total_amount from rawdata r
+left join Product p on r.product_id = p.product_id
+where total_amount is not null
+order by 1,3
