@@ -14,6 +14,19 @@ join Logins e on a.id = e.id and datediff(d.login_date,e.login_date) = 1
 join Accounts acc on a.id = acc.id
 order by 1
 
+-- 基于上一种方法的基础上写出下者：
+-- 可以跑的并且不会timeout
+with raw as
+(select distinct l1.id from Logins l1
+join Logins l2 on l1.id = l2.id and datediff(l2.login_date,l1.login_date) = 1
+join Logins l3 on l2.id = l3.id and datediff(l3.login_date,l2.login_date) = 1
+join Logins l4 on l3.id = l4.id and datediff(l4.login_date,l3.login_date) = 1
+join Logins l5 on l4.id = l5.id and datediff(l5.login_date,l4.login_date) = 1)
+
+select * from Accounts
+where id in (select * from raw)
+order by id
+
 
 
 

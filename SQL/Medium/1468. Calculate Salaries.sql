@@ -48,3 +48,23 @@ select
     else salary * 0.49 end),0) as salary
     from Salaries s 
     left join company_max_salary c on s.company_id = c.company_id
+
+
+-- 其实case when里面是可以进行计数操作的
+with tax as
+(select 
+company_id,
+case when max(salary) < 1000 then 0 
+when max(salary) >= 1000 and max(salary) <= 10000 then 0.24
+else 0.49
+end as tax
+from Salaries
+group by 1)
+
+select 
+s.company_id,
+s.employee_id,
+s.employee_name,
+round(s.salary * (1 - tax),0) as salary
+from Salaries s
+left join tax t on s.company_id = t.company_id

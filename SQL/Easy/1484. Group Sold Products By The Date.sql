@@ -7,6 +7,8 @@ FROM Activities
 GROUP BY sell_date
 ORDER BY sell_date ASC
 
+
+
 -- MS SQL Server的做法
 select sell_date, 
     COUNT(product) as num_sold,

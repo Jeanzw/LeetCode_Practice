@@ -12,3 +12,15 @@ select
     and a.x_value != b.x_value
     and a.y_value != b.y_value
     order by 3 desc, 1,2
+
+
+-- 再一次做的：
+select 
+    p1.id as p1, 
+    p2.id as p2, 
+    abs(p1.x_value - p2.x_value) * abs(p1.y_value - p2.y_value) as area
+from Points p1
+left join Points p2 on p1.id < p2.id
+group by 1,2,3
+having area != 0 and area is not null
+order by 3 desc,1,2
