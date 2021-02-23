@@ -54,3 +54,23 @@ select country from country_duration cd
 left join country_person cp on cd.id = cp.id
 group by 1
 having avg(duration) > (select avg(duration) from Calls)
+
+
+
+-- 另外的方法：
+with rawdata as
+(select caller_id as id, duration from Calls
+union all
+select callee_id as id, duration from Calls)
+,globaldata as
+(select avg(duration) as global_duration from rawdata)
+-- 这里我们先把global avg给求出来
+
+select 
+c.name as country
+from rawdata r
+left join Person p on r.id = p.id
+left join Country c on left(p.phone_number,3) = country_code
+group by 1
+having avg(duration) > (select global_duration from globaldata)
+-- 在最后保证我们这里每个国家的avg duration是大于global duration
