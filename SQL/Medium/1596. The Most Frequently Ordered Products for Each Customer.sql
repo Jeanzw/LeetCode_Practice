@@ -12,6 +12,20 @@ with max_product as
     left join Products p on m.product_id = p.product_id
     where rnk = 1
 
+-- 我其实觉得不能什么都用cte做，因为据说有些公司的sql不推荐用cte因为看不到logic
+-- 这道题如果直接做其实也很简单的
+select customer_id,product_id,product_name from
+(select 
+o.customer_id, 
+o.product_id,
+p.product_name,
+dense_rank() over (partition by customer_id order by count(*) desc) as rnk 
+from Orders o 
+left join Products p on o.product_id = p.product_id
+group by 1,2,3)tmp
+where rnk = 1
+
+
 
 -- 我们也可以不用rank来做
 SELECT customer_id,products.product_id,product_name
@@ -19,7 +33,7 @@ from Orders
 JOIN Products on Products.product_id=Orders.product_id
 group by customer_id,product_id
 HAVING (customer_id,COUNT(order_date)) IN(
-#Get Maxiumum Count for each customer 
+-- #Get Maxiumum Count for each customer 
 SELECT customer_id,MAX(cnt)FROM
 (
 SELECT customer_id,product_id,COUNT(order_date) as cnt
