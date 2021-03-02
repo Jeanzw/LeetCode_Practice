@@ -10,7 +10,8 @@
 with recursive seq as
 (select 1 as ids 
  union  select ids + 1 from seq 
- where ids < (SELECT MAX(customer_id) FROM Customers))
+ where ids < (SELECT MAX(customer_id) FROM Customers))  
+ --这里我们需要用<而不是<=，因为我们如果用后者，那么比如说最大值是5，但是这个时候我们的ids当他是5的时候会再进入循环一圈，从而导致ids变成了6
  
 select * from seq
 where ids not in (select customer_id from Customers)
