@@ -51,3 +51,17 @@ on a.player_id = b.player_id and a.event_date - 1 = b.min_date
     ) c,
 
 (select count(distinct player_id) as bottom from Activity)d
+
+
+
+
+-- 我觉得上面的答案真的太复杂了……
+-- 这道题其实就是先找最小日期，然后将最小日期和原表相连，保证playerid一致同时日期相差1天即可
+-- 连得上的就是满足条件的，连不上的就是不满足条件的
+with min_day as
+(select player_id, min(event_date) as min_day from Activity group by 1)
+
+select
+round(count(distinct b.player_id)/count(distinct a.player_id),2) as fraction
+from min_day a
+left join Activity b on datediff(b.event_date,a.min_day) = 1 and a.player_id = b.player_id
