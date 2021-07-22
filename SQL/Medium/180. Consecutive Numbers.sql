@@ -22,3 +22,19 @@ and b.Id + 1 = c.Id
 and a.Num = b.Num and b.Num = c.Num
 
 
+
+
+
+-- 为了响应连续数的第一种方法，我真是煞费苦心……
+-- 这道题烦的一点就在于，可能存在的情况是Id从0开始的……
+-- 所以我们为了保证group by里面的是正数，我们用了Id + 1 - rnk，这样子相当于把所有的Id都加1，确保Id是从1开始的
+select distinct Num as ConsecutiveNums
+from
+(select
+    Num,
+    Id,
+    rank() over (partition by Num order by Id) as rnk 
+    from Logs) 
+    tmp
+    group by Num, Id + 1 - rnk
+    having count(*) >= 3

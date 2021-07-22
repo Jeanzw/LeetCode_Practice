@@ -1,11 +1,12 @@
-#mysql
+-- 方法1：先求出每个departmentid对应的最大工资数
+-- 然后确保我们抽出来的人的工资和部门与之对应即可
 select Department.Name as Department, Employee.Name as Employee, Salary
 from Employee
 join Department on Employee.DepartmentId = Department.Id
 where (Employee.DepartmentId, Salary) in
 (select DepartmentId, max(Salary) from Employee group by DepartmentId)
 
-#ms sql  
+-- 直接用rank求解
 /* Write your T-SQL query statement below */
 select 
     Department,

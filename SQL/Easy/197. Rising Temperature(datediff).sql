@@ -27,3 +27,8 @@ left join Weather b
 where a.Temperature > b.Temperature
 
 
+-- 其实这种题，当我们只需要考虑存在的而不需要考虑不存在的，那么使用join其实会好很多
+select 
+distinct a.id 
+from Weather a
+join Weather b on datediff(a.recordDate,b.recordDate) = 1 and a.Temperature > b.Temperature

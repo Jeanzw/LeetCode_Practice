@@ -5,3 +5,7 @@ DELETE p1 FROM Person p1,
     Person p2
 WHERE
     p1.Email = p2.Email AND p1.Id > p2.Id
+
+
+delete p2 from Person p1
+left join Person p2 on p1.Email = p2.Email and p1.Id < p2.Id
