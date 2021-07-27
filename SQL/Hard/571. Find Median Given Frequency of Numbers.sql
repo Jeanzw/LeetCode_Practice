@@ -25,3 +25,32 @@ abs((select sum(Frequency) from Numbers where Number<=n.Number) -
 -- the equation above is (n+l) - (n+r) = l - r, x is median if l==r, of course.
 -- When l != r, as long as n can cover the difference, x is the median. 
 
+
+
+-- 其实我上面的方法我还是没有办法理解，所以这一次做我写了个自己的方法。也就是说我们用recursive把Frequency给展开，然后就是正常的求中位数的方法了
+with recursive cte as
+(select 
+    Number,
+    Frequency,
+    1 as rnk from Numbers
+
+ union all
+ 
+ select 
+    Number,
+    Frequency,
+    rnk + 1 as rnk
+ from cte
+ where rnk < Frequency
+ 
+)
+
+
+select avg(Number) as median from
+(select 
+    Number,
+    row_number() over (order by Number) as rnk,
+    count(*) over () as cnt
+from cte
+order by Number)tmp
+where rnk between cnt/2 and cnt/2 + 1

@@ -6,7 +6,6 @@ order by que_ans/que_show desc limit 1
 
 
 -- 也可以直接这样做：
-# Write your MySQL query statement below
 select question_id as survey_log from
 (select 
     question_id,
