@@ -25,3 +25,19 @@ on (r1.id + 1 = r2.id and r1.id + 2 = r3.id)
 or (r2.id + 1 = r3.id and r2.id + 2 = r1.id)
 or (r3.id + 1 = r1.id and r3.id + 2 = r2.id)
 order by visit_date
+
+
+
+
+-- 这道题也可以按照常规套路，就是用group by来做，只是相对比较麻烦
+with diff as
+(select 
+    id,
+    visit_date,
+    people,
+    id - row_number() over(order by id) as rnk
+    from Stadium
+    where people >= 100)
+
+select id,visit_date,people from diff
+where rnk in (select rnk from diff group by 1 having count(*) >= 3)
