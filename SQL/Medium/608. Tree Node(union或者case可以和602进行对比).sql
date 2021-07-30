@@ -43,6 +43,18 @@ a.id	a.p_id	b.p_id	b.id
 */	
 
 
+-- 如果用left join也可以直接这样写：
+select 
+    t1.id,
+    case 
+        when t1.p_id is null then 'Root'
+        when t2.id is not null then 'Inner'
+        else 'Leaf' end as Type
+    from tree t1
+    left join tree t2 on t1.id = t2.p_id
+    group by 1,2
+
+
 
 -- 对于第三次做的时候，我还是选择了用case when而不是union all的方式
 -- 我们的目的其实就是，如果p_id是null，那么肯定就是Root
@@ -59,3 +71,12 @@ case when p_id is null then 'Root'
     when id not in (select p_id from p_type) and p_id is not null then 'Leaf'
     else 'Inner' end as Type 
     from tree
+
+
+-- 其实下面这种方法应该是最简单的了：
+select 
+    id,
+    case when p_id is null then 'Root'
+    when id in (select p_id from tree) then 'Inner'
+    else 'Leaf' end as Type
+from tree

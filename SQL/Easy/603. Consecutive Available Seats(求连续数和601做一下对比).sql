@@ -14,3 +14,14 @@ select distinct r1.seat_id from raw_data r1
 join raw_data r2 
 on r1.seat_id + 1 = r2.seat_id or r2.seat_id + 1 = r1.seat_id
 order by 1
+
+
+-- 也可以用group by来做
+with diff as
+(select seat_id, seat_id - row_number() over (order by seat_id) as rnk
+from cinema
+where free = 1)
+
+select seat_id from diff
+where rnk in
+(select rnk from diff group by 1 having count(*) >= 2)
