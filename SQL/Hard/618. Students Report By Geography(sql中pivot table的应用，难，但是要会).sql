@@ -36,3 +36,16 @@ select min(America) as America, min(Asia) as Asia, min(Europe) as Europe from
         row_number() over(partition by continent order by name) as row
         from student) t1) t2
 group by row;
+
+
+-- 如果直接用pivot来做就是：
+select America, 
+       Asia, 
+       Europe
+from
+    (select name, 
+            continent,
+            row_number() over (partition by continent order by name) as id
+     from student) as a
+     pivot
+     (max(name) for continent in ([America], [Asia], [Europe])) as b

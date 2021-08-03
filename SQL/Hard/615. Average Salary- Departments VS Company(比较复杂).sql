@@ -52,3 +52,33 @@ from salary
 group by pay_month) as b
 on a.pay_month = b.pay_month
 order by pay_month desc, department_id
+
+
+-- 其实这种题我觉得用subquery实在是可读性有点差，不如用cte来的清晰明了
+-- 找到每个月公司的平均值
+with company as
+(select 
+ date_format(pay_date,'%Y-%m') as pay_month,
+ avg(amount) as com_avg
+ from salary 
+ group by 1)
+--  找到每个月每个部门的平均值
+, dep as
+(select 
+date_format(pay_date,'%Y-%m') as pay_month,
+department_id,
+avg(amount) as dep_avg
+from salary s
+left join employee e on s.employee_id = e.employee_id
+group by 1,2)
+
+-- 比较公司和部门
+select 
+d.pay_month,
+department_id,
+case 
+    when dep_avg > com_avg then 'higher'
+    when dep_avg < com_avg then 'lower'
+    else 'same' end as comparison
+from dep d
+left join company c on d.pay_month = c.pay_month

@@ -9,6 +9,7 @@ select a.follower,count(distinct b.follower) as num from follow a
 join follow b
 on a.follower = b.followee
 group by b.followee
+order by b.followee
 
 
 -- 其实这一道题目根本不需要join就可以做出来，首先我们要找出follower里面存在follower的

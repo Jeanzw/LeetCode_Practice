@@ -68,4 +68,8 @@ where product_key in (select product_key from Product)
 group by 1 
 having n = (select count(distinct product_key) from Product))tmp
 
-
+-- 上面的解法可以进一步简单
+select customer_id from Customer
+where product_key in (select * from Product)
+group by 1
+having count(distinct product_key) = (select count(distinct product_key) from Product)
