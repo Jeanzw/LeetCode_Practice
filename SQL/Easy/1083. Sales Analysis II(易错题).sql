@@ -22,6 +22,23 @@ WHERE p.product_name='iphone'
 )
 
 
+-- 上面的做法简化一点写就是：
+with raw as
+(select 
+    buyer_id,
+    product_name
+    from Sales s
+    left join Product p on s.product_id = p.product_id)
+
+select distinct buyer_id from Sales
+where buyer_id in (select buyer_id from raw where product_name = 'S8')
+and buyer_id not in (select buyer_id from raw where product_name = 'iPhone')
+
+
+
+
+
+
 
 -- 这道题其实还是属于一道易错题，我又一次做的时候仍旧不能立刻读完题就写，还是需要想一下
 with buyer_S8 as

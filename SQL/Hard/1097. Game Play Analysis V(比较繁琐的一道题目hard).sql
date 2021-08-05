@@ -43,3 +43,23 @@ from first_login f
 left join Activity a on f.player_id = a.player_id 
 and datediff(a.event_date,f.first_login) =  1
 group by 1
+
+
+
+-- 我这一次做的时候，觉得上面用count(event_date)来计算Day1_retention其实不太好。
+-- 因为现实可能是，player用不同的device在某一天上线了两次，那么如果用date来作为计量其实会有重复
+-- 所以最准确的还是用playerid作为计量依据
+with first_day as
+(select 
+    player_id,
+    min(event_date) as install_dt
+    from Activity
+    group by 1)
+    
+select
+    install_dt,
+    count(distinct f.player_id) as installs,
+    round(count(distinct a.player_id)/count(distinct f.player_id),2) as Day1_retention
+    from first_day f
+    left join Activity a on f.player_id = a.player_id and datediff(a.event_date,f.install_dt) = 1
+    group by 1
