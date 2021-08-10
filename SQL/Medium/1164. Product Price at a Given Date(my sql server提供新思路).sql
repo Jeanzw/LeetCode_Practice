@@ -73,3 +73,20 @@ from Product p
 left join price pp on p.product_id = pp.product_id and rnk = 1
 -- 然后将两张表join起来
 -- 这里注意如果我们的rnk = 1是在where处join，那么其实不会有productid = 3的情况，只有将其放在join里面，那么对于productid = 3的情况会出现，但是是null
+
+
+
+-- 在做一次的时候
+with framework as
+(select distinct product_id from Products)
+, latest as
+(select product_id,new_price as price from Products
+where (product_id,change_date) in
+(select product_id,max(change_date) from Products where change_date <= '2019-08-16' group by 1)
+)
+
+select 
+    f.product_id,
+    ifnull(price,10) as price
+    from framework f
+    left join latest l on f.product_id = l.product_id

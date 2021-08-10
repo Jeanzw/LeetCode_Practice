@@ -73,3 +73,35 @@ left join Items i on rs.item_id = i.item_id
 left join Users u on rs.seller_id = u.user_id
 where rnk = 2
 -- 下面就是有rank = 2 的情况，这个时候就是来看join的熟悉度的问题了
+
+
+
+
+
+-- 或者也可以这样做
+with multi_item as
+(select seller_id from Orders
+group by 1
+having count(*) > 1)
+
+select 
+    seller_id, 
+    case when item_brand = favorite_brand then 'yes' else 'no' end as 2nd_item_fav_brand
+    from
+(select 
+    user_id as seller_id,
+    o.item_id,
+    item_brand,
+    favorite_brand,
+    rank() over (partition by user_id order by order_date) as rnk
+    from Users u 
+    left join Orders o on u.user_id = o.seller_id
+    left join Items i on o.item_id = i.item_id
+    where u.user_id in (select * from multi_item))tmp
+    where rnk = 2
+
+union all
+
+select user_id as seller_id, 'no' as 2nd_item_fav_brand
+from Users
+where user_id not in (select * from multi_item)

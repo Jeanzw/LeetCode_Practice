@@ -6,6 +6,6 @@ order by id
 
 -- 其实也可以直接算不需要两步
 select distinct viewer_id as id from Views
-group by view_date,viewer_id
+group by view_date,viewer_id  --我不懂为什么我之后写的时候没有group by id
 having count(distinct article_id) > 1
 order by 1
