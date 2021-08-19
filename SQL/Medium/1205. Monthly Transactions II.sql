@@ -39,3 +39,6 @@ sum(case when state = 'chargeback' then 1 else 0 end) as chargeback_count,
 sum(case when state = 'chargeback' then amount else 0 end) as chargeback_amount
 from trans_charge
 group by 1,2
+
+
+
