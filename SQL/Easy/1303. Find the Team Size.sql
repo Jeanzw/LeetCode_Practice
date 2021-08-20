@@ -4,3 +4,10 @@ group by 1)
 
 select employee_id, num as team_size from Employee e
 left join team_size ts on e.team_id = ts.team_id
+
+
+-- 直接用window function
+select 
+    employee_id,
+    count(employee_id) over (partition by team_id) as team_size
+    from Employee
