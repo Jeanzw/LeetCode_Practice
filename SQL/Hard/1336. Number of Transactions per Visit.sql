@@ -11,6 +11,7 @@ group by 1
 
 
 -- 于是我们用下面的方法
+-- 这一道题的问题在于，我们不能用recursive，虽然下方是有这么一个操作，但是全部都是基于mssql上的而非mysql
 with b as
 (select times as transactions_count, count(*) as visits_count from
 (select a.user_id, a.visit_date,

@@ -11,6 +11,35 @@ offset 6 rows  --这个offset只有在MS SQL才能起作用，在mysql中是不�
 -- 这个相当于就是把最开始的六行给淘汰掉
 
 
+
+
+-- 如果不会offset的应用，那么可以用下面的query，也就是用rank定位
+with daily_amount as
+(select 
+    visited_on,
+    sum(amount) as total_daily_amount
+    from Customer
+    group by 1)
+
+select 
+    visited_on,
+    amount,
+    round(amount/7,2) as average_amount
+    from
+(select 
+    visited_on,
+    sum(total_daily_amount) over (order by visited_on rows between 6 preceding and current row) as amount,
+    dense_rank() over (order by visited_on) as rnk
+    from daily_amount)tmp
+    where rnk >= 7
+
+
+
+
+
+
+
+
 -- MYSQL
 SELECT 
     a.visited_on, 

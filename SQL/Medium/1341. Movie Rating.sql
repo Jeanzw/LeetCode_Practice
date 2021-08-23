@@ -15,6 +15,26 @@ order by 2 desc, 1
 limit 1) movies
 
 
+
+-- 上面的可以缩减成：
+(select 
+name as results
+from Users u join Movie_Rating m on u.user_id = m.user_id
+group by 1
+order by count(distinct movie_id) desc,1
+limit 1)
+
+union all
+
+(select title as results
+from Movies m join Movie_Rating m1 on m.movie_id = m1.movie_id
+where created_at between '2020-02-01' and '2020-02-29'
+group by 1
+order by avg(rating) desc,1
+limit 1)
+
+
+
 -- 如果用cte那么就是：
 -- 我本来是用上面的方法，但是一直报错，后来检查了一下，每次union all前后我没有对这个view取一个 temp name
 with user_rating as
