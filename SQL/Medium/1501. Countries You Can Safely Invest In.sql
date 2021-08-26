@@ -14,9 +14,9 @@ select callee_id as id, duration from Calls
 
 
 
--- 特别好的解法
+-- 特别好的解法，也就是说直接用avg就可以解决这个问题了
 SELECT Country.name AS country
-FROM Person JOIN Calls ON Calls.caller_id = Person.id OR Calls.callee_id = Person.id
+FROM Person JOIN Calls ON Calls.caller_id = Person.id OR Calls.callee_id = Person.id  --此处其实我觉得做一个cte没有问题，会更加清楚在干嘛
 JOIN Country ON Country.country_code = LEFT(Person.phone_number, 3)
 GROUP BY Country.name
 HAVING AVG(duration) > (SELECT AVG(duration) FROM Calls)
