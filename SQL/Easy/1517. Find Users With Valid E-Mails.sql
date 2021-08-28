@@ -1,26 +1,14 @@
--- A detailed explanation of the following regular expression solution:
+-- 仅用于ms sql
+-- Here first LIKE checks that the mail starts with letter and ends with @leetcode.com, 
+-- the second LIKE checks that the first part of the mail does not contain any symbol except allowed.
 
--- '^[A-Za-z]+[A-Za-z0-9\_\.\-]*@leetcode.com'
--- 1. ^ means the beginning of the string
---     - This is important because without it, we can have something like
---     '.shapiro@leetcode.com'
---     This is because *part* of the regex matches the pattern perfectly. 
---     The part that is 'shapiro@leetcode.com'.
---     This is how I understand it: regex will return the whole 
---     thing as long as part of it matches. By adding ^ we are saying: you have to
---     match FROM THE START.	
--- 2. [] means character set. [A-Z] means any upper case chars. In other words, 
---     the short dash in the character set means range.
--- 3. After the first and the second character set, there is a notation: + or *.
---     + means at least one of the character from the preceding charset, and * means 
---     0 or more. 
--- 4. \ inside the charset mean skipping. In other words, \. means we want the dot as 
---     it is. Remember, for example, - means range in the character set. So what if
---      we would like to find - itself as a character? use \-. 	 
--- 5. Everything else, like @leetcode.com refers to exact match.
+-- NOT LIKE '%[^0-9a-zA-Z_.-]%' -> means that the string does not contain any character except [0-9a-zA-Z_.-]
+-- LIKE '%[0-9a-zA-Z_.-]%' -> means that the string contains at least one character from [0-9a-zA-Z_.-]
 
-
--- https://blog.csdn.net/weixin_40417658/article/details/78132084
-
-select * from Users 
-where regexp_like(mail, '^[A-Za-z]+[A-Za-z0-9\_\.\-]*@leetcode.com')
+SELECT
+    user_id,
+    name,
+    mail
+FROM Users
+WHERE mail LIKE '[a-zA-Z]%@leetcode.com' 
+AND LEFT(mail, LEN(mail) - 13) NOT LIKE '%[^0-9a-zA-Z_.-]%'

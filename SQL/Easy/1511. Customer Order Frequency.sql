@@ -30,6 +30,9 @@ where customer_id in (select * from customers_more_than_100)
 
 
 -- 另外的做法
+-- 我觉得这种方法是最好的诶
+-- 就是我们相当于所有的customer都有对应的6月份和7月份的消费，如果没有我们就当做是0
+-- 然后我们只需要保证这两个月的消费同时多于100即可
 SELECT customer_id, name
 FROM (
     SELECT c.customer_id, c.name, 
