@@ -25,3 +25,14 @@ FROM schoola sa CROSS JOIN schoolb sb
             AND sa.student_id != sc.student_id
             AND sb.student_id != sc.student_id
             AND sa.student_id != sb.student_id
+
+
+-- 我不懂为什么我之前说三张表没有办法通过什么链接……直接通过id以及name连接起来即可呀
+-- join的存在不仅仅只可以找相同的数，我们还可以让不同的数连接起来
+select
+    a.student_name as member_A,
+    b.student_name as member_B,
+    c.student_name as member_C
+    from SchoolA a
+    join SchoolB b on a.student_id != b.student_id and a.student_name != b.student_name
+    join SchoolC c on a.student_id != c.student_id and a.student_name != c.student_name and b.student_id != c.student_id and b.student_name != c.student_name 
