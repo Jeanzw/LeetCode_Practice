@@ -57,3 +57,17 @@ class Solution(object):
                     list.append(i)
                     list.append(j)
                     return list
+
+
+# 上面的做法有点太简单粗暴了，其实这种找配对的问题我觉得可以由两个方向思考：
+# 1. 如果index不能重复且是有顺序的，那么two pointer或者dic都可以用
+# 2. 如果index不能重复但是没有顺序的，则考虑dic
+# 3. 如果index可以重复且有顺序，那么考虑two pointer
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        dic = {}
+        for i in range(len(nums)):
+            if nums[i] in dic:
+                return dic[nums[i]], i
+            else:
+                dic[target - nums[i]] = i
