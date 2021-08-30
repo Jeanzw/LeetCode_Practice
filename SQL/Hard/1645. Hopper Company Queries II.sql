@@ -25,3 +25,36 @@ from month m
 left join driver d on m.month >= d.join_date
 left join accept_rides a on m.month = a.month
 group by 1
+
+
+-- 和I一样，简化最后两个cte
+with recursive month as
+(select 1 as month
+union all
+select month + 1 as month from month
+ where month<= 11
+)
+, driver as
+(select 
+    driver_id,
+    case when year(join_date) < 2020 then 1 else month(join_date) end as month
+ from Drivers
+ where join_date <= '2020-12-31'
+)
+, acceptrides as
+(select 
+    month(requested_at) as month,
+    a.driver_id
+ from Rides r
+ join AcceptedRides a on r.ride_id = a.ride_id
+ where year(requested_at) = 2020
+ group by 1,2
+)
+
+select 
+    m.month,
+    ifnull(round(100 * count(distinct a.driver_id)/count(distinct d.driver_id),2),0.00) as working_percentage
+    from month m
+    left join driver d on m.month >= d.month
+    left join acceptrides a on m.month = a.month
+    group by 1

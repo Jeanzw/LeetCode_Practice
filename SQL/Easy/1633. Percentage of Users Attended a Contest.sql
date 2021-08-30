@@ -13,3 +13,15 @@ SELECT contest_id
 FROM Register 
 GROUP BY contest_id
     ORDER BY percentage DESC, contest_id
+
+
+-- 我觉得更严谨的做法其实是要对register这张表进行一个筛选
+-- 因为我们不能保证register这张表里面只存在users表里面的users
+select 
+contest_id,
+round(100 * count(distinct user_id)/(select count(distinct user_id) from Users),2) as percentage
+
+from Register 
+where user_id in (select user_id from Users)
+group by 1
+order by 2 desc,1
