@@ -8,6 +8,15 @@ select employee_id,department_id from Employee
 where employee_id in (select employee_id from Employee group by 1 having count(*) = 1))tmp
 group by 1,2
 
+-- 和上面原理相似
+select employee_id,department_id from Employee
+where primary_flag = 'Y'
+union all
+select employee_id,department_id from Employee
+where employee_id not in (select employee_id from Employee
+where primary_flag = 'Y')
+
+
 
 -- 另外我们可以直接用union来做，union和union all的区别在于前者会自动合并重复值
 select employee_id,department_id from Employee
