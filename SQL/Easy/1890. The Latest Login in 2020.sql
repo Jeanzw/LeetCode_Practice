@@ -7,3 +7,11 @@ from
     from Logins
     where year(time_stamp) = 2020)tmp
     where rnk = 1
+
+-- 直接用max即可
+select
+user_id,
+max(time_stamp) as last_stamp
+from Logins
+where year(time_stamp) = 2020
+group by 1
