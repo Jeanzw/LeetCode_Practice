@@ -19,7 +19,8 @@ select
     Salary,
     dense_rank() over (partition by d.Name order by Salary desc) as rnk
 from Employee e
-join Department d
+join Department d   
+-- 这里我们用join不用left join是因为可能department根本就没有，那么在这种情况我们输出的是空值
 on e.DepartmentId = d.Id)a
 where rnk = 1
 

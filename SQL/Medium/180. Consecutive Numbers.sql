@@ -36,5 +36,5 @@ from
     rank() over (partition by Num order by Id) as rnk 
     from Logs) 
     tmp
-    group by Num, Id + 1 - rnk
+    group by Num, Id + 1 - rnk  --这里 Id + 1 - rnk 是要有顺序的，我们必须保证从左到右计算要一直保证这个是正数
     having count(*) >= 3
