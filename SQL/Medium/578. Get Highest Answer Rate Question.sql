@@ -9,7 +9,7 @@ order by que_ans/que_show desc limit 1
 select question_id as survey_log from
 (select 
     question_id,
-    sum(case when action = 'answer' then 1 else 0 end)/sum(case when action = 'show' then 1 else 0 end) as ratio
+    sum(case when action = 'answer' then 1 else 0 end)/sum(case when action in ('show','skip') then 1 else 0 end) as ratio
     from survey_log
 where action in ('show','answer')
 group by 1

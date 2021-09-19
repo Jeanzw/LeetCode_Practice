@@ -25,3 +25,13 @@ order by count(*) desc limit 1)
 
 select Name from Candidate 
 where id in (select * from most_vote)
+
+
+-- 或者直接用join来做这道题
+select 
+Name 
+from Candidate c
+join Vote v on c.id = v.CandidateId
+group by 1
+order by count(*) desc
+limit 1

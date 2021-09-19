@@ -32,3 +32,29 @@ select
 from Employee E
 where Month != ( select max(Month) from Employee EE where E.Id = EE.Id group by EE.Id  )
 order by Id asc, Month desc
+
+
+
+-- 其实如果用recursive也是可以做的
+with recursive cte as
+(select Id, min(Month) as min_month,max(Month) as max_month from Employee
+ group by 1
+ union all
+select Id, min_month + 1 as min_month,max_month from cte
+where min_month < max_month
+)
+, cte2 as
+(select Id, min_month as month
+from cte)
+
+select Id,month,sum_salary as Salary from
+(select
+    c.Id,
+    c.month,
+    e.Salary,
+    sum(e.Salary) over (partition by c.Id order by c.month rows between 2 preceding and current row) as sum_salary
+    from cte2 c
+    left join Employee e on c.Id = e.Id and c.month = e.Month)tmp
+    where Salary is not null
+    and (Id,month) not in (select Id, max(Month) from Employee group by 1)
+    order by 1,2 desc
