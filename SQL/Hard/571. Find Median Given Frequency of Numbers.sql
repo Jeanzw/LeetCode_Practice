@@ -54,3 +54,17 @@ select avg(Number) as median from
 from cte
 order by Number)tmp
 where rnk between cnt/2 and cnt/2 + 1
+
+
+-- 这道题和569不同的地方在于：
+-- 1. 569是有一个Id作为一个定位的，而这道题如果我们用recursive那么最后也只有数字的排位
+-- 数字的排位的问题在于，如果是569的情况：
+-- ID      Number
+-- 1         0
+-- 2         0
+-- 那么我们用rnk和rnk_desc是可以得到正反两个排位的
+-- 但是对于这道题，因为我们没有Id作为定位，所以，我们在rnk以及rnk_desc其实是不清晰的，甚至只要是Number一样都是容易混乱的
+-- 2. 由于上面的原因，我们这道题只能用count的window function来帮助我们解决这道题，也就是说，我们要理解median的意思，也就是中间两个数
+-- 那么既然是中间两个数，如果我们得到了这组数一共有几个数，那么中间这个数应该是在cnt / 2 - 1 和 cnt / 2 + 1之间的
+-- 但是我们要注意了，对于sql来说cnt / 2是自动往下取小的整数，也就是说在sql中cnt / 2已经是cnt / 2 - 1的结果了
+-- 所以我们在最后的where里面其实需要区分一下

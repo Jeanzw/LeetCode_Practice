@@ -7,5 +7,6 @@ WHERE
     p1.Email = p2.Email AND p1.Id > p2.Id
 
 
-delete p2 from Person p1
+delete p2  --delete 是必须把整行给全部删除的，而不能够仅仅删除几列
+from Person p1
 left join Person p2 on p1.Email = p2.Email and p1.Id < p2.Id
