@@ -28,3 +28,17 @@ having count(*) = 1)
 select round(sum(TIV_2016),2) as TIV_2016 from insurance 
 where TIV_2015 not in (select * from unique_tiv_2015)
 and (LAT,LON) in (select * from unique_location)
+
+
+
+
+-- 其实这道题也可以用join来做
+select sum(TIV_2016) as TIV_2016 from
+(select
+a.PID,
+a.TIV_2016
+from insurance a
+join insurance b on a.TIV_2015 = b.TIV_2015 and a.PID != b.PID
+left join insurance c on a.LAT = c.LAT and a.LON = c.LON and a.PID != c.PID
+where c.PID is null
+group by 1,2)tmp
