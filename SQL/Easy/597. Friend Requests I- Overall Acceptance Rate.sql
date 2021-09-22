@@ -1,5 +1,3 @@
-
-
 select
 ifnull(round((count(distinct requester_id,accepter_id)
               /

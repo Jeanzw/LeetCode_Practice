@@ -24,11 +24,12 @@ group by id
 order by count(*) desc limit 1
 
 
-
-
-select id,count(*) as num from
-(select requester_id as id from request_accepted
-union all
-select accepter_id as id from request_accepted)tmp
+-- 我觉得比较常规的方法应该如下图
+-- 也就是说我们还是得先确定id和对应的friend
+select id,count(friend) as num from
+(select requester_id as id, accepter_id as friend from request_accepted
+union
+select accepter_id as id, requester_id as friend from request_accepted)tmp
 group by 1
-order by 2 desc limit 1
+order by num desc
+limit 1
