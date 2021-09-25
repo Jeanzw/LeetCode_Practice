@@ -25,6 +25,20 @@ from seat,num_seats
 order by 1
 
 
+
+-- 或者我们不用cross join来做就是：
+with max_seat as
+(select max(id) as max_id from seat)
+
+select
+case when (select max_id from max_seat) % 2 = 1 and id = (select max_id from max_seat) then id
+when (select max_id from max_seat) % 2 = 1 and id != (select max_id from max_seat) and mod(id,2) = 1 then id + 1
+when (select max_id from max_seat) % 2 = 0 and id != (select max_id from max_seat) and mod(id,2) = 1 then id + 1
+else id - 1 end as id,
+student
+from seat
+order by 1
+
 /*
 这一道题如果写成下面这种情况那么就有问题了
 select 
