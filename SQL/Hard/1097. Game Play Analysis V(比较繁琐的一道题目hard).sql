@@ -27,6 +27,19 @@ on a.player_id = b.player_id
 and a.install_date + 1 = b.event_date
 group by install_date
 
+-- 上面这种做法可以改成：
+select
+a.event_date as install_dt,
+count(distinct a.player_id) as installs,
+round(count(distinct b.player_id)/count(distinct a.player_id),2) as Day1_retention
+from Activity a
+left join Activity b on a.player_id = b.player_id and datediff(b.event_date,a.event_date) = 1
+where (a.player_id,a.event_date) in (select player_id,min(event_date) from Activity group by 1)
+group by 1
+
+
+
+
 
 -- 之后做的：
 -- 直接用cte来把first_login给抽出来

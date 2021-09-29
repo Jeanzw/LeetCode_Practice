@@ -28,6 +28,20 @@ where s.product_id not in
 (select distinct s.product_id from Sales s
 where sale_date < '2019-01-01' or sale_date > '2019-03-31')
 
+-- 上面的做法关于时间的范围可以写成not between
+with raw as
+(select
+product_id from Sales
+where sale_date not between '2019-01-01' and '2019-03-31')
+
+select
+distinct s.product_id,
+product_name
+from Sales s
+left join Product p on s.product_id = p.product_id
+where s.product_id not in (select product_id from raw)
+
+
 
 --再一次做的方式，把在这个范围内的求出来，不在的求出来，然后再划定我们的范围 
 with spring_2019 as

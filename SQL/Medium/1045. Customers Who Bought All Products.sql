@@ -4,6 +4,16 @@ where product_key in (select product_key from Product)
 group by 1 
 having n = (select count(distinct product_key) from Product))tmp
 
+-- 上面可以直接写成
+select
+customer_id
+from Customer
+where product_key in (select product_key from Product)
+group by 1
+having count(distinct product_key) = (select count(distinct product_key) from Product)
+
+
+
 -- 其实也可以直接用cte来做，这个会比较清楚一点
 with raw_customer as
 (select * from Customer
