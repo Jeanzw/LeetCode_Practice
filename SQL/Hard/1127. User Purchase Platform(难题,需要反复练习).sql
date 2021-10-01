@@ -88,7 +88,39 @@ order by spend_date) o
 on p.platform = o.platform and p.spend_date = o.spend_date
 
 
+-- 上面的query修改一下就更容易理解了
+with platform as
+(select 'desktop' as platform
+union 
+ select 'mobile' as platform
+union
+ select 'both' as platform
+)
+, framework as
+(select
+s.spend_date,
+ p.platform
+ from (select distinct spend_date from Spending)s cross join platform p
+)
+-- 上面两个cte相当于去建立整个result的框架
+, user_info as
+(select
+user_id,
+spend_date,
+case when count(distinct platform) = 1 then platform
+when count(distinct platform) = 2 then 'both' end as platform,
+sum(amount) as total_amount
+from Spending
+group by 1,2)
+-- 最后一个cte相当于是不考虑框架直接对原表进行计算
 
+select
+f.*,
+ifnull(sum(total_amount),0) as total_amount,
+ifnull(count(distinct user_id),0) as total_users
+from framework f
+left join user_info u on f.platform = u.platform and f.spend_date = u.spend_date
+group by 1,2
 ----------------------------------------------------------------------------------------
 
 

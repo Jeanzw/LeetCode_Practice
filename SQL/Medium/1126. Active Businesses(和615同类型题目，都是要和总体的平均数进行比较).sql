@@ -14,7 +14,7 @@ group by 1)
 -- 这里我们相当于就是计算了各个event_type的平均数
 
 select business_id
-from Events e left join average a on e.event_type = a.event_type
+from Events e left join average a on e.event_type = a.event_type  -- 用left join或者join都可以
 where occurences > avg_occu
 group by 1
 having count(*) > 1

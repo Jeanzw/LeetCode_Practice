@@ -1,3 +1,6 @@
+-- 这道题容易忽略说是在同一天里面这个条件，所以我们group by除了group by id以外还需要group by date
+-- 而因为我们group by了两个条件，所以id可能会有重复只出现，所以我们最后用了一个distinct
+
 select distinct id from
 (select view_date, viewer_id as id, count(distinct article_id) as n from Views
 group by 1,2 
