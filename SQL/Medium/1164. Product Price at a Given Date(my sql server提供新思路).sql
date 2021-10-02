@@ -76,6 +76,9 @@ left join price pp on p.product_id = pp.product_id and rnk = 1
 
 
 
+
+
+
 -- 在做一次的时候
 with framework as
 (select distinct product_id from Products)

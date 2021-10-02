@@ -17,3 +17,11 @@ select
     where (customer_id,order_date) in
     (select customer_id,min(order_date) as first_order_date from Delivery 
     group by 1)
+
+-- 其实我个人并不推荐用sum来计数，因为就是可能存在表出问题的情况（虽然在面试中可能不存在这样的情况）
+select
+round(100 * count(distinct case when order_date = customer_pref_delivery_date then delivery_id else null end)
+/
+count(distinct delivery_id),2) as immediate_percentage
+from Delivery
+where (customer_id , order_date) in (select customer_id, min(order_date) from Delivery group by 1)

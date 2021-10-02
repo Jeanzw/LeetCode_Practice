@@ -43,10 +43,32 @@ with raw_data as
 -- 其实我们会发现一个问题就是，对于user_id = 1是没有第二次购买的，那么在这种情况下，我们将其定义为no
 -- 同时因为userid = 1没有第二次购买，所以上面的cte其实没有办法抽出userid = 1的情况
 -- 所以，我们需要另外重新和Users这个tablejoin起来，这样子可以获得所有userid，并且对所有userid进行讨论
-
 select user_id as seller_id,
 case when fav is null then 'no' else fav end as '2nd_item_fav_brand'
 from Users u 
+
+-- 我做了这么多遍还是觉得上面这个query才是最应该写的内容，但是我们的rnk = 2可以直接放在最后处理
+with second_sell as
+(select
+user_id,
+case when favorite_brand = item_brand then 'yes' else 'no' end as fav_qual_sell,
+rank() over (partition by u.user_id order by order_date) as rnk
+from Users u 
+left join Orders o on u.user_id = o.seller_id
+left join Items i on o.item_id = i.item_id)
+-- 上面的cte只在处理排序的问题，不考虑是否有rnk = 2的存在
+
+select 
+u.user_id as seller_id,
+ifnull(fav_qual_sell,'no') as 2nd_item_fav_brand
+from Users u
+left join second_sell s on u.user_id = s.user_id and s.rnk = 2
+
+
+
+
+
+
 
 
 
