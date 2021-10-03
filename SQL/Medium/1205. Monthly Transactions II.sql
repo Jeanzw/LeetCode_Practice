@@ -20,8 +20,11 @@ with trans_charge as
 date_format(trans_date,'%Y-%m') as month,
 country,
 state,
-amount from Transactions where state = 'approved'
+amount 
+from Transactions where state = 'approved'
+
 union all
+
 select 
 date_format(c.trans_date,'%Y-%m') as month,
 country,
@@ -41,4 +44,37 @@ from trans_charge
 group by 1,2
 
 
+
+-- 我对上面的解法进行修改，我还是倾向于用count来计数
+with rawdata as
+(select
+date_format(trans_date,'%Y-%m') as month,
+country,
+state,
+amount,
+id
+from Transactions
+where state = 'approved'
+
+union all
+
+select
+date_format(c.trans_date,'%Y-%m') as month,
+country,
+'chargeback' as state,
+amount,
+trans_id as id
+from Chargebacks c
+left join Transactions t on c.trans_id = t.id)
+
+
+select 
+month,
+country,
+count(distinct case when state = 'approved' then id end) as approved_count,
+sum(case when state = 'approved' then amount else 0 end) as approved_amount,
+count(distinct case when state = 'chargeback' then id end) as chargeback_count,
+sum(case when state = 'chargeback' then amount else 0 end) as chargeback_amount
+from rawdata
+group by 1,2
 
