@@ -36,6 +36,36 @@ where success_date >= '2019-01-01' and success_date <= '2019-12-31'))tmp
 group by period_state,dateadd(day,-rank,date)
 order by start_date
 
+-- 我们对上面的内容进行修改一下
+ith rawdata as
+(select
+'fail' as status,
+fail_date as day
+from Failed
+union all
+select 
+'success' as status,
+success_date as day
+from Succeeded)
+-- 这个cte我们直接处理成统一的表
+
+select status, min(day) as start_date,max(day) as end_date from
+(select
+*,
+row_number() over (partition by status order by day) as rnk
+-- 我们的rank需要针对每个部分自己有一个rank，而不能统一的rank
+-- 因为类似于题目给的例子，其实succeeded和failed是连续的，如果我们针对所有的日期进行排序，那么其实第二段success和第一段success之间，通过day - rnk其实是没有差别的
+-- 那么当我们用group by的时候，第二段和第一段success其实系统是没办法区别的，就会自动将这两段合在一起
+-- 而这个肯定不是我们想要的
+from rawdata
+where day between '2019-01-01' and '2019-12-31')tmp
+group by status, dateadd(day,- rnk ,day)
+order by start_date
+
+
+
+
+
 
 -- 如果要在mysql中处理，那么我们在group by之前需要处理一下
 SELECT stats AS period_state, MIN(day) AS start_date, MAX(day) AS end_date

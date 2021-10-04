@@ -26,3 +26,27 @@ where page_id not in (select page_id from Likes where user_id = 1)
 and user_id in (select user_id from friend)
 -- 然后需要保证的就是page_id不是在user_id = 1看的page中
 -- 同时要保证这些user_id是user_id = 1的朋友
+
+
+
+
+
+
+-- 或者把user_id = 1的处理放到最后
+with friend as
+(select 
+user1_id as user_id,
+ user2_id as friend_id
+ from Friendship
+ union
+ select 
+ user2_id as user_id,
+ user1_id as friend_id
+ from Friendship
+)
+
+select
+distinct page_id as recommended_page
+from Likes l 
+join friend f on l.user_id = f.friend_id and f.user_id = 1
+where page_id not in (select page_id from Likes where user_id = 1)
