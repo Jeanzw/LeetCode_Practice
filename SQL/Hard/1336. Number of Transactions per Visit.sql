@@ -10,26 +10,29 @@ group by 1,2)tmp
 group by 1
 
 
--- 于是我们用下面的方法
--- 这一道题的问题在于，我们不能用recursive，虽然下方是有这么一个操作，但是全部都是基于mssql上的而非mysql
-with b as
-(select times as transactions_count, count(*) as visits_count from
-(select a.user_id, a.visit_date,
-sum(case when b.user_id is null then 0 else 1 end) as times
-from Visits a
-left join Transactions b on a.user_id = b.user_id and a.visit_date = b.transaction_date
-group by a.user_id, a.visit_date)tmp
-group by times)
-
-,k as (select max(transactions_count) as num from b)  --这里求出最大的值
-,c as (
-select 0 as Number
+-- 我们直接用mysql的recursive来解这道题
+with recursive rawdata as
+(select
+v.user_id,
+v.visit_date,
+count(t.transaction_date) as transaction
+from Visits v
+left join Transactions t on v.user_id = t.user_id and v.visit_date = t.transaction_date
+group by 1,2
+)
+,base as --虽然我们代表recursive的query在第二个cte出现，但是recursive要写在第一个cte处
+(select 0 as transactions
 union all
-select Number +1 from c   --而这里像是一种动态的过程，也就是我们生成transactions_count从0到最大值的过程
-where Number < (select num from k))
+ select transactions + 1 as transactions from base
+ where transactions < (select max(transaction) as max_t from rawdata)
+)
 
-select c.Number as transactions_count,isnull(b.visits_count,0) as visits_count
-from c left join b on c.Number=b.transactions_count
+select 
+c.transactions as transactions_count,
+ifnull(count(r.user_id),0) as visits_count
+from base c
+left join rawdata r on c.transactions = r.transaction
+group by c.transactions
 
 
 
