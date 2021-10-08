@@ -106,7 +106,14 @@ group by 1,2)
 
 
 
-select r.product_id,product_name,report_year,total_amount from rawdata r
+select 
+r.product_id,
+CAST(product_id  AS  CHAR) as product_id, 
+--这道题神奇了，最后答案里面product_id非要弄成string，这个时候就涉及如何把int变成string
+product_name,
+report_year,
+total_amount 
+from rawdata r
 left join Product p on r.product_id = p.product_id
 where total_amount is not null
 order by 1,3

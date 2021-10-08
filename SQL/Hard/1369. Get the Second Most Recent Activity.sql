@@ -17,6 +17,10 @@ having count(*) = 1)
 
 
 -- 但其实可以这样做的
+-- 也就是说给每个user两个指标，用window function来计算
+-- 其中一个指标是算在各自user内部这个activity是第几名
+-- 第二个指标就是计算这个users总共有多少个activity
+-- 而后我们只需要确保，要不然排名是第2，如果这个user只有一个activity，那么就确保计算的数为1
 select username, activity, startDate, endDate from (
 select
     username,
