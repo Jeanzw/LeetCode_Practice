@@ -15,3 +15,20 @@ with recursive seq as
  
 select * from seq
 where ids not in (select customer_id from Customers)
+
+
+
+
+-- 也可以用join来做
+with recursive cte as
+(select 1 as id
+ union all
+ select id + 1 as id from cte
+where id < (select max(customer_id) from Customers)
+)
+
+select id as ids
+from cte
+left join Customers c on cte.id = c.customer_id
+where c.customer_id is null
+order by 1
