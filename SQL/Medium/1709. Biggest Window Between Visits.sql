@@ -5,7 +5,7 @@
 */
 with raw_data as
 (select user_id, visit_date from UserVisits
-union all
+union all  --其实我觉得这里应该用union而不是union all，虽然结果没有影响，但是union all其实在之后是sql的处理会多一些步骤
 select distinct user_id, '2021-01-01' as visit_date from UserVisits)
 , rank_date as
 (select user_id, visit_date,row_number() over (partition by user_id order by visit_date) as date_rank from raw_data)
