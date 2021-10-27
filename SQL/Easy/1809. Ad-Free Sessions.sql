@@ -1,4 +1,3 @@
-
 -- 这道题关键在于弄懂题目意思，也就是说我们要保证timestamp是在starttime和endtime之间的
 select distinct session_id
 FROM Playback p

@@ -29,6 +29,7 @@ where employee_id in (select employee_id from Employee group by 1 having count(*
 
 
 -- 另一种做法使用window function来做
+-- 其实这一种方法我觉得是熟练之后应该立刻要想到的方法
 SELECT EMPLOYEE_ID,DEPARTMENT_ID
 FROM
 (
