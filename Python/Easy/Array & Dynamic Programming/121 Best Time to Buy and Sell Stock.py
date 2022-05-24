@@ -41,3 +41,22 @@ class Solution:
             min_price = min(min_price,prices[i])
         
         return max_profit
+
+
+
+# 我觉得上面的写法不太方便，另外写了一版
+def MaxGain(l):
+    min_index,max_profit = 0,0
+    # 我们先把特殊情况给考虑到考虑到
+    if len(l) == 1:
+        return 0
+    
+    for i in range(len(l) - 1):
+        # 这里的逻辑是：我们就考虑后面一位数是否比前面一位数小
+        # 如果后面一位数比前面一位数小，那么我们就把后面一位数定为min
+        # 如果后面一位数比前面一位数大，那么我们就把后面一位数当做max，然后去减去min，如果再次比较仍旧大，那么就继续往后推，把后面一位数当做max，但是在这个过程中min是不变的
+        if l[i + 1] > l[i]:
+            max_profit = max(max_profit,l[i + 1] - l[min_index])
+        else:
+            min_index = i + 1
+    return max_profit
