@@ -6,7 +6,7 @@ def TargetSum(a,b):
             if a[i] + a[j] == b:
                 return [i,j]
     return - 1
-# 方法2：利用dic，key是要寻找的另一半数字，而value就是当前key
+# 方法2：利用dic，key是要寻找的另一半数字，而value就是当前index
 def TargetSum(a,b):
     dic = {}
     for i in range(len(a)):
