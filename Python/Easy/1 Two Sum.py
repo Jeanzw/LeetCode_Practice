@@ -1,3 +1,24 @@
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        dic = {}
+        for i in range(len(nums)):
+            if nums[i] not in dic.keys():
+                dic[target - nums[i]] = i
+                # print(dic)
+            else:
+                return [dic[nums[i]],i]
+
+
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        for i in range(len(nums)):
+            for j in range(i+1, len(nums)):
+                if nums[i] + nums[j] == target and i != j:
+                    return [i,j]
+
+
+
+----------------------------------------------------------------------------
 nums = [2, 7, 11, 15]
 target = 9
 residual = {}  #我们这里相当于是创建了一个dictionary
