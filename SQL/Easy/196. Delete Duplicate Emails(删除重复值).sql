@@ -10,3 +10,13 @@ WHERE
 delete p2  --delete 是必须把整行给全部删除的，而不能够仅仅删除几列
 from Person p1
 left join Person p2 on p1.Email = p2.Email and p1.Id < p2.Id
+
+
+-- 用python
+import pandas as pd
+
+def delete_duplicate_emails(person: pd.DataFrame) -> None:
+    min_id = person.groupby('email')['id'].transform('min')
+    removed_person = person[person['id'] != min_id] 
+    person.drop(removed_person.index, inplace=True)
+    return
