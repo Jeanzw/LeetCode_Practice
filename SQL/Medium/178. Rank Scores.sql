@@ -5,3 +5,12 @@ select
     Score, 
     dense_rank() over (order by Score desc) as 'Rank' 
     from Scores
+
+
+
+-- Python
+import pandas as pd
+
+def order_scores(scores: pd.DataFrame) -> pd.DataFrame:
+    scores['rank'] = scores['score'].rank(method='dense', ascending=False)
+    return scores[['score', 'rank']].sort_values('score', ascending=False)
