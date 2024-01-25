@@ -16,6 +16,7 @@ row_number() over (partition by Company order by Salary,id) as row1
 --  之所以在排序的过程中，我们需要对id也进行排序
 -- 这是因为我们希望,在同一家公司，如果人数为奇数，同时多人工资一样的情况下，我们会考虑id排序然后选择抽出中位数
  where row1 = row2 or abs(row1 - row2) = 1  
+--  如果是mssql里面可以把where的部分直接写成abd(row1 - row2) <= 1
 --  我觉得之所以在mysql里面不能在where里面用abs(row1 - row2) = 1是因为，mysql的where或者group by需要全部都是大于0的状态
 
 

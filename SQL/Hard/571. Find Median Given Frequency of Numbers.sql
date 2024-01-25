@@ -68,3 +68,19 @@ where rnk between cnt/2 and cnt/2 + 1
 -- 那么既然是中间两个数，如果我们得到了这组数一共有几个数，那么中间这个数应该是在cnt / 2 - 1 和 cnt / 2 + 1之间的
 -- 但是我们要注意了，对于sql来说cnt / 2是自动往下取小的整数，也就是说在sql中cnt / 2已经是cnt / 2 - 1的结果了
 -- 所以我们在最后的where里面其实需要区分一下
+
+
+
+-- leetcode上面的最新做法
+with cte AS
+(
+select 
+    *, 
+    sum(frequency) over(order by num) as freq, --这里相当于把这些数字累计求和
+    (sum(frequency) over())/2 as median_num --这里相当于就是直接求出整张表的median，然后放在每一行后面作为index
+from Numbers)
+
+SELECT
+round(avg(num),1) as median
+from cte
+where median_num between (freq - frequency) and freq
