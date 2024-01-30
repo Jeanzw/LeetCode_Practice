@@ -10,3 +10,13 @@ where id not in (select id from customer where referee_id = 2)
 -- 这道题需要注意的点在于：
 -- ①存在同名不同id的人，那么我们①不能用name作为not in的指标 
 -- ②不能用distinct name，因为虽然名字一样但是id不一样所以是不一样的人
+
+
+-- 我个人觉得这一道题只能用第二种解法，因为我们不能保证一个id不能对应多个referee_id
+-- 比如说
+-- id     referee_id
+-- 1          2
+-- 1          3
+-- 1          4
+-- 这样子的数据如果只用select name from customer where referee_id != 2 or referee_id is null
+-- 那么我们依旧会抽出id = 1的情况
