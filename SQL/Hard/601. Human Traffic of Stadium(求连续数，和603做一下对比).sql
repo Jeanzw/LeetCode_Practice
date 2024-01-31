@@ -43,3 +43,25 @@ select id,visit_date,people from diff
 where rnk in (select rnk from diff group by 1 having count(*) >= 3)
 -- 这里我们之所以用in不用原本consecutive的常见套路group by A，B是因为，这里根本没有A呀……
 -- 我们之前的两个group by中的第一个A是因为是在对某个固定群体先group by起来，但是这里，因为people其实都是> 100的，那么其实是没有对应的固定群体的
+
+
+
+-- 这道题和#180的对比：
+-- #180需要求出来对应的数就好，而不是需要把所有的id以及num全部列出来
+-- 但是#601不是说把对应的某个数字列出来，而是要求把连续出现的行数全部打出来
+-- 那么我们需要的就是先把id - rnk这个可以作为链接的数给求出来，然后用in来筛选出来满足条件的行
+
+
+
+-- Python
+def human_traffic(stadium: pd.DataFrame) -> pd.DataFrame:
+
+    stadium = stadium[stadium['people'] >= 100]
+
+    stadium['rnk'] = range(len(stadium))
+
+    stadium['island'] = stadium.id - stadium.rnk
+
+    stadium['island_cnt'] = stadium.groupby(['island'], as_index=False).id.transform('count')
+
+    return stadium[stadium['island_cnt'] >= 3][['id', 'visit_date', 'people']].sort_values(by='visit_date')
