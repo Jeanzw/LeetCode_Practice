@@ -56,3 +56,18 @@ Output:
 Expected:
 {"headers":["id","student"],"values":[[1,"Doris"],[2,"Abbot"],[3,"Green"],[4,"Emerson"],[5,"Julia"],[6,"Jeames"]]}
 */
+
+
+
+
+-- 或者直接把num_seat在case when里面用掉
+with num_seat as
+(select max(id) as last_seat from Seat)
+
+select 
+    case when mod(id,2) = 0 then id - 1
+         when mod(id,2) = 1 and id != (select last_seat from num_seat) then id + 1
+         else id end as id,
+    student
+    from Seat
+    order by 1

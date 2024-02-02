@@ -9,3 +9,18 @@ select max(num) as num from
 (select num from my_numbers
 group by num
 having count(*) = 1) tno
+
+
+
+-- Python
+import pandas as pd
+
+def biggest_single_number(my_numbers: pd.DataFrame) -> pd.DataFrame:
+    # 1. Filter numbers that appear only once
+    unique_numbers = my_numbers.groupby('num').filter(lambda x: len(x) == 1)
+    
+    # 2. Find the maximum of those numbers
+    max_value = unique_numbers['num'].max()
+    
+    return pd.DataFrame({'num': [max_value]})
+    
