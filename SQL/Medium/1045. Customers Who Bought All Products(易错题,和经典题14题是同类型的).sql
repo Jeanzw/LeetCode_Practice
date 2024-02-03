@@ -73,3 +73,20 @@ select customer_id from Customer
 where product_key in (select * from Product)
 group by 1
 having count(distinct product_key) = (select count(distinct product_key) from Product)
+
+
+
+-- Not IN 其实不是很高效，用JOIN会更好一点
+-- 我们之所以用JOIN就是要保证在Customer的表的产品都是在Product里面的，不然只是用数量来判断很容易出现错误：
+-- 1. Customer：A B C
+-- 2. Product: C D F
+-- 数量都是3个，但是Customer的表里只有C产品是出现在Product里面的
+with all_product_num as
+(select count(distinct product_key) as product_num from Product)
+
+select 
+    customer_id
+from Customer a
+inner join Product b on a.product_key = b.product_key
+group by 1
+having count(distinct a.product_key) = (select product_num from all_product_num)
