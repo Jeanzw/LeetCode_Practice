@@ -1,4 +1,4 @@
-/*我最开始写的错误代码是：
+ /*我最开始写的错误代码是：
 select buyer_id from Sales
 where product_id = 
 (select product_id from Product where product_name = 'S8') 
