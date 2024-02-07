@@ -27,3 +27,32 @@ dense_rank() over (partition by student_id order by grade desc) as rnk
 from Enrollments)tmp
 where rnk = 1
 group by 1,3
+
+
+-- 也可以这么做
+with max_grade as
+(select 
+student_id,max(grade) as max_grade
+from Enrollments group by 1)
+
+select 
+student_id,min(course_id) as course_id,grade from Enrollments
+where (student_id,grade) in
+(select * from max_grade)
+group by 1,3
+order by 1
+
+
+-- Python
+import pandas as pd
+
+
+def highest_grade(enrollments: pd.DataFrame) -> pd.DataFrame:
+    max_grades = enrollments.groupby("student_id")["grade"].transform("max")
+    filtered = enrollments[enrollments["grade"] == max_grades]
+    result = (
+        filtered.groupby("student_id")
+        .apply(lambda group: group.nsmallest(1, "course_id"))
+        .reset_index(drop=True)
+    )
+    return result[["student_id", "course_id", "grade"]]

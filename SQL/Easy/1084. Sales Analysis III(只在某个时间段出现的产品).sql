@@ -1,3 +1,5 @@
+-- 这道题目有一个edge case：如果在Product而不在Sales表里，那么不用提取出来
+
 select Sales.product_id,product_name from Sales 
 join Product on Product.product_id = Sales.product_id
 group by Sales.product_id
@@ -52,3 +54,19 @@ with spring_2019 as
 select product_id,product_name from Product
 where product_id in (select * from spring_2019)
 and product_id not in (select * from not_spring_2019)
+
+
+
+
+-- Python
+import pandas as pd
+
+def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
+    start_time = pd.to_datetime('2019-01-01')
+    end_time = pd.to_datetime('2019-03-31')
+    df = sales.groupby('product_id').filter(lambda x:
+        min(x['sale_date']) >= start_time and max(x['sale_date']) <= end_time
+    )
+    df = df.drop_duplicates(subset = 'product_id')
+    df = df.merge(product, left_on = 'product_id', right_on = 'product_id')
+    return df[['product_id', 'product_name']]
