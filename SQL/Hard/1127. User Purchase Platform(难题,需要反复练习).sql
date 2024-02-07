@@ -209,3 +209,36 @@ from date_platform dp
 left join purchase p on dp.spend_date = p.spend_date and dp.platform = p.platform
 group by 1,2
 -- 而最后就是很简单的left join了
+
+
+
+---------------------------------------------------------------------------------------
+-- 再做一遍
+with framework as
+-- 首先把框架给搭起来，因为最后的output是无论是否有3种platform，但只要有对应的spend_date那么对应的platform就有三种
+(select distinct spend_date, 'desktop' as platform from Spending
+union all
+select distinct spend_date, 'mobile' as platform from Spending
+union all
+select distinct spend_date, 'both' as platform from Spending
+)
+, users_info as
+-- 把users自己的信息给确定好，比如说有几个platform
+(select 
+    user_id, 
+    spend_date,
+    case when count(distinct platform) = 1 then platform else 'both' end as platform,
+    sum(amount) as amount
+    from Spending 
+    group by 1,2
+    )
+
+-- 最后整合两张表
+select
+a.spend_date,
+a.platform,
+ifnull(sum(amount),0) as total_amount,
+count(distinct b.user_id) as total_users
+from framework a
+left join users_info b on a.spend_date = b.spend_date and a.platform = b.platform
+group by 1,2
