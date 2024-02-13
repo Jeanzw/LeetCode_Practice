@@ -17,3 +17,29 @@ group by 1)
 
 select user_id as buyer_id, join_date, ifnull(order_num,0) as orders_in_2019 from Users u
 left join 2019_order o on u.user_id = o.buyer_id
+
+
+-- Python
+
+import pandas as pd
+
+def market_analysis(
+    users: pd.DataFrame, orders: pd.DataFrame, items: pd.DataFrame
+) -> pd.DataFrame:
+
+    # Step 1: Filter the orders dataframe to only include orders from the year 2019.
+    df = orders.query("order_date.dt.year==2019").merge(
+        # Step 2: Merge the filtered orders with the users dataframe on buyer_id and user_id.
+        users,
+        left_on="buyer_id",
+        right_on="user_id",
+        how="right",
+    )
+
+    # Step 3: Group the merged dataframe by user_id and join_date, then count the number of items (orders) for each user.
+    result = df.groupby(["user_id", "join_date"]).item_id.count()
+
+    # Step 4: Format the output by resetting the index and renaming the columns for clarity.
+    return result.reset_index().rename(
+        columns={"user_id": "buyer_id", "item_id": "orders_in_2019"}
+    )

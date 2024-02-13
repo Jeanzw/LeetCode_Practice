@@ -12,3 +12,23 @@ select distinct viewer_id as id from Views
 group by view_date,viewer_id  --我不懂为什么我之后写的时候没有group by id
 having count(distinct article_id) > 1
 order by 1
+
+
+-- Python
+import pandas as pd
+
+def article_views(views: pd.DataFrame) -> pd.DataFrame:
+    # Self join on viewer_id and view_date, but ensure different articles
+    merged_views = views.merge(views, on=["viewer_id", "view_date"])
+    distinct_articles = merged_views[
+        merged_views["article_id_x"] < merged_views["article_id_y"]
+    ]
+
+    # Extract unique viewer IDs who viewed more than one article on the same date
+    result = (
+        distinct_articles[["viewer_id"]]
+        .drop_duplicates()
+        .rename(columns={"viewer_id": "id"})
+    )
+
+    return result.sort_values("id").reset_index(drop=True)

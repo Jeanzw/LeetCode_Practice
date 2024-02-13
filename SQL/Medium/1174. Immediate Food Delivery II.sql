@@ -9,7 +9,7 @@ where rnk = 1
 
 
 -- 我之后做就不太愿意用rank了 
--- 而是直接用customerid和order date来做ding wei le
+-- 而是直接用customerid和order date来做定位了
 select 
     round(100 * sum(case when order_date = customer_pref_delivery_date then 1 else 0 end)
     /count(*),2) as immediate_percentage
