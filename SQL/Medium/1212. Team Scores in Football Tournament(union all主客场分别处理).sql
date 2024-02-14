@@ -16,6 +16,11 @@ union all
             when guest_goals=host_goals then 1
             else 0
        end as score
+     --   注意了，这里的case when是不能写成
+     -- when host_goals>guest_goals then 0
+     --   when host_goals=guest_goals then 1
+     --   else 3
+     -- 因为可能存在Teams上某个球队根本就没有上，那么和Matches相连后对应的是null，如果采用上面这种写法，就算是null还是会给它赋值3
     from Matches)
 ) m
 group by team) tmp
@@ -45,10 +50,6 @@ group by 1)
 select t.*,ifnull(score,0) as num_points from Teams t
 left join team_score ts on t.team_id = ts.team
 order by num_points desc, team_id
-
-
-
-
 
 
 -- 第二次写的：

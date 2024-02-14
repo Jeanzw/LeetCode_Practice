@@ -37,7 +37,7 @@ group by period_state,dateadd(day,-rank,date)
 order by start_date
 
 -- 我们对上面的内容进行修改一下
-ith rawdata as
+with rawdata as
 (select
 'fail' as status,
 fail_date as day
