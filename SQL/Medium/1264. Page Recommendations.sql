@@ -38,7 +38,7 @@ with friend as
 user1_id as user_id,
  user2_id as friend_id
  from Friendship
- union
+ union --用union比较好，因为可以提出重复值
  select 
  user2_id as user_id,
  user1_id as friend_id
