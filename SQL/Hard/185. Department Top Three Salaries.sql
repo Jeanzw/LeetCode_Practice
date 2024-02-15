@@ -10,7 +10,7 @@ on e.DepartmentId = d.Id)
 
 select Department, Employee, Salary from salary_rank
 where rnk <= 3
-
+ 
 
 -- Python
 import pandas as pd
