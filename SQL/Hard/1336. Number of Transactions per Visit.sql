@@ -65,3 +65,35 @@ ORDER BY 1
 
 -- 这里涉及一个知识点：ROW_NUMBER, RANK, DENSE_RANK的区别：
 -- https://blog.csdn.net/yjgithub/article/details/76136737
+
+
+
+
+-- 下面的方法就不需要用recursive来做
+with t as (select v.user_id, v.visit_date, count(t.user_id) as transaction_counts
+from visits v
+left join transactions t
+on v.user_id = t.user_id
+and v.visit_date = t.transaction_date
+group by 1,2)
+-- 上面我们还是按照一般做法，先算出每个users对应天的交易数量
+,rowcounts as 
+(select 0 as t_counts
+union
+select row_number() over(order by user_id) from transactions
+)
+-- 上面的部分相当于我们给所有的users排序
+-- 这里的逻辑就是：就算我们所有users都在一天交易，那么最多也就不过所有users的这个数字，不可能更多了
+,temp as 
+(select transaction_counts, count(user_id) as visits_counts
+from t
+group by transaction_counts)
+-- 上面的cte相当于就是把原本按照users的交易量的分布改成了交易量对应有多少users这样的逻辑
+
+select rc.t_counts as transactions_count,
+case when temp.visits_counts is not null then temp.visits_counts else 0 end as visits_count
+from rowcounts rc
+left join temp
+on rc.t_counts = temp.transaction_counts
+where rc.t_counts <= (select max(transaction_counts) from temp)
+-- 最后我们用where语句，把所有过多的数字给筛除
