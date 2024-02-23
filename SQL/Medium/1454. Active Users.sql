@@ -76,3 +76,26 @@ having count(*) >= 5)
 select * from Accounts
 where id in (select id from more_5_consecutive_date)
 order by id
+
+
+-- 下面这种更容易看
+with dedup as
+(select
+distinct a.id,
+a.name,
+login_date,
+dense_rank() over (partition by a.id order by login_date) as rnk
+from Accounts a
+inner join Logins b on a.id = b.id)
+-- 先把duplicate全部剔除掉
+
+, bridge as
+(select
+id, name, dateadd(day, - rnk,login_date) as bridge
+from dedup)
+-- 用dateadd建筑桥梁
+
+select distinct id, name from bridge 
+group by id,name,bridge
+having count(*) >=5
+order by id
