@@ -1,3 +1,25 @@
+-- 另外的做法，就是我们已经把参加考试的同学进行了一次筛选并且匹配上了排名
+-- 然后用not in在已经筛选过了的表中进行筛选
+with rank_student as
+(select
+a.student_id,
+a.student_name,
+dense_rank() over (partition by exam_id order by score) as rnk,
+dense_rank() over (partition by exam_id order by score desc) as rnk_desc
+from Student a
+inner join Exam b on a.student_id = b.student_id)
+
+select distinct student_id,student_name from rank_student
+where student_id not in 
+(select distinct student_id from rank_student
+where rnk = 1 or rnk_desc = 1)
+order by 1
+
+
+
+
+
+
 with non_quiet as
 (select distinct student_id from
 (select 
