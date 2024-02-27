@@ -55,3 +55,46 @@ left join Orders f on i.item_id = f.item_id and weekday(f.order_date) = 5
 left join Orders g on i.item_id = g.item_id and weekday(g.order_date) = 6
 group by 1
 order by 1
+
+
+-- 这样做比较清楚
+with summary as
+(select 
+item_category,
+order_date,
+sum(quantity) as total
+from Items a
+left join Orders b on a.item_id = b.item_id
+group by 1,2)
+
+select
+item_category as Category,
+ifnull(sum(case when weekday(order_date) = 0 then total end),0) as 'Monday',
+ifnull(sum(case when weekday(order_date) = 1 then total end),0) as 'Tuesday',
+ifnull(sum(case when weekday(order_date) = 2 then total end),0) as 'Wednesday',
+ifnull(sum(case when weekday(order_date) = 3 then total end),0) as 'Thursday',
+ifnull(sum(case when weekday(order_date) = 4 then total end),0) as 'Friday',
+ifnull(sum(case when weekday(order_date) = 5 then total end),0) as 'Saturday',
+ifnull(sum(case when weekday(order_date) = 6 then total end),0) as 'Sunday'
+from summary
+group by 1
+order by 1
+
+
+
+-- Python
+import pandas as pd
+
+def sales_by_day(orders: pd.DataFrame, items: pd.DataFrame) -> pd.DataFrame:
+  
+    df = items.merge(orders, how='left', on='item_id').rename(columns={'item_category': 'category'})
+
+    all_weekdays = pd.CategoricalDtype(
+        categories = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], 
+        ordered=True)
+
+    df['dayofweek'] = df['order_date'].dt.day_name().str.upper().astype(all_weekdays)
+
+    df = df.pivot_table(index='category', columns='dayofweek', values='quantity', aggfunc='sum').reset_index()
+
+    return df
