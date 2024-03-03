@@ -2,7 +2,7 @@
 
 select player_id, event_date, 
 sum(games_played) over (partition by player_id order by event_date) as games_played_so_far 
-from Activity
+from Activity   
 
 
 -- 如果不用sum() over那么就是常规解法：
