@@ -25,3 +25,13 @@ from Register
 where user_id in (select user_id from Users)
 group by 1
 order by 2 desc,1
+
+
+-- 筛选也可以用join
+select 
+contest_id,
+round(100 * count(distinct b.user_id)/(select count(distinct user_id) from Users),2) as percentage
+from Users a
+inner join Register b on a.user_id = b.user_id
+group by 1
+order by 2 desc, 1
