@@ -61,3 +61,28 @@ left join acceptrides a on m.month = a.month
 group by 1
 
 
+-- 再简化：
+-- 其实我们要知道对于ride这一块，因为就涉及当月的情况我们其实是可以和cte一起处理的
+-- 但是对于driver来说是需要先进行处理，因为涉及到累积的问题
+with recursive cte as
+(select 1 as month
+union all
+select month + 1 as month from cte where month <12
+)
+, driver as
+(select 
+driver_id,
+case when year(join_date) < 2020 then 0 else month(join_date) end as month
+from Drivers
+where year(join_date) <= 2020
+)
+
+select
+a.month,
+count(distinct d.driver_id) as active_drivers,
+count(distinct c.ride_id) as accepted_rides
+from cte a
+left join Rides b on a.month = month(b.requested_at) and year(b.requested_at) = 2020
+left join AcceptedRides c on b.ride_id = c.ride_id
+left join driver d on a.month >= d.month 
+group by 1

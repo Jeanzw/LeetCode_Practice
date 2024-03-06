@@ -58,3 +58,31 @@ select
     left join driver d on m.month >= d.month
     left join acceptrides a on m.month = a.month
     group by 1
+
+
+
+-- 和上面一个题目一样，再次简化：
+with recursive cte as
+(select 1 as month
+union all
+select month + 1 as month from cte where month <12
+)
+, driver as
+(select 
+driver_id,
+case when year(join_date) < 2020 then 0 else month(join_date) end as month
+from Drivers
+where year(join_date) <= 2020
+)
+
+select
+a.month,
+round(100 * case when count(distinct d.driver_id) = 0 then 0 else
+count(distinct c.driver_id)/count(distinct d.driver_id) end,2) as working_percentage
+
+
+from cte a
+left join Rides b on a.month = month(b.requested_at) and year(b.requested_at) = 2020
+left join AcceptedRides c on b.ride_id = c.ride_id
+left join driver d on a.month >= d.month 
+group by 1

@@ -11,3 +11,11 @@ select
     -- right： 从右边数
     -- lenth： 求string的长度
     -- concat：将两个string给合并到一起
+
+
+    -- Python
+import pandas as pd
+
+def fix_names(users: pd.DataFrame) -> pd.DataFrame:
+    users["name"] = users["name"].str[0].str.upper() + users["name"].str[1:].str.lower()
+    return users.sort_values("user_id")
