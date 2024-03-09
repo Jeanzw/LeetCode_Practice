@@ -43,6 +43,29 @@ select name,mail from Users
 where user_id in (select * from gold union all select * from three_medal)
 
 
+-- 上面这种方法可以在算trhee medal用join来连接
+with gold as
+(select b.name,b.mail from Contests a inner join Users b on a.gold_medal = b.user_id
+group by 1,2 having count(distinct contest_id) >= 3)
+, consecutive_summary as
+(select 
+    b.name,
+    b.mail,
+    a.contest_id, 
+    row_number() over (partition by b.user_id order by contest_id) as rnk,
+    a.contest_id - row_number() over (partition by b.user_id order by contest_id) as bridge
+from Contests a 
+inner join Users b 
+on a.gold_medal = b.user_id or a.silver_medal = b.user_id or a.bronze_medal = b.user_id
+order by 1,4)
+, consecutive as
+(select name, mail from consecutive_summary group by 1,2,bridge having count(*) >= 3)
+
+select distinct name,mail from gold
+union
+select distinct name, mail from consecutive
+
+
 
 -- 我看到另一种解法说是用lag（）
 with cte as (
