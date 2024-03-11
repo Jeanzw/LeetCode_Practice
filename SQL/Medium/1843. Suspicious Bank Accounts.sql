@@ -1,6 +1,9 @@
 with exceed as
 (select 
     date_format(day,'%Y%m') as month,
+-- 这里考察date的形式，如果是按照上面的形式，那么出来的格式就是类似于数字的201905这样子，那么加减就是正常的变化
+-- 但是如果我们的date形式是：date_format(day,'%Y-%m') as month，那么出来的形式就是类似2019-05
+-- 那么加减就是从年份上加减，达不到我们想要的目的
     t.account_id,
     case when sum(case when type = 'Creditor' then amount else 0 end) > max_income then 1 else 0 end as amount,
     row_number() over (partition by t.account_id order by date_format(day,'%Y-%m')) as rnk
@@ -52,3 +55,43 @@ FROM temp t1, temp t2
 WHERE t1.account_id=t2.account_id AND PERIOD_DIFF(t1.date, t2.date)=1
 GROUP BY t1.account_id
 ORDER BY t1.account_id
+
+-- Python
+import pandas as pd
+
+def suspicious_bank_accounts(
+    accounts: pd.DataFrame, transactions: pd.DataFrame
+) -> pd.DataFrame:
+    # Assign a new column 'month' representing the transaction month in 'YYYY-MM' format
+    monthly_transactions = transactions.assign(
+        month=transactions["day"].dt.to_period("M")
+    )
+
+    # Filter for 'Creditor' type transactions
+    creditor_transactions = monthly_transactions.query("type == 'Creditor'")
+
+    # Calculate the previous month for each transaction
+    creditor_transactions = creditor_transactions.assign(
+        prev_month=(transactions["day"] - pd.DateOffset(months=1)).dt.to_period("M")
+    )
+
+    # Group by account_id, previous month, and current month, and sum the transaction amounts
+    monthly_income = creditor_transactions.groupby(
+        ["account_id", "prev_month", "month"], as_index=False
+    )["amount"].sum()
+
+    # Merge with the accounts dataframe to compare with max_income
+    merged_data = monthly_income.merge(accounts, on="account_id")
+
+    # Filter out rows where the monthly income exceeds the max_income
+    over_max_income = merged_data.query("amount > max_income")
+
+    # Merge data with itself to find accounts with excessive income for two consecutive months
+    suspicious_accounts = over_max_income.merge(
+        over_max_income,
+        left_on=["account_id", "prev_month"],
+        right_on=["account_id", "month"],
+    )
+
+    # Return unique account_ids of suspicious accounts
+    return suspicious_accounts[["account_id"]].drop_duplicates()
