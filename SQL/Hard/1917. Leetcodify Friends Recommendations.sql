@@ -39,7 +39,9 @@ distinct l1.user_id,
 l2.user_id as recommended_id
 from Listens l1
 join Listens l2 on l1.user_id != l2.user_id and l1.song_id = l2.song_id and l1.day = l2.day
+-- 因为我们第一个限定就是两人要听一样的至少三首歌，所以可以直接用listens这个表进行筛选出这个条件
 left join friend f on l1.user_id = f.user1_id and l2.user_id = f.user2_id
+-- 然后用left join来对friend进行筛选
 -- 这里还是需要用left join而不是not in，因为为了保持高效性
 where f.user1_id is null
 group by 1,2,l1.day
