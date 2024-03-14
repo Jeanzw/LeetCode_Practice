@@ -57,3 +57,73 @@ FROM CTE1
 WHERE RN = 1 OR RK = 1
 GROUP BY user_id, DAY
 HAVING COUNT(DISTINCT recipient_id) = 1
+
+
+
+-- 或者下面这种方法，用min和max找到某一天第一个和最后一个电话
+with framework as
+(select caller_id as person1,recipient_id as person2,call_time from Calls
+union
+select recipient_id as person1,caller_id as person2,call_time from Calls)
+, first_last_call as
+(select person1,date(call_time) as call_day, min(call_time) as frist_call, max(call_time) as last_call from framework group by 1,2)
+
+select
+distinct a.person1 as user_id
+from framework a
+inner join first_last_call b on a.person1 = b.person1 and call_time in (frist_call,last_call)
+group by a.person1, a.person2
+having count(*) = 2
+union
+select 
+person1 as user_id
+from first_last_call 
+where frist_call = last_call
+
+
+
+-- Python
+import pandas as pd
+
+def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
+    # Step 1: Create a unified view of calls
+    # Each call is represented twice, from both caller's and recipient's perspectives.
+    unified_calls = pd.concat(
+        [
+            calls,
+            calls.rename(
+                columns={"caller_id": "recipient_id", "recipient_id": "caller_id"}
+            ),
+        ],
+        ignore_index=True,
+    )
+
+    # Step 2: Extract the date part from call_time to identify the call day
+    unified_calls["call_day"] = unified_calls["call_time"].dt.date
+
+    # Step 3: Identify the first (earliest) and last (latest) calls of each day for each user
+    # Group by call_day and caller_id, then find the index of the min/max call_time
+    first_call_indices = unified_calls.groupby(["call_day", "caller_id"])[
+        "call_time"
+    ].idxmin()
+    last_call_indices = unified_calls.groupby(["call_day", "caller_id"])[
+        "call_time"
+    ].idxmax()
+
+    first_calls = unified_calls.loc[first_call_indices]
+    last_calls = unified_calls.loc[last_call_indices]
+
+    # Step 4: Merge first and last calls to find users whose first and last calls are with the same recipient
+    merged_calls = first_calls.merge(
+        last_calls, on=["caller_id", "recipient_id", "call_day"]
+    )
+
+    # Step 5: Prepare the final output
+    # Select unique caller_id and rename to user_id
+    result = (
+        merged_calls[["caller_id"]]
+        .rename(columns={"caller_id": "user_id"})
+        .drop_duplicates()
+    )
+
+    return result
