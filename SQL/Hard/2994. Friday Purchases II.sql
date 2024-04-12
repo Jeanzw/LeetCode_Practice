@@ -1,5 +1,4 @@
-2994. Friday Purchases II
-
+-- 这道题我还没看到有人不用自己算的时间来做的，但是我觉得按照自己算的时间来做其实是不对的
 with recursive cte as
 (select 1 as week_of_month,'2023-11-03' as purchase_date
 union all
