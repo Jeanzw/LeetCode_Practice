@@ -5,6 +5,7 @@ select
     Score, 
     dense_rank() over (order by Score desc) as 'Rank' 
     from Scores
+    order by 2
 
 
 
