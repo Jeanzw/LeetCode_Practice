@@ -51,6 +51,29 @@ from eligible_case
 
 
 
+-- 再一次写的时候逻辑更清楚一点，我不太想要用not in
+-- 先用一个cte把banned的行都给剔除掉
+with unbanned as
+(select 
+a.*
+from Trips a
+left join Users b on b.banned = 'Yes' and (a.client_id = b.users_id or a.driver_id = b.users_id)
+where b.users_id is null
+)
+
+-- 然后就可以直接进行计算了
+select 
+request_at as Day,
+round(count(distinct case when status != 'completed' then id end ) 
+/
+count(distinct id),2) as "Cancellation Rate"
+from unbanned
+where request_at between '2013-10-01' and '2013-10-03'
+group by 1
+order by 1
+
+
+
 
 
 -- Python
