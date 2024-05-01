@@ -50,7 +50,7 @@ select avg(Number) as median from
 (select 
     Number,
     row_number() over (order by Number) as rnk,
-    count(*) over () as cnt
+    count(*) over () as cnt  --我们这里是计算所有的数量，然后中位数就是这个数是位于总体数量/2附近的
 from cte
 order by Number)tmp
 where rnk between cnt/2 and cnt/2 + 1

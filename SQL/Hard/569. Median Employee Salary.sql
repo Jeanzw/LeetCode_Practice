@@ -1,7 +1,7 @@
 select min(Id) as Id, Company, Salary
 from (select Id, Company, Salary, 
-row_number() over(partition by Company order by Salary desc) row1, 
-row_number() over(partition by Company order by Salary) row2
+row_number() over(partition by Company order by Salary desc,id desc) row1, 
+row_number() over(partition by Company order by Salary,id) row2
 from employee) tmp
 where row1 between row2-1 and row2+1
 group by Company, Salary
@@ -30,3 +30,13 @@ from Employee )
 select Id, Company, Salary
 from t1
 where row between cnt/2.0 and cnt/2.0+1;
+
+
+
+-- Python
+import pandas as pd
+def median_employee_salary(employee: pd.DataFrame) -> pd.DataFrame:
+
+    df = employee.sort_values(['salary', 'id']).groupby('company').apply(lambda x: x.iloc[(len(x) - 1) // 2 : len(x) // 2 + 1])
+
+    return df
