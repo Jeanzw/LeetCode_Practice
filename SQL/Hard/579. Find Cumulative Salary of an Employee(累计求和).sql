@@ -22,6 +22,19 @@ where (a.Id,a.Month) not in (select Id,max(Month) from Employee group by 1)
 group by 1,2
 order by 1,2 desc
 
+-- 或者上面判断是否是最近一个月的方法可以直接用rank来用
+with cte as
+(select
+a.id, a.month, ifnull(a.salary,0) + ifnull(b.salary,0) + ifnull(c.salary,0) as Salary,
+dense_rank() over (partition by a.id order by a.month desc) as rnk
+from Employee a
+left join Employee b on a.id = b.id and a.month - 1 = b.month
+left join Employee c on c.id = b.id and b.month - 1 = c.month)
+
+select id, month, Salary from cte where rnk != 1 order by 1, 2 desc
+
+
+
 
 /*但是如果真的要用MS SQL Server那么可以如下*/
 -- 这道题不能用滚动求和，因为比如说Id = 1 并且Month = 7的时候，其实求出来的应该是90，因为5和6月份都没有对应的工作，所以是0，而我们7月份求的综合应该是5和6和7月份的综合

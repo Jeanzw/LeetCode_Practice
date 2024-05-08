@@ -33,3 +33,16 @@ select
     from survey_log
     group by 1
     order by count(answer_id)/count(question_id) desc limit 1
+
+
+-- 或者在这里直接用rank来做
+with cte as
+(select 
+question_id,
+row_number() over (order by count(case when action = 'answer' then question_id end)
+/
+count(case when action = 'show' then question_id end) desc, question_id) as rnk
+from SurveyLog
+group by 1)
+
+select question_id as survey_log from cte where rnk = 1
