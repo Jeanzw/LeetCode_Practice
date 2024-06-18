@@ -29,7 +29,18 @@ select round(sum(TIV_2016),2) as TIV_2016 from insurance
 where TIV_2015 not in (select * from unique_tiv_2015)
 and (LAT,LON) in (select * from unique_location)
 
+-- 最好不要用In来做
+with same_2015 as
+(select distinct a.pid from Insurance a inner join Insurance b on a.tiv_2015 = b.tiv_2015 and a.pid != b.pid)
+, same_location as
+(select distinct a.pid from Insurance a inner join Insurance b on a.lat = b.lat and a.pid != b.pid and a.lon = b.lon)
 
+select 
+round(sum(a.tiv_2016),2) as tiv_2016
+from Insurance a
+left join same_2015 b on a.pid = b.pid
+left join same_location c on a.pid = c.pid
+where b.pid is not null and c.pid is null
 
 
 -- 其实这道题也可以用join来做

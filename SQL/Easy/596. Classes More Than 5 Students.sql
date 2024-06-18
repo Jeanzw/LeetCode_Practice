@@ -16,10 +16,8 @@ having count(*) >= 5
 --                         ["E", "Math"], 
 --                         ["F", "Math"], 
 --                         ["A", "Math"]]}}
--- 这里我们发现["A", "Math"]是重复值，那么如果直接count(*)就会报错
--- 所以在这里我们职能用count(distinct student)
-
--- 我觉得用count(*)是没有问题的，没有说这个class里面就不会有同名的学生呀……
+-- 这里我们发现["A", "Math"]是重复值，那么如果直接count(*)就会报错  
+-- -> 我们不需要担心这个问题，因为题目中说了(student, class) is the primary key，那么我们计算的时候直接count(student)即可
 
 
 -- Python
