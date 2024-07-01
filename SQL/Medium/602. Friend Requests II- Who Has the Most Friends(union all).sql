@@ -35,6 +35,18 @@ order by num desc
 limit 1
 
 
+-- 最好用cte来写，不然太乱了
+with cte as
+(select requester_id as id, accepter_id as friend from RequestAccepted
+union 
+select accepter_id as id, requester_id as friend from RequestAccepted)
+
+select id,count(distinct friend) as num from cte
+group by 1
+order by num desc
+limit 1
+
+
 -- Python
 import pandas as pd
 def most_friends(request_accepted: pd.DataFrame) -> pd.DataFrame:

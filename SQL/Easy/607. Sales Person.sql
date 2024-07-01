@@ -17,6 +17,22 @@ left join company c on o.com_id = c.com_id
 where c.name = 'RED')
 
 
+-- 用join做
+With red as
+(select 
+distinct a.sales_id
+from SalesPerson a
+inner join Orders b on a.sales_id = b.sales_id
+inner join Company c on b.com_id = c.com_id and c.name = 'Red'
+)
+
+select 
+name
+from SalesPerson a
+left join red b on a.sales_id = b.sales_id
+where b.sales_id is null
+
+
 -- Python
 import pandas as pd
 
