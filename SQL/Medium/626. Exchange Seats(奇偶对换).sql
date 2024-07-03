@@ -71,3 +71,19 @@ select
     student
     from Seat
     order by 1
+
+
+
+-- 或者我们可以直接用window function帮我们判断是否是最后一行
+with cte as
+(select
+id, student, max(id) over () as max_
+from Seat)
+
+select
+case when id != max_ and mod(id,2) = 1 then id + 1
+     when mod(id,2) = 0 then id - 1
+     else id end as id,
+student
+from cte
+order by 1

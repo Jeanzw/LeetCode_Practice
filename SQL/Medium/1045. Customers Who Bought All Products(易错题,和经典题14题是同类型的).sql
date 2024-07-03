@@ -90,3 +90,11 @@ from Customer a
 inner join Product b on a.product_key = b.product_key
 group by 1
 having count(distinct a.product_key) = (select product_num from all_product_num)
+
+-- 上面还是太复杂了……
+select
+customer_id
+from Customer a
+inner join Product b on a.product_key = b.product_key
+group by 1
+having count(distinct a.product_key) = (select count(distinct product_key) from Product)
