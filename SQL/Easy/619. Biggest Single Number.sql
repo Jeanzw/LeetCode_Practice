@@ -10,6 +10,8 @@ select max(num) as num from
 group by num
 having count(*) = 1) tno
 
+SELECT ifnull ((SELECT num FROM MyNumbers GROUP BY num HAVING COUNT(num) = 1 ORDER BY num DESC LIMIT 1), null) AS num;
+
 
 
 -- Python
