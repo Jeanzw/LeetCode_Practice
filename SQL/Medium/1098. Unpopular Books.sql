@@ -35,4 +35,7 @@ and dispatch_date between  '2018-06-23' and '2019-06-23'
 -- 而如果放在这里，那么匹配不上的只会显示null
 where available_from <= '2019-05-23'
 group by 1,2
-having sum(quantity) <10 or sum(quantity) is null
+having sum(quantity) <10 or sum(quantity) is null 
+-- 上面的having也可以改成：
+-- having ifnull(sum(quantity),0) < 10
+-- 但无论改成什么，这里的意思就是要保证没有卖出去一本书的书也是可以被提取出来的

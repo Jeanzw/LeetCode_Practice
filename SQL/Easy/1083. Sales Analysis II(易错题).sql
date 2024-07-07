@@ -51,3 +51,21 @@ with buyer_S8 as
 select distinct buyer_id from buyer_S8 
 where buyer_id not in (select * from buyer_iphone)
 -- 最后满足在买了S8的人中，找出其id不在买了iphone的人之列
+
+
+-- 我觉得上面这一系列做法还是都太复杂了，其实只需要一个cte即可
+-- 这个cte就是找到购买了iPhone的人
+-- 然后利用left join保证链接不到即可
+with iphone as
+(select 
+distinct buyer_id
+from Sales a
+inner join Product b on a.product_id = b.product_id and b.product_name = 'iPhone'
+)
+
+select 
+distinct a.buyer_id
+from Sales a
+inner join Product b on a.product_id = b.product_id and b.product_name = 'S8'
+left join iphone c on a.buyer_id = c.buyer_id
+where c.buyer_id is null

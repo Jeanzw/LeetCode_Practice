@@ -41,6 +41,8 @@ distinct s.product_id,
 product_name
 from Sales s
 left join Product p on s.product_id = p.product_id
+-- 注意：上面left join的是Product表，而不是raw表
+-- 因为我们要保证最后抽出来的数据是在Sales表里面存在的
 where s.product_id not in (select product_id from raw)
 
 
