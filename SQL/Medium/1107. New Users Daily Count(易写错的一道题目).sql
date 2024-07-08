@@ -42,3 +42,17 @@ where activity = 'login'
 group by 1
 having datediff('2019-06-30',min(activity_date)) <= 90)tmp
 group by 1
+
+
+-- 我们也可以把时间范围放到最后一步
+with cte as
+(select
+user_id, min(activity_date) as first_log
+from Traffic
+where activity = 'login'
+group by 1)
+
+select first_log as login_date, count(distinct user_id) as user_count
+from cte
+where datediff('2019-06-30',first_log) between 0 and 90
+group by 1
