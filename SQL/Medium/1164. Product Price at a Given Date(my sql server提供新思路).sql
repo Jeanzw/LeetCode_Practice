@@ -93,3 +93,21 @@ select
     ifnull(price,10) as price
     from framework f
     left join latest l on f.product_id = l.product_id
+
+
+
+
+-- 用Python写
+import pandas as pd
+
+def price_at_given_date(products: pd.DataFrame) -> pd.DataFrame:
+    # 我们这里应该先筛选后排序，不然如果出现又有2019-08-16之前的行，也有2019-08-16之后的行，那么按照rank来找为1的就找不到了
+    # 但是我们要注意，这下面的code得出来的列是：product_id, 最大的change_date，并没有对应的price
+    max_find = products.query("change_date <= '2019-08-16'").groupby(['product_id']).change_date.max().reset_index()
+    # merge的好处是，当我们merge之后，用来连接的列直接就省去了
+    max_find = max_find.merge(products, left_on =['product_id','change_date'],right_on =['product_id','change_date'], how = 'left')
+    # 然后清除重复值，把unique product_id给找出来
+    dedup = products.drop_duplicates(subset = 'product_id')
+    merge = max_find.merge(dedup, left_on = "product_id", right_on = "product_id", how = 'right')
+    res = merge[['product_id', 'new_price_x']].fillna(10)
+    return res.rename(columns = {'new_price_x':'price'})
