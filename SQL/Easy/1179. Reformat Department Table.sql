@@ -50,3 +50,21 @@ select
     sum(case when month = 'Dec' then revenue else null end) as Dec_Revenue
     from Department 
     group by 1
+
+
+
+
+-- Python
+import pandas as pd
+
+def reformat_table(department: pd.DataFrame) -> pd.DataFrame:
+    prefixes = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    # 下面在做pivot的时候已经确定了index，但是只index被隐藏起来了，所以在最后的最后需要reset_index
+    by_month = department.pivot(index = 'id', columns = 'month',values = 'revenue')
+    # 将上面创的一月到十二月的列表插入
+    by_month = by_month.reindex(columns = prefixes)
+    # 给列重新取名字，我们这里用lambda的形式
+    by_month.rename(columns=lambda title: title + "_Revenue", inplace=True)
+    # 用reset_index将id给显现化
+    by_month.reset_index(inplace = True)
+    return by_month
