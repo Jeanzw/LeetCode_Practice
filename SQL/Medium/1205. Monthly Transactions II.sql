@@ -88,31 +88,35 @@ group by 1,2
 
 
 
--- Python
 import pandas as pd
-​
+
 def monthly_transactions(transactions: pd.DataFrame, chargebacks: pd.DataFrame) -> pd.DataFrame:
+    # 先把transactions的日期进行处理
+    transactions['month'] = transactions['trans_date'].dt.strftime('%Y-%m')
+    # 找到approved的行，并且取出我想要的内容
+    trans_approved = transactions.query("state == 'approved'")[
+        ['id','country','state','amount','month']
+    ]
+    # 这里我们用as_index = False让month和country两列显现
+    # 并且用agg()对两列进行aggregation
+    trans_approved = trans_approved.groupby(['month','country'],as_index = False).agg(
+        approved_count =('id','count'),
+        approved_amount = ('amount','sum')
+    )
+    
+    # 依旧是对chargeback这一个表进行日期处理
+    chargebacks['month'] = chargebacks['trans_date'].dt.strftime('%Y-%m')
+    # 和transactions连接，找到对应的钱和国家
+    trans_chargeback = pd.merge(
+        transactions,chargebacks, left_on = 'id', right_on = 'trans_id', how = 'inner'
+        )[['id','country','amount','month_y']].rename(columns = {'month_y':'month'})
+    
+    # 对trans_chargeback进行求和处理,同时注意，这里依旧是要确保as_index = False
+    trans_chargeback = trans_chargeback.groupby(['month','country'], as_index = False).agg(
+        chargeback_count = ('id','count'),
+        chargeback_amount = ('amount','sum')
+    )
 
-    df = transactions.merge(chargebacks, left_on='id', right_on='trans_id', how='left')
 
-    df['month_chargeback'] = df['trans_date_y'].dt.strftime('%Y-%m')
-
-    df['month_transaction'] = df['trans_date_x'].dt.strftime('%Y-%m')
-
-    df1 = df[df['state'] == 'approved'].groupby(
-        ['month_transaction', 'country'], as_index=False
-        ).agg(
-            approved_count=('amount', 'count'),
-            approved_amount=('amount', 'sum')
-        ).rename(columns={'month_transaction': 'month'})
-
-    df2 = df.groupby(
-        ["month_chargeback", "country"], as_index=False
-        ).agg(
-            chargeback_count=('amount', 'count'), 
-            chargeback_amount=('amount', 'sum')
-        ).rename(columns={'month_chargeback': 'month'})
-        
-    df3 = df1.merge(df2, how='outer', on=['month', 'country']).fillna(0)
-
-    return df3
+    res = trans_approved.merge(trans_chargeback, how = 'outer', on = ['month','country']).fillna(0)
+    return res

@@ -74,3 +74,32 @@ sum(case when host_goals  < guest_goals then 3
  on a.team = t.team_id
  group by 1,2
  order by num_points desc, team_id
+
+
+--  Python
+import pandas as pd
+import numpy as np
+
+def team_scores(teams: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
+    # 把host给抽出来
+    team1 = matches[['host_team','host_goals','guest_goals']].rename(columns = {'host_team':'team'})
+    # 把guest给抽出来
+    team2 = matches[['guest_team','host_goals','guest_goals']].rename(columns = {'guest_team':'team'})
+
+    # where语句判断每个队应该得分的情况
+    team1['score'] = np.where(
+        team1['host_goals']>team1['guest_goals'],3, 
+        np.where(team1['host_goals']==team1['guest_goals'],1,0)
+        )
+    team2['score'] = np.where(
+        team1['host_goals']>team1['guest_goals'],0, 
+        np.where(team1['host_goals']==team1['guest_goals'],1,3)
+        )
+    
+    # 将两张表直接合并并且求和
+    team1_team2 = pd.concat([team1,team2]).groupby(['team'], as_index = False).score.sum().reset_index()
+    
+    # 将得分情况的表和原来队伍信息的表相连
+    res = pd.merge(teams,team1_team2, left_on = 'team_id', right_on = 'team', how = 'left').fillna(0)
+    # 最后取出想要的列，并且确定好排序情况
+    return res[['team_id','team_name','score']].rename(columns = {'score':'num_points'}).sort_values(['num_points','team_id'], ascending = [False, True])
