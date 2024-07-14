@@ -15,3 +15,23 @@ ifnull(round(sum(price * units)/sum(units),2),0) as average_price
 from Prices a
 left join UnitsSold b on a.product_id = b.product_id and purchase_date between start_date and end_date
 group by 1
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def average_selling_price(prices: pd.DataFrame, units_sold: pd.DataFrame) -> pd.DataFrame:
+    # 先连接
+    merge = pd.merge(prices,units_sold, on = 'product_id', how = 'left')
+    # 只选取满足条件的行
+    merge = merge.query('(purchase_date >= start_date and purchase_date <= end_date) or purchase_date.isna()').fillna(0)
+    # 进行计算
+    merge['sum_price'] = merge['price'] * merge['units']
+    res = merge.groupby(['product_id'], as_index = False).agg(
+        sum_price = ('sum_price','sum'),
+        sum_unit = ('units','sum')
+    )
+    # 最后用一个where来对null值进行处理
+    res['average_price'] = np.where(res['sum_price']/res['sum_unit'].notna(),res['sum_price']/res['sum_unit'],0)
+    return res[['product_id','average_price']].round(2)

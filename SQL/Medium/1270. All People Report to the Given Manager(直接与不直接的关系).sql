@@ -75,3 +75,17 @@ select a.employee_id from Employees a
 left join Employees b on a.manager_id = b.employee_id
 left join Employees c on b.manager_id = c.employee_id
 where c.manager_id = 1 and a.employee_id != 1
+
+
+
+-- 用python
+import pandas as pd
+
+def find_reporting_people(employees: pd.DataFrame) -> pd.DataFrame:
+    employee = employees.query('employee_id != 1')
+    employee1 = employee.query('manager_id == 1')[['employee_id']]
+    employee2 = employee[employee['manager_id'].isin(employee1['employee_id'])]
+    employee3 = employee[employee['manager_id'].isin(employee2['employee_id'])]
+    
+    res = pd.concat([employee1[['employee_id']],employee2[['employee_id']],employee3[['employee_id']]])
+    return res.drop_duplicates()

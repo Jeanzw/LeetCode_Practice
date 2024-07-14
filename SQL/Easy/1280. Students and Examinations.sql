@@ -52,3 +52,16 @@ on fw.student_id = e.student_id
 and fw.subject_name = e.subject_name
 group by 1,2,3
 order by 1,3
+
+
+
+-- Python
+import pandas as pd
+
+def students_and_examinations(students: pd.DataFrame, subjects: pd.DataFrame, examinations: pd.DataFrame) -> pd.DataFrame:
+    frame = pd.merge(students,subjects, how = 'cross')
+    acc = examinations.groupby(['student_id','subject_name'],as_index = False).size()
+    
+    merge = pd.merge(frame,acc, how = 'left', on = ['student_id','subject_name']).rename(columns = {'size':'attended_exams'})
+    merge['attended_exams'] = merge['attended_exams'].fillna(0)
+    return merge.sort_values(['student_id','subject_name'])

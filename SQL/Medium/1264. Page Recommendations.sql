@@ -50,3 +50,24 @@ distinct page_id as recommended_page
 from Likes l 
 join friend f on l.user_id = f.friend_id and f.user_id = 1
 where page_id not in (select page_id from Likes where user_id = 1)
+
+
+-- 个人不推荐用not in来做
+# Write your MySQL query statement below
+with cte as
+(select user1_id as userid, user2_id as friend from Friendship
+where user1_id = 1
+union
+select user2_id as userid, user1_id as friend from Friendship
+where user2_id = 1
+)
+, user1_like as
+(select distinct page_id from Likes where user_id = 1)
+
+
+select 
+distinct b.page_id as recommended_page
+from cte a
+inner join Likes b on a.friend = b.user_id
+left join user1_like c on b.page_id = c.page_id
+where c.page_id is null

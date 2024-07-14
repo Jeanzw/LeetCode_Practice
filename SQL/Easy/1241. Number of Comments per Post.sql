@@ -31,3 +31,18 @@ group by 1)
 select p.sub_id as post_id,ifnull(number_of_comments,0) as number_of_comments  from post p
 left join comment c on p.sub_id = c.parent_id
 order by 1
+
+
+
+-- Python
+import pandas as pd
+
+def count_comments(submissions: pd.DataFrame) -> pd.DataFrame:
+    # 先把post和comment取出来，分别放在两张表里面，并且需要剔除重复值
+    post = submissions[submissions['parent_id'].isna()].drop_duplicates()
+    comments = submissions[submissions['parent_id'].notna()].drop_duplicates()
+    # merge两张表
+    merge = pd.merge(post,comments,left_on = 'sub_id', right_on = 'parent_id', how = 'left')
+    # 求和
+    res = merge.groupby(['sub_id_x'],as_index = False).sub_id_y.count()
+    return res.rename(columns = {'sub_id_x':'post_id','sub_id_y':'number_of_comments'})
