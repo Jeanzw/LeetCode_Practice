@@ -34,12 +34,6 @@ select
     where rnk >= 7
 
 
-
-
-
-
-
-
 -- MYSQL
 SELECT 
     a.visited_on, 
@@ -84,3 +78,36 @@ FROM
 那么基于上面的结果，我们如果要求出一天和六天前的amount的总和，其实直接对第一个visited_on进行操作就好了
 而又因为我们需要去除最开始的六天，所以最后要有一个having来进行筛选
 */
+
+
+# Write your MySQL query statement below
+with summary as
+(select visited_on, sum(amount) as amount from Customer group by 1)
+
+select
+visited_on,
+sum(amount) over (order by visited_on rows between 6 preceding and current row) as amount,
+round(sum(amount) over (order by visited_on rows between 6 preceding and current row)/7,2) as average_amount
+from 
+-- 一定要limit，这里我们给个超大的数。
+LIMIT 100000
+offset 6
+
+
+-- Python
+
+import pandas as pd
+
+def restaurant_growth(customer: pd.DataFrame) -> pd.DataFrame:
+    # 因为存在一个日期多条数据，所以这里我们先进行求和
+    summary = customer.groupby(['visited_on'],as_index = False).amount.sum()
+    # 这里我们先给summary进行排序，然后直接用排序之后的index作为我们判定排名的依据
+    # 因为最后我们要把前6行给直接删去
+    summary.sort_values('visited_on',inplace = True)
+    summary['rank'] = summary.index
+    # 开始用rolling来进行滚动求和
+    summary['rolling_7'] = summary['amount'].rolling(window = 7, min_periods = 1).sum()
+    summary['average_amount'] = (summary['rolling_7']/7).round(2)
+
+    res = summary.query('rank > 5')[['visited_on','rolling_7','average_amount']].rename(columns = {'rolling_7':'amount'})
+    return res

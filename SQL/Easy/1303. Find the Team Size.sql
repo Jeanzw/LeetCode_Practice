@@ -20,3 +20,13 @@ select
     employee_id,
     count(employee_id) over (partition by team_id) as team_size
     from Employee
+
+
+-- Python
+import pandas as pd
+
+def team_size(employee: pd.DataFrame) -> pd.DataFrame:
+    team_size = employee.groupby(['team_id'], as_index = False).employee_id.count().rename(columns = {'employee_id':'team_size'})
+    
+    merge = pd.merge(employee,team_size, how = 'left',on = 'team_id')
+    return merge[['employee_id','team_size']]
