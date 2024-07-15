@@ -54,3 +54,23 @@ limit 1)
 select name as results from user_rating
 union all
 select title as results from movie_rating
+
+
+
+-- Python
+import pandas as pd
+
+def movie_rating(movies: pd.DataFrame, users: pd.DataFrame, movie_rating: pd.DataFrame) -> pd.DataFrame:
+    users = pd.merge(users,movie_rating, on ='user_id').groupby(['user_id','name'],as_index = False).agg(
+        results = ('movie_id','count')
+    ).sort_values(['results','name'], ascending = [False, True]).head(1)
+    users = users[['name']].rename(columns = {'name':'results'})
+
+    movies = pd.merge(movies,movie_rating, on ='movie_id').query("created_at >= '2020-02-01' and created_at <= '2020-02-29'").groupby(['movie_id','title'],as_index = False).agg(
+        results = ('rating','mean')
+    ).sort_values(['results','title'], ascending = [False, True]).head(1)
+
+    movies = movies[['title']].rename(columns = {'title':'results'})
+
+    res = pd.concat([users,movies])
+    return res

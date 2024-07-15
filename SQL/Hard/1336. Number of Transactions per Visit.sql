@@ -97,3 +97,19 @@ left join temp
 on rc.t_counts = temp.transaction_counts
 where rc.t_counts <= (select max(transaction_counts) from temp)
 -- 最后我们用where语句，把所有过多的数字给筛除
+
+
+
+--  Python
+import pandas as pd
+
+def draw_chart(visits: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame:
+    summary = pd.merge(visits,transactions, left_on = ['user_id','visit_date'], right_on = ['user_id','transaction_date'], how = 'left')
+
+    agg = summary.groupby(['user_id','visit_date'], as_index = False).count()
+    agg = agg.groupby(['amount'], as_index = False).user_id.count()
+-- 下面是这道题解题的关键,也就是sql里面recursive
+    frame = pd.DataFrame({'transactions_count':range(max(agg['amount']) + 1)})
+
+    res = pd.merge(frame, agg, left_on = 'transactions_count', right_on = 'amount', how = 'left').fillna(0)
+    return res[['transactions_count','user_id']].rename(columns = {'user_id':'visits_count'})

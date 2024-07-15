@@ -10,3 +10,13 @@ s.name
 from Students s
 left join Departments d on s.department_id = d.id
 where d.id is null
+
+
+-- Python
+import pandas as pd
+
+def find_students(departments: pd.DataFrame, students: pd.DataFrame) -> pd.DataFrame:
+    summary = pd.merge(students,departments, left_on = 'department_id', right_on = 'id', how = 'left').query('id_y.isna()')
+
+    summary = summary[['id_x','name_x']].rename(columns = {'id_x':'id', 'name_x':'name'})
+    return summary

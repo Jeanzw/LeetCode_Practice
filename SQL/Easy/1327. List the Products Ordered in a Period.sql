@@ -15,3 +15,13 @@ having unit >= 100)
 
 select product_name,unit from Products p
 join orders o on p.product_id = o.product_id
+
+
+-- Python
+import pandas as pd
+
+def list_products(products: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    orders = orders.query("order_date >= '2020-02-01' and order_date <= '2020-02-29'").groupby(['product_id'],as_index = False).unit.sum()
+
+    res = orders.query('unit >= 100').merge(products, on = 'product_id', how = 'left')
+    return res[['product_name','unit']]
