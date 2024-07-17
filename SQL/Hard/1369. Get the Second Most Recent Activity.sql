@@ -47,3 +47,13 @@ LEFT JOIN UserActivity u2
     ON u1.username = u2.username AND u1.endDate < u2.endDate
 GROUP BY u1.username, u1.endDate
 HAVING COUNT(u2.endDate) = 1
+
+
+
+-- Python
+import pandas as pd
+
+def second_most_recent(user_activity: pd.DataFrame) -> pd.DataFrame:
+    summary = user_activity.sort_values(['username','startDate'], ascending = [True, False])
+    rnk = summary.groupby(['username']).head(2).groupby(['username']).tail(1)
+    return rnk

@@ -146,3 +146,21 @@ def count_trusted_contacts(
     return invoice_customer[
         ["invoice_id", "customer_name", "price", "contacts_cnt", "trusted_contacts_cnt"]
     ]
+
+
+-- Python
+-- 上面写的我觉得有点复杂了
+-- 我的思路就是直接全部join起来，然后最后进行aggregation的处理
+import pandas as pd
+
+def count_trusted_contacts(customers: pd.DataFrame, contacts: pd.DataFrame, invoices: pd.DataFrame) -> pd.DataFrame:
+    invoices_customers = pd.merge(invoices,customers, left_on = 'user_id', right_on = 'customer_id', how = 'left')
+    invoices_customers_contacts = pd.merge(invoices_customers,contacts, on ='user_id', how = 'left')
+    summary = pd.merge(invoices_customers_contacts,customers,left_on = 'contact_email', right_on = 'email', how = 'left')
+    summary = summary[['invoice_id','price','customer_name_x','contact_name','email_y']].drop_duplicates()
+
+    res = summary.groupby(['invoice_id','customer_name_x','price'], as_index = False).agg(
+        contacts_cnt = ('contact_name','count'),
+        trusted_contacts_cnt = ('email_y','count')
+    )
+    return res.rename(columns = {'customer_name_x':'customer_name'}).sort_values('invoice_id')

@@ -45,3 +45,16 @@ with max_activity as
 select name as activity from Activities
 where name not in (select * from max_activity)
 and name not in (select * from min_activity)
+
+
+
+-- Python
+import pandas as pd
+
+def activity_participants(friends: pd.DataFrame, activities: pd.DataFrame) -> pd.DataFrame:
+    summary = friends.groupby(['activity'], as_index = False).id.count()
+    max_min = summary.agg(
+        {'id':['max','sum']}
+    )
+    res = summary[~summary['id'].isin(max_min['id'])][['activity']]
+    return max_min
