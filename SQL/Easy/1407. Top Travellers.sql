@@ -30,3 +30,12 @@ ON
 GROUP BY 
     u.id
 ORDER BY 2 DESC, 1 ASC
+
+
+
+-- Python
+import pandas as pd
+
+def top_travellers(users: pd.DataFrame, rides: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(users,rides,left_on = 'id', right_on = 'user_id', how = 'left').groupby(['id_x','name'],as_index = False).distance.sum()
+    return merge[['name','distance']].sort_values(['distance','name'], ascending = [False,True]).rename(columns = {'distance':'travelled_distance'})

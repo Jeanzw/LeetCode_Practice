@@ -65,3 +65,38 @@ select
 from Student
 where student_id not in (select student_id from not_quiet where rnk = 1 or rnk_desc = 1)
 and student_id in (select student_id from Exam)
+
+
+-- 我不是很喜欢用not in来做题
+# Write your MySQL query statement below
+with cte as
+(select
+a.student_id,a.student_name, exam_id,
+rank() over (partition by exam_id order by score) as rnk,
+rank() over (partition by exam_id order by score desc) as rnk_desc
+from Student a
+inner join Exam b on a.student_id = b.student_id)
+,max_min as
+(select distinct student_id from cte where rnk = 1 or rnk_desc = 1)
+
+select distinct a.student_id,a.student_name
+from cte a
+left join max_min b on a.student_id = b.student_id
+where b.student_id is null
+order by 1
+
+
+-- Python
+import pandas as pd
+
+def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame:
+    exam = pd.merge(exam,student, on = 'student_id')
+    # 先用transform找到对于每个exam_id的最大最小值
+    exam["max_score"] = exam.groupby("exam_id").score.transform(max)
+    exam['min_score'] = exam.groupby('exam_id').score.transform(min)
+    # 逆向思维，因为我们要找到quiet，那么我们先找到not quiet student
+    not_quiet = exam.query('score == max_score or score == min_score')
+
+    # 然后使得student表格里面student_id不在not_quiet里面即可
+    res = exam[~exam['student_id'].isin(not_quiet['student_id'])]
+    return res[['student_id','student_name']].drop_duplicates().sort_values('student_id')

@@ -67,13 +67,10 @@ having count(distinct product_name) = 2
 import pandas as pd
 
 def find_customers(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
-    def valid(subdf):
-        purchased = set(subdf['product_name'])
-        return  'A' in purchased and \
-                'B' in purchased and \
-                'C' not in purchased
+    summary = pd.merge(orders,customers, on = 'customer_id')
 
-    df = orders.groupby('customer_id').filter(valid)
+    product_ab = summary.query("product_name == 'A' or product_name == 'B'").groupby(['customer_id','customer_name'], as_index = False).product_name.count().query('product_name >= 2')
+    product_c = summary.query("product_name == 'C'")[['customer_id','customer_name']].drop_duplicates()
 
-    cond = customers['customer_id'].isin(df['customer_id'])
-    return customers[cond].sort_values(by = 'customer_id')
+    res = pd.merge(product_ab,product_c, on = 'customer_id', how = 'left').query("customer_name_y.isna()")
+    return res[['customer_id','customer_name_x']].rename(columns = {'customer_name_x':'customer_name'})
