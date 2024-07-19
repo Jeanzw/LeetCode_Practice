@@ -99,3 +99,14 @@ select distinct id, name from bridge
 group by id,name,bridge
 having count(*) >=5
 order by id
+
+
+
+-- Python
+import pandas as pd
+
+def active_users(accounts: pd.DataFrame, logins: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(logins,accounts,on='id', how = 'left').drop_duplicates().sort_values(['id','login_date'])
+    merge['occ'] = 1
+    merge = merge.groupby(['id','name'],as_index = False).rolling('5D',min_periods = 5, on = 'login_date').sum()
+    return merge.query("occ.notna()")[['id','name']].drop_duplicates()

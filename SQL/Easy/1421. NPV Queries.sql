@@ -4,11 +4,9 @@
 select a.*,ifnull(npv,0) as npv from Queries a
 left join NPV b on a.id = b.id and a.year = b.year
 
-
 -- Python
 import pandas as pd
 
 def npv_queries(npv: pd.DataFrame, queries: pd.DataFrame) -> pd.DataFrame:
-    result = pd.merge(queries, npv, on=['id', 'year'], how='left')
-    result['npv'].fillna(0, inplace=True)
-    return result
+    merge = pd.merge(queries,npv,on = ['id','year'], how = 'left').fillna(0)
+    return merge
