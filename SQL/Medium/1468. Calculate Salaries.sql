@@ -68,3 +68,16 @@ s.employee_name,
 round(s.salary * (1 - tax),0) as salary
 from Salaries s
 left join tax t on s.company_id = t.company_id
+
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def calculate_salaries(salaries: pd.DataFrame) -> pd.DataFrame:
+    salaries['max_salary'] = salaries.groupby('company_id').salary.transform('max')
+    salaries['salary_after_tax'] = np.where(salaries['max_salary'] < 1000, salaries['salary'], 
+    np.where(salaries['max_salary'] > 10000,(1 - 0.49) * salaries['salary'],(1 - 0.24) * salaries['salary'])
+    ).round(0)
+    return salaries[['company_id','employee_id','employee_name','salary_after_tax']].rename(columns = {'salary_after_tax':'salary'})

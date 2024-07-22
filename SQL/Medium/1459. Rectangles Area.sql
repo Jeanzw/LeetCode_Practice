@@ -24,3 +24,13 @@ left join Points p2 on p1.id < p2.id
 group by 1,2,3
 having area != 0 and area is not null
 order by 3 desc,1,2
+
+
+-- Python
+import pandas as pd
+
+def rectangles_area(points: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(points,points, how = 'cross')
+    summary = merge.query("id_x < id_y and x_value_x != x_value_y and y_value_x != y_value_y")
+    summary['AREA'] = abs(summary['x_value_x'] - summary['x_value_y']) * abs(summary['y_value_x'] - summary['y_value_y'])
+    return summary[['id_x','id_y','AREA']].rename(columns = {'id_x':'P1','id_y':'P2'}).sort_values(['AREA','P1','P2'], ascending = [False, True, True])
