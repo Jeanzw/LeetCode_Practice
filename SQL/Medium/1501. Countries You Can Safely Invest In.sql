@@ -74,3 +74,41 @@ left join Country c on left(p.phone_number,3) = country_code
 group by 1
 having avg(duration) > (select global_duration from globaldata)
 -- 在最后保证我们这里每个国家的avg duration是大于global duration
+
+
+-- 另外的方法，直接用window function做
+# Write your MySQL query statement below
+with calls_duration as
+(select caller_id as id, duration from Calls
+union all
+select callee_id as id, duration from Calls
+)
+, summary as
+(select 
+a.id, a.duration, c.name,
+avg(duration) over (partition by c.name) as country_avg,
+avg(duration) over () as global_avg
+from 
+calls_duration a
+left join Person b on a.id = b.id
+left join Country c on left(phone_number,3) = country_code
+)
+
+select distinct name as country from summary
+where country_avg > global_avg
+
+
+
+-- Python
+import pandas as pd
+
+def find_safe_countries(person: pd.DataFrame, country: pd.DataFrame, calls: pd.DataFrame) -> pd.DataFrame:
+    call1 = calls[['caller_id','duration']].rename(columns = {'caller_id':'id'})
+    call2 = calls[['callee_id','duration']].rename(columns = {'callee_id':'id'})
+    call = pd.concat([call1,call2])
+    person['country_code'] = person['phone_number'].str[:3]
+    merge = pd.merge(call,person, on = 'id', how = 'left').merge(country, on = 'country_code', how = 'left')
+
+    merge['country_avg'] =  merge.groupby('name_y').duration.transform(mean)
+    merge['global_avg'] =  merge.duration.mean()
+    return merge.query("country_avg>global_avg")[['name_y']].rename(columns = {'name_y':'country'}).drop_duplicates()

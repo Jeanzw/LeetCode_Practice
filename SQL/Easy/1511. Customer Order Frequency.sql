@@ -51,27 +51,11 @@ WHERE t1 >= 100 AND t2 >= 100
 -- Python
 import pandas as pd
 
-def customer_order_frequency(
-    customers: pd.DataFrame, product: pd.DataFrame, orders: pd.DataFrame
-) -> pd.DataFrame:
+def customer_order_frequency(customers: pd.DataFrame, product: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(customers,orders,on = 'customer_id').merge(product,on = 'product_id').query("order_date >= '2020-06-01' and order_date <= '2020-07-31'")
+    merge['month'] = merge['order_date'].dt.strftime('%Y-%m')
+    merge['total_price'] = merge['quantity'] * merge['price']
 
-    # Merge and filter for year 2020
-    merged_df = pd.merge(
-        pd.merge(orders, customers, on="customer_id"), product, on="product_id"
-    )
-    merged_df["order_date"] = pd.to_datetime(merged_df["order_date"])
-    merged_df = merged_df[merged_df["order_date"].dt.year == 2020]
-
-    # Group by customer_id and calculate monthly sums
-    grouped = merged_df.groupby(["customer_id", merged_df["order_date"].dt.month])
-    monthly_sums = grouped.apply(lambda x: (x["quantity"] * x["price"]).sum()).unstack()
-
-    # Filter for customers meeting criteria in both June (6) and July (7)
-    valid_customers = monthly_sums[
-        (monthly_sums[6] >= 100) & (monthly_sums[7] >= 100)
-    ].index
-
-    # Final DataFrame with customer details
-    result = customers[customers["customer_id"].isin(valid_customers)]
-
-    return result[["customer_id", "name"]]
+    groupby = merge.groupby(['customer_id','name','month'],as_index = False).total_price.sum().query("total_price >= 100")
+    res = groupby.groupby(['customer_id','name'], as_index = False).month.nunique()
+    return res.query("month == 2")[['customer_id','name']]
