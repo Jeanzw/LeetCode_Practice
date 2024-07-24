@@ -15,28 +15,31 @@ top_first
 left join Products p on top_first.product_id = p.product_id
 order by product_name,product_id,order_id
 
+-- 我们可以把rnk = 1放到最后
+# Write your MySQL query statement below
+with rnk as
+(select
+a.product_id,
+a.product_name,
+b.order_id,
+b.order_date,
+rank() over (partition by a.product_id order by order_date desc) as rnk
+from Products a
+inner join Orders b on a.product_id = b.product_id)
 
--- 我就感觉这道题没必要用cte……太麻烦了
-select product_name,product_id,order_id,order_date from
-(select 
- product_name,
- o.product_id,
- o.order_id,
- order_date,
- dense_rank() over (partition by o.product_id order by order_date desc) as rnk
- from Orders o
- left join Products p on o.product_id = p.product_id)tmp
- where rnk = 1
- order by product_name ,product_id,order_id
+select product_name,product_id,order_id,order_date
+from rnk
+where rnk = 1
+order by 1,2,3
+
 
 
 --  Python
 import pandas as pd
-​
+
 def most_recent_orders(customers: pd.DataFrame, orders: pd.DataFrame, products: pd.DataFrame) -> pd.DataFrame:
-
-    df = orders.merge(products, on='product_id').reset_index()
-
-    df = df.groupby('product_id').apply(lambda x:x[x.order_date == x.order_date.max()]).reset_index(drop=True)
-
-    return df[['product_name', 'product_id', 'order_id', 'order_date']].sort_values(['product_name', 'product_id', 'order_id'])
+    merge = pd.merge(products,orders, on ='product_id')
+    # 用transform(max)来对每个product_id分组求出最大值
+    merge['max_date'] = merge.groupby(['product_id']).order_date.transform(max)
+    res = merge.query("order_date == max_date")
+    return res[['product_name','product_id','order_id','order_date']].sort_values(['product_name','product_id','order_id'])

@@ -4,3 +4,14 @@ SELECT LOWER(TRIM(product_name)) product_name, DATE_FORMAT(sale_date, "%Y-%m") s
 FROM sales
 GROUP BY 1, 2
 ORDER BY 1, 2
+
+
+-- Python
+import pandas as pd
+
+def fix_name_format(sales: pd.DataFrame) -> pd.DataFrame:
+    sales['product_name'] = sales['product_name'].str.lower().str.strip()
+    sales['sale_date'] = sales['sale_date'].dt.strftime('%Y-%m')
+
+    res = sales.groupby(['product_name','sale_date'],as_index = False).sale_id.nunique().rename(columns = {'sale_id':'total'})
+    return res.sort_values(['product_name','sale_date'])
