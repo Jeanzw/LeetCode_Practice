@@ -41,3 +41,15 @@ from Orders
 group by customer_id,product_id
 ) as a
 group by customer_id)
+
+
+-- Python
+import pandas as pd
+
+def most_frequently_products(customers: pd.DataFrame, orders: pd.DataFrame, products: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(customers,orders, on ='customer_id').merge(products,on = 'product_id')
+    merge = merge.groupby(['customer_id','product_id','product_name'], as_index = False).order_id.count()
+    merge['rank'] = merge.groupby(['customer_id']).order_id.rank(method='dense',ascending = 0)
+
+    res = merge.query('rank == 1')[['customer_id','product_id','product_name']]
+    return res
