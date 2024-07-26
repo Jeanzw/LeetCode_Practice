@@ -50,3 +50,13 @@ inner join SchoolB b
 inner join SchoolC c 
 on a.student_id != b.student_id and b.student_id != c.student_id and a.student_id != c.student_id
 and a.student_name != b.student_name and b.student_name != c.student_name and a.student_name != c.student_name
+
+
+
+-- Python
+import pandas as pd
+
+def find_valid_triplets(school_a: pd.DataFrame, school_b: pd.DataFrame, school_c: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(school_a,school_b, how = 'cross').merge(school_c,how = 'cross')
+    res = merge.query("student_id_x != student_id_y and student_id_x != student_id and student_id_y != student_id and student_name_x != student_name_y and student_name_x != student_name and student_name_y != student_name")
+    return res[['student_name_x','student_name_y','student_name']].rename(columns = {'student_name_x':'member_A','student_name_y':'member_B','student_name':'member_C'})

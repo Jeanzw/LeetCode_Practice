@@ -86,3 +86,26 @@ left join Rides b on a.month = month(b.requested_at) and year(b.requested_at) = 
 left join AcceptedRides c on b.ride_id = c.ride_id
 left join driver d on a.month >= d.month 
 group by 1
+
+
+
+
+-- Python
+import pandas as pd
+
+def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_rides: pd.DataFrame) -> pd.DataFrame:
+    frame = pd.DataFrame({'month':range(1,13)})
+
+    drivers = drivers.query("join_date.dt.year <= 2020")
+    drivers['month'] = np.where(drivers['join_date'].dt.year < 2020, 1, drivers['join_date'].dt.month)
+    drivers = drivers.groupby(['month'], as_index = False).driver_id.nunique()
+
+    rides = rides.query('requested_at.dt.year == 2020')
+    rides['month'] = rides['requested_at'].dt.month
+    rides_accept = pd.merge(rides,accepted_rides, on = 'ride_id')
+    rides_accept = rides_accept.groupby(['month'], as_index = False).driver_id.nunique()
+
+    summary = pd.merge(frame,drivers, on = 'month', how = 'left').merge(rides_accept,on = 'month', how = 'left').fillna(0)
+    summary['cumsum'] = summary['driver_id_x'].cumsum()
+    summary['working_percentage'] = round(100 * summary['driver_id_y']/summary['cumsum'],2).fillna(0)
+    return summary[['month','working_percentage']]
