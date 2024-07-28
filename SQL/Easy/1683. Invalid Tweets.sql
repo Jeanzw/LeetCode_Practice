@@ -22,6 +22,6 @@ SELECT CHAR_LENGTH('€') # is equal to 1
 import pandas as pd
 
 def invalid_tweets(tweets: pd.DataFrame) -> pd.DataFrame:
-    is_valid = tweets['content'].str.len() > 15
-    df = tweets[is_valid]
-    return df[['tweet_id']]
+    tweets['len'] = tweets['content'].str.len()
+    tweets = tweets.query("len>15")[['tweet_id']]
+    return tweets

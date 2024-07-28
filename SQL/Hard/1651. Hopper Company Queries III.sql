@@ -64,3 +64,23 @@ select * from
     group by 1)tmp
     where month <= 10
     order by month
+
+
+-- Python
+import pandas as pd
+
+def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_rides: pd.DataFrame) -> pd.DataFrame:
+    rides = rides.query("requested_at.dt.year == 2020")
+    rides['month'] = rides['requested_at'].dt.month
+    merge = pd.merge(accepted_rides,rides, on ='ride_id').groupby(['month'],as_index = False).agg(
+    sum_ride_distance = ('ride_distance','sum'),
+    sum_ride_duration = ('ride_duration','sum') 
+)
+    frame = pd.DataFrame({'month':range(1,13)})
+    summary = pd.merge(frame,merge, on = 'month', how = 'left').fillna(0).sort_values(['month'],ascending = [False])
+    summary['average_ride_distance'] = summary['sum_ride_distance'].rolling(3).mean().fillna(0).round(2)
+    summary['average_ride_duration'] = summary['sum_ride_duration'].rolling(3).mean().fillna(0).round(2)
+    summary = summary.query("month <= 10")
+
+    res = summary[['month','average_ride_distance','average_ride_duration']].sort_values(['month'])
+    return res
