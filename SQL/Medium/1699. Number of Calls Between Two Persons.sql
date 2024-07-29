@@ -17,3 +17,17 @@ select
     sum(duration) as total_duration
     from Calls
     group by 1,2
+
+
+
+-- Python
+import pandas as pd
+
+def number_of_calls(calls: pd.DataFrame) -> pd.DataFrame:
+    calls['person1'] = np.where(calls['from_id'] < calls['to_id'],calls['from_id'],calls['to_id'])
+    calls['person2'] = np.where(calls['from_id'] < calls['to_id'],calls['to_id'],calls['from_id'])
+    res = calls.groupby(['person1','person2'], as_index = False).agg(
+        call_count = ('duration','count'),
+        total_duration = ('duration','sum')
+    )
+    return res   

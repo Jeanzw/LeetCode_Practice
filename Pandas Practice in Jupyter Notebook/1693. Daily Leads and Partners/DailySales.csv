@@ -1,0 +1,11 @@
+date_id,make_name,lead_id,partner_id
+12/8/20,toyota,0,1
+12/8/20,toyota,1,0
+12/8/20,toyota,1,2
+12/7/20,toyota,0,2
+12/7/20,toyota,0,1
+12/8/20,honda,1,2
+12/8/20,honda,2,1
+12/7/20,honda,0,1
+12/7/20,honda,1,2
+12/7/20,honda,2,1
