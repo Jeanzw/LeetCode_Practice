@@ -4,13 +4,10 @@ sum(out_time - in_time) as total_time
 from Employees
 group by 1,2
 
-
 -- Python
 import pandas as pd
 
 def total_time(employees: pd.DataFrame) -> pd.DataFrame:
-    employees["total_time"] = employees["out_time"] - employees["in_time"]
-    employees = employees.groupby(["event_day", "emp_id"])["total_time"].sum().reset_index()
-    employees.rename({"event_day": "day"}, axis=1, inplace=True)
-    employees["day"] = employees["day"].astype(str)
-    return employees
+    employees['time'] = employees['out_time'] - employees['in_time']
+    res = employees.groupby(['event_day','emp_id'], as_index = False).time.sum()
+    return res.rename(columns = {'event_day':'day','time':'total_time'})

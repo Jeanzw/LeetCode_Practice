@@ -11,3 +11,13 @@ def find_products(products: pd.DataFrame) -> pd.DataFrame:
     df = df[['product_id']]
     
     return df
+
+
+
+
+-- 或者
+import pandas as pd
+
+def find_products(products: pd.DataFrame) -> pd.DataFrame:
+    products = products.query("low_fats == 'Y' and recyclable == 'Y'")
+    return products[['product_id']].drop_duplicates()

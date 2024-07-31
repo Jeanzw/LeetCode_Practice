@@ -28,3 +28,17 @@ select
     join Employees b on a.employee_id = b.reports_to
     group by 1,2
     order by 1
+
+
+
+-- Python
+import pandas as pd
+
+def count_employees(employees: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(employees,employees, left_on = 'employee_id', right_on = 'reports_to')
+    res = merge.groupby(['employee_id_x','name_x'], as_index = False).agg(
+        reports_count = ('employee_id_y','nunique'),
+        average_age = ('age_y','mean')
+    )
+    res['average_age'] = round(res['average_age']+0.1,0)
+    return res.rename(columns = {'employee_id_x':'employee_id','name_x':'name'})
