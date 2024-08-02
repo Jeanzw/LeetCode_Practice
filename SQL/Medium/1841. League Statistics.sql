@@ -52,54 +52,33 @@ order by points desc, goal_diff desc, team_name
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def league_statistics(teams: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
-    # Merging the teams with matches twice for home and away
-    home_matches = pd.merge(matches, teams, left_on="home_team_id", right_on="team_id")
-    away_matches = pd.merge(matches, teams, left_on="away_team_id", right_on="team_id")
+    matches['home_points'] = np.where(matches['home_team_goals'] > matches['away_team_goals'],3,np.where(matches['home_team_goals'] == matches['away_team_goals'],1,0))
+    matches['away_points'] = np.where(matches['home_team_goals'] > matches['away_team_goals'],0,np.where(matches['home_team_goals'] == matches['away_team_goals'],1,3))
+    home = matches.groupby(['home_team_id'],as_index = False).agg(
+        matches_played = ('home_team_id','count'),
+        points = ('home_points','sum'),
+        goal_for = ('home_team_goals','sum'),
+        goal_against = ('away_team_goals','sum')
+    ).rename(columns = {'home_team_id':'team_id'})
+    away = matches.groupby(['away_team_id'],as_index = False).agg(
+        matches_played = ('away_team_id','count'),
+        points = ('away_points','sum'),
+        goal_for = ('away_team_goals','sum'),
+        goal_against = ('home_team_goals','sum')
+    ).rename(columns = {'away_team_id':'team_id'})
+    home_away = pd.concat([home, away])
+    home_away = home_away.groupby(['team_id'],as_index = False).agg(
+        matches_played = ('matches_played','sum'),
+        points = ('points','sum'),
+        goal_for = ('goal_for','sum'),
+        goal_against = ('goal_against','sum')
 
-    # Calculating points, goals for, and goals against for home and away matches
-    home_matches["points"] = home_matches.apply(
-        lambda x: 3
-        if x["home_team_goals"] > x["away_team_goals"]
-        else (1 if x["home_team_goals"] == x["away_team_goals"] else 0),
-        axis=1,
     )
-    home_matches["goal_for"] = home_matches["home_team_goals"]
-    home_matches["goal_against"] = home_matches["away_team_goals"]
+    home_away['goal_diff'] = home_away['goal_for'] - home_away['goal_against']
 
-    away_matches["points"] = away_matches.apply(
-        lambda x: 3
-        if x["away_team_goals"] > x["home_team_goals"]
-        else (1 if x["home_team_goals"] == x["away_team_goals"] else 0),
-        axis=1,
-    )
-    away_matches["goal_for"] = away_matches["away_team_goals"]
-    away_matches["goal_against"] = away_matches["home_team_goals"]
-
-    # Concatenating the home and away results
-    total_matches = pd.concat([home_matches, away_matches])
-
-    # Grouping by team and calculating aggregates
-    result = (
-        total_matches.groupby("team_name")
-        .agg(
-            {
-                "team_id": "count",
-                "points": "sum",
-                "goal_for": "sum",
-                "goal_against": "sum",
-            }
-        )
-        .rename(columns={"team_id": "matches_played"})
-    )
-
-    # Calculating goal difference
-    result["goal_diff"] = result["goal_for"] - result["goal_against"]
-
-    # Sorting the result
-    result = result.sort_values(
-        by=["points", "goal_diff", "team_name"], ascending=[False, False, True]
-    )
-
-    return result.reset_index()
+    summary = pd.merge(teams,home_away, on = 'team_id')
+    return summary[['team_name','matches_played','points','goal_for','goal_against','goal_diff']].sort_values(['points','goal_diff','team_name'], ascending = [False, False, True])
+    

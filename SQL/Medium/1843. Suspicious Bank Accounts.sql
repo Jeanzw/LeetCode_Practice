@@ -18,6 +18,29 @@ group by 1,month-rnk
 having count(*) > 1
 
 
+-- 还是沿袭上面对于date的处理，但是不需要用rnk来进行定位了
+# Write your MySQL query statement below
+with income as
+(select
+date_format(day,'%Y%m') as month,
+account_id,
+sum(amount) as amount
+from Transactions
+where type = 'Creditor'
+group by 1,2)
+, summary as
+(select 
+a.account_id, b.month
+from Accounts a
+left join income b on a.account_id = b.account_id
+where max_income < amount)
+
+select
+distinct a.account_id
+from summary a
+inner join summary b on a.account_id =b.account_id and a.month + 1 = b.month
+
+
 
 -- 也有人是用join来判断连续两个月的
 WITH summary AS

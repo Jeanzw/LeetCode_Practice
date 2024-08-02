@@ -94,3 +94,26 @@ having
     sum(gold) >= 3
 or
     sum(contest_id - prevprev = 2) >= 1
+
+
+
+
+-- Python
+import pandas as pd
+
+def find_interview_candidates(contests: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
+    gold = contests.groupby(['gold_medal'],as_index = False).contest_id.nunique()
+    gold = gold.query("contest_id >= 3")[['gold_medal']].rename(columns = {'gold_medal':'user_id'})
+    gold_medal = contests[['contest_id','gold_medal']].rename(columns = {'gold_medal':'medal'})
+    silver_medal = contests[['contest_id','silver_medal']].rename(columns = {'silver_medal':'medal'})
+    bronze_medal = contests[['contest_id','bronze_medal']].rename(columns = {'bronze_medal':'medal'})
+    medal = pd.concat([gold_medal,silver_medal,bronze_medal]).sort_values(['medal','contest_id'])
+# 我最开始的时候做的是shift(-1)，因为我想要和sql一样求出一个bridge，但是在Python其实可以更简单
+# 直接就是shift(-2)，因为我们要求出的是连续三个数，那么我们保证下下行和这一行相差2那么中间一行肯定和当前行就相差1
+# 然后我们也不需要再Groupby了，直接就抽取diff为2的即可
+    medal['shift'] = medal['contest_id'].shift(-2)
+    medal['diff'] = medal['shift'] - medal['contest_id']
+    medal = medal.query("diff == 2")[['medal']].rename(columns = {'medal':'user_id'})
+    summary = pd.concat([gold,medal])
+    sumamry = pd.merge(summary,users, on = 'user_id')
+    return sumamry[['name','mail']].drop_duplicates()
