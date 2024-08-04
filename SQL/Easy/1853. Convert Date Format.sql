@@ -29,3 +29,12 @@ SELECT format(day,'D') AS day FROM Days
 
 -- oracle
 SELECT TO_CHAR(Day,'fmDay, fmMonth fmdd, YYYY') AS day FROM Days
+
+
+
+-- Python
+import pandas as pd
+
+def convert_date_format(days: pd.DataFrame) -> pd.DataFrame:
+    days['day'] = days['day'].dt.strftime('%A, %B %-d, %Y')
+    return days

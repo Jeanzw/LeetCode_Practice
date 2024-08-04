@@ -35,3 +35,26 @@ from
 (select employee_id, name, salary, count(employee_id) over(partition by salary) emp_nb
 from employees) t
 where emp_nb >=2
+
+
+-- 或者更简单的是：
+with cte as
+(select
+a.*,
+dense_rank() over (order by a.salary) as team_id
+from Employees a
+inner join Employees b on a.salary = b.salary and a.employee_id != b.employee_id)
+
+select distinct employee_id, name, salary,team_id from cte
+order by 4,1
+
+
+-- Python
+import pandas as pd
+
+def employees_of_same_salary(employees: pd.DataFrame) -> pd.DataFrame:
+    employees['cnt_salary'] = employees.groupby(['salary']).employee_id.transform('count')
+    employees = employees.query("cnt_salary > 1")
+    employees['team_id'] = employees.salary.rank(method = 'dense')
+    employees = employees[['employee_id','name','salary','team_id']]
+    return employees.sort_values(['team_id','employee_id'])

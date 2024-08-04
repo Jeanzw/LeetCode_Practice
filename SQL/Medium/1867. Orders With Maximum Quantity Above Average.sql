@@ -26,3 +26,15 @@ SELECT order_id
 FROM tb1
 WHERE max_quantity > (SELECT MAX(avg_quantity) AS max_avg_quantity
 FROM tb1)
+
+
+-- Python
+import pandas as pd
+
+def orders_above_average(orders_details: pd.DataFrame) -> pd.DataFrame:
+    summary = orders_details.groupby(['order_id'],as_index = False).agg(
+        max_quantity = ('quantity','max'),
+        avg_quantity = ('quantity','mean')
+    )
+    summary['max_avg_quantity'] = summary.avg_quantity.max()
+    return summary.query("max_quantity > max_avg_quantity")[['order_id']]
