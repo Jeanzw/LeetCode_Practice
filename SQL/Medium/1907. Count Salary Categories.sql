@@ -42,15 +42,11 @@ from Accounts
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def count_salary_categories(accounts: pd.DataFrame) -> pd.DataFrame:
-    low_count = (accounts['income'] < 20000).sum()
-    average_count = ((accounts['income'] >= 20000) & (accounts['income'] <= 50000)).sum()
-    high_count = (accounts['income'] > 50000).sum()
-
-    ans = pd.DataFrame({
-        'category': ['Low Salary', 'Average Salary', 'High Salary'],
-        'accounts_count': [low_count, average_count, high_count]
-    })
-
-    return ans
+    frame = pd.DataFrame({'category':['Low Salary','Average Salary','High Salary']})
+    accounts['category'] = np.where(accounts['income'] > 50000, 'High Salary', np.where(accounts['income'] < 20000, 'Low Salary','Average Salary'))
+    summary = pd.merge(frame,accounts,on = 'category', how = 'left')
+    summary = summary.groupby(['category'], as_index = False).account_id.nunique().rename(columns = {'account_id':'accounts_count'})
+    return summary

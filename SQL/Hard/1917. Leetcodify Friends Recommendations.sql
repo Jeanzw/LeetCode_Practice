@@ -46,3 +46,17 @@ left join friend f on l1.user_id = f.user1_id and l2.user_id = f.user2_id
 where f.user1_id is null
 group by 1,2,l1.day
 having count(distinct l1.song_id) >= 3
+
+
+
+-- Python
+import pandas as pd
+
+def recommend_friends(listens: pd.DataFrame, friendship: pd.DataFrame) -> pd.DataFrame:
+    user1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user_id','user2_id':'friend'})
+    user2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user_id','user1_id':'friend'})
+    user = pd.concat([user1,user2]).drop_duplicates()
+    merge = pd.merge(listens,listens, on = ['song_id','day']).query("user_id_x != user_id_y")
+    summary = pd.merge(merge,user,left_on = ['user_id_x','user_id_y'], right_on = ['user_id','friend'],how = 'left', indicator = False).query("user_id.isna()")
+    summary = summary.groupby(['user_id_x','user_id_y','day'], as_index = False).song_id.nunique()
+    return summary.query("song_id >= 3")[['user_id_x','user_id_y']].rename(columns = {'user_id_x':'user_id','user_id_y':'recommended_id'}).drop_duplicates()

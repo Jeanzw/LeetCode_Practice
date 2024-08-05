@@ -16,3 +16,13 @@ inner join Listens b on a.user1_id = b.user_id
 inner join Listens c on a.user2_id = c.user_id and b.song_id = c.song_id and b.day = c.day
 group by 1,2, b.day
 having count(distinct b.song_id) >= 3
+
+
+-- Python
+import pandas as pd
+
+def leetcodify_similar_friends(listens: pd.DataFrame, friendship: pd.DataFrame) -> pd.DataFrame:
+    listen = pd.merge(listens,listens, on = ['song_id','day']).query("user_id_x < user_id_y")
+    summary = pd.merge(listen,friendship, left_on = ['user_id_x','user_id_y'], right_on = ['user1_id','user2_id'])
+    summary = summary.groupby(['user1_id','user2_id','day'],as_index = False).song_id.nunique().query("song_id >= 3")
+    return summary[['user1_id','user2_id']].drop_duplicates()
