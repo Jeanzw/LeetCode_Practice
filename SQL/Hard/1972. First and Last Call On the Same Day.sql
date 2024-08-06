@@ -86,44 +86,14 @@ where frist_call = last_call
 import pandas as pd
 
 def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
-    # Step 1: Create a unified view of calls
-    # Each call is represented twice, from both caller's and recipient's perspectives.
-    unified_calls = pd.concat(
-        [
-            calls,
-            calls.rename(
-                columns={"caller_id": "recipient_id", "recipient_id": "caller_id"}
-            ),
-        ],
-        ignore_index=True,
-    )
+    user1 = calls.rename(columns = {'caller_id':'user_id','recipient_id':'id'})
+    user2 = calls[['recipient_id','caller_id','call_time']].rename(columns = {'recipient_id':'user_id','caller_id':'id'})
+    concat = pd.concat([user1,user2]).drop_duplicates()
+    concat['day'] = concat['call_time'].dt.strftime('%Y-%m-%d')
+    concat['first_call'] = concat.groupby(['user_id','day']).call_time.rank()
+    concat['last_call'] = concat.groupby(['user_id','day']).call_time.rank(ascending = False)
+    concat = concat.query("first_call == 1 or last_call == 1")
 
-    # Step 2: Extract the date part from call_time to identify the call day
-    unified_calls["call_day"] = unified_calls["call_time"].dt.date
-
-    # Step 3: Identify the first (earliest) and last (latest) calls of each day for each user
-    # Group by call_day and caller_id, then find the index of the min/max call_time
-    first_call_indices = unified_calls.groupby(["call_day", "caller_id"])[
-        "call_time"
-    ].idxmin()
-    last_call_indices = unified_calls.groupby(["call_day", "caller_id"])[
-        "call_time"
-    ].idxmax()
-
-    first_calls = unified_calls.loc[first_call_indices]
-    last_calls = unified_calls.loc[last_call_indices]
-
-    # Step 4: Merge first and last calls to find users whose first and last calls are with the same recipient
-    merged_calls = first_calls.merge(
-        last_calls, on=["caller_id", "recipient_id", "call_day"]
-    )
-
-    # Step 5: Prepare the final output
-    # Select unique caller_id and rename to user_id
-    result = (
-        merged_calls[["caller_id"]]
-        .rename(columns={"caller_id": "user_id"})
-        .drop_duplicates()
-    )
-
-    return result
+    merge = pd.merge(concat, concat, on = ['user_id','id','day'])
+    res = merge.query("(first_call_x == 1 and last_call_x == 1) or call_time_x != call_time_y")
+    return res[['user_id']].drop_duplicates()

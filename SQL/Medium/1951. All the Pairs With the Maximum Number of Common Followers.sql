@@ -31,3 +31,14 @@ select
     user2_id 
     from rawdata
     where rnk = 1
+
+
+-- Python
+import pandas as pd
+
+def find_pairs(relations: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(relations,relations, on = 'follower_id').query("user_id_x < user_id_y")
+    merge = merge.groupby(['user_id_x','user_id_y'], as_index = False).follower_id.nunique()
+
+    merge['rnk'] = merge.follower_id.rank(method = 'dense', ascending = False)
+    return merge.query("rnk == 1")[['user_id_x','user_id_y']].rename(columns = {'user_id_x':'user1_id','user_id_y':'user2_id'})

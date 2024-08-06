@@ -40,3 +40,19 @@ inner join friend c on a.user2_id = c.user and a.user1_id != c.friend and b.frie
 -- 链接第二个friends，去找user2的friend，并且保证user1的friend和user2的friend一致
 group by 1,2
 having common_friend >= 3
+
+
+-- Python
+import pandas as pd
+
+def strong_friendship(friendship: pd.DataFrame) -> pd.DataFrame:
+    user1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user_id','user2_id':'friend'})
+    user2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user_id','user1_id':'friend'})
+    concat = pd.concat([user1,user2]).drop_duplicates()
+
+
+    merge = pd.merge(friendship,concat, left_on = 'user1_id', right_on = 'user_id').merge(concat, left_on = 'user2_id', right_on = 'user_id')
+    merge = merge.query("friend_x != user2_id and friend_x == friend_y")
+
+    summary = merge.groupby(['user1_id','user2_id'], as_index = False).friend_x.nunique()
+    return summary.query("friend_x >= 3").rename(columns = {'friend_x':'common_friend'})

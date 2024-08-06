@@ -22,3 +22,11 @@ FULL OUTER JOIN Salaries s
 ON e.employee_id = s.employee_id
 WHERE name IS NULL or salary IS NULL          -- get the ones without proper information
 ORDER BY employee_id
+
+
+-- Python
+import pandas as pd
+
+def find_employees(employees: pd.DataFrame, salaries: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(employees,salaries,on='employee_id', how='outer').query("name.isna() or salary.isna()")
+    return merge[['employee_id']].sort_values('employee_id')
