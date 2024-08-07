@@ -19,6 +19,7 @@ select
 ifnull(count(distinct employee_id),0) as accepted_candidates
 from senior
 where sum_salary <= 70000
+-- 我们应该注意到这里是没有group by，没有group by那么当一个senior都不符合的时候，返回的是0，不然啥也不返回……
 
 union all
 
@@ -27,7 +28,7 @@ select
 count(distinct employee_id) as accepted_candidates
 from junior
 where sum_salary <= (70000 - (select ifnull(max(sum_salary),0) from senior where sum_salary <= 70000))
-
+-- 这里我们在最后的where里面一定要让ifnull(max(sum_salary),0)，不然如果senior没有一个符合的时候就会导致Junior这里也是0
 
 
 -- 其实上面的给senior和junior统计工资，我们完全可以用一个cte解决
