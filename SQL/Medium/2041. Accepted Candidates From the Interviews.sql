@@ -12,17 +12,9 @@ having sum(score) > 15
 import pandas as pd
 
 def accepted_candidates(candidates: pd.DataFrame, rounds: pd.DataFrame) -> pd.DataFrame:
-    # Approach: Conditional Index, Groupby Sum, inner merge
-    # Filtering candidates who have at least two YoE
-    candidates = candidates[candidates['years_of_exp'] >= 2]
+    candidates = candidates.query("years_of_exp >= 2")
+    rounds = rounds.groupby(['interview_id'],as_index = False).score.sum()
+    rounds = rounds.query("score > 15")
 
-    # .groupby('interview_id')['score'].sum(), filter for > 15
-    rounds = rounds.groupby('interview_id')['score'].sum().reset_index(name='total_score')
-    rounds = rounds[rounds['total_score'] > 15]
-
-    # Inner merge on `interview_id`, rounds onto candidates
-    result = candidates.merge(rounds, how='inner', on='interview_id')
-
-    # Return `candidate_id`
-    return result[['candidate_id']]
-    
+    res = pd.merge(candidates,rounds,on = 'interview_id')
+    return res[['candidate_id']]
