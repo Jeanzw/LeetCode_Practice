@@ -10,3 +10,14 @@ from Genders)
 select user_id, gender 
 from cte
 order by rnk, cate_rnk
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def arrange_table(genders: pd.DataFrame) -> pd.DataFrame:
+    genders['rnk'] = genders.groupby(['gender']).user_id.rank()
+    genders['cate_rnk'] = np.where(genders['gender'] == 'female', 1, np.where(genders['gender'] == 'male',3,2))
+    genders = genders.sort_values(['rnk','cate_rnk'])
+    return genders[['user_id','gender']]
