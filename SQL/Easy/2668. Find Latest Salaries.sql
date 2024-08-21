@@ -11,7 +11,8 @@ order by 1
 
 
 -- Python
+import pandas as pd
+
 def find_latest_salaries(salary: pd.DataFrame) -> pd.DataFrame:
-    df = salary.sort_values(by = 'salary', ascending = False)
-    df = df.drop_duplicates(subset = 'emp_id')
-    return df.sort_values(by = 'emp_id')
+    salary = salary.sort_values(['emp_id','salary'], ascending = [1,0])
+    return salary.groupby(['emp_id'],as_index = False).head(1)
