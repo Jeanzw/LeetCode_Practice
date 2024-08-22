@@ -17,3 +17,15 @@ inner join summary b on a.user_id = b.user_id and datediff(b.created_at,a.create
 -- | 8       | Smart Light Strip | 2021-09-29 | 630773 |
 -- | 4       | Smart Cat Feeder  | 2021-09-02 | 693545 |
 -- | 4       | Smart Cat Feeder  | 2021-09-02 | 693545 |
+
+
+
+-- Python
+import pandas as pd
+
+def find_active_users(users: pd.DataFrame) -> pd.DataFrame:
+    users['ind'] = users.index
+    merge = pd.merge(users,users, on = 'user_id')
+    merge['day_diff'] = (merge['created_at_x'] - merge['created_at_y']).dt.days
+    merge = merge.query("ind_x != ind_y and day_diff >= 0 and day_diff <= 7")
+    return merge[['user_id']].drop_duplicates()
