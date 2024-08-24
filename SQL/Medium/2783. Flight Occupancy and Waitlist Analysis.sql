@@ -14,6 +14,18 @@ left join cnt_passenger b on a.flight_id = b.flight_id
 order by 1
 
 
+
+-- 直接一个query写下来就可以了
+select
+a.flight_id,
+case when count(distinct passenger_id) <= capacity then count(distinct passenger_id) else capacity end as booked_cnt,
+case when count(distinct passenger_id) <= capacity then 0 else count(distinct passenger_id) - capacity end as waitlist_cnt
+from Flights a
+left join Passengers b on a.flight_id = b.flight_id
+group by 1
+order by 1
+
+
 -- 上面用case when判断大小也可以改成用least()和greatest()
 SELECT 
   f.flight_id, 
@@ -37,14 +49,12 @@ ORDER BY
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def waitlist_analysis(flights: pd.DataFrame, passengers: pd.DataFrame) -> pd.DataFrame:
-    passengers = (
-        passengers.groupby(by="flight_id")
-        .agg(cnt=("passenger_id", "nunique"))
-        .reset_index()
-    )
-    passengers = flights.merge(passengers, on="flight_id", how="left").fillna(0)
-    passengers["booked_cnt"] = passengers.apply(lambda row: min(row["cnt"], row["capacity"]), axis=1)
-    passengers["waitlist_cnt"] = passengers["cnt"] - passengers["booked_cnt"]
-    return passengers.drop(["cnt", "capacity"], axis=1).sort_values(by="flight_id")
+    merge = pd.merge(flights,passengers, on = 'flight_id', how = 'left')
+    merge = merge.groupby(['flight_id','capacity'], as_index = False).passenger_id.nunique()
+    merge['booked_cnt'] = np.where(merge['capacity'] >= merge['passenger_id'], merge['passenger_id'], merge['capacity'])
+    merge['waitlist_cnt'] = np.where(merge['capacity'] >= merge['passenger_id'], 0, merge['passenger_id'] -merge['capacity'])
+
+    return merge[['flight_id','booked_cnt','waitlist_cnt']].sort_values('flight_id')

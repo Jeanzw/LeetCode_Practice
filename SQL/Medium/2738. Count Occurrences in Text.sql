@@ -15,11 +15,8 @@ group by 1
 import pandas as pd
 
 def count_occurrences(files: pd.DataFrame) -> pd.DataFrame:
-    bull_count = files["content"].str.contains(" bull ", case=False).sum()
-    bear_count = files["content"].str.contains(" bear ", case=False).sum()
+    bull = files['content'].str.contains(' bull ').sum()
+    bear = files['content'].str.contains(' bear ').sum()
 
-    data = {"word": ["bull", "bear"], "count": [bull_count, bear_count]}
-
-    result_df = pd.DataFrame(data)
-
-    return result_df
+    result = pd.DataFrame({'word':['bull','bear'], 'count':[bull,bear]})
+    return result

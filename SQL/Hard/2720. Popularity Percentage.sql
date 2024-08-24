@@ -30,29 +30,11 @@ order by 1
 import pandas as pd
 
 def popularity_percentage(friends: pd.DataFrame) -> pd.DataFrame:
-    # Expand friendships in both directions
-    expanded_friends = pd.concat(
-        [
-            friends.rename(columns={'user1': 'primary_user', 'user2': 'friend_user'}),
-            friends.rename(columns={'user1': 'friend_user', 'user2': 'primary_user'}),
-        ]
-    )
+    friends1 = friends.rename(columns = {'user1':'user1','user2':'friend'})
+    friends2 = friends[['user2','user1']].rename(columns = {'user2':'user1','user1':'friend'})
+    concat = pd.concat([friends1, friends2]).drop_duplicates()
+    friend = concat.groupby(['user1'], as_index = False).friend.nunique()
+    friend['tt'] = friend.user1.nunique()
+    friend['percentage_popularity'] = round(100 * friend['friend']/friend['tt'],2)
 
-    # Count the number of unique friends for each user
-    friend_count = expanded_friends.groupby('primary_user')['friend_user'].nunique()
-
-    # Calculate the total number of users
-    total_users = expanded_friends['primary_user'].nunique()
-
-    # Calculate the popularity percentage
-    popularity_percentage = 100 * friend_count / total_users
-
-    # Create the result DataFrame
-    result = pd.DataFrame(
-        {
-            'user1': popularity_percentage.index,
-            'percentage_popularity': popularity_percentage.values.round(2),
-        }
-    ).reset_index(drop=True)
-
-    return result
+    return friend[['user1','percentage_popularity']].sort_values('user1')
