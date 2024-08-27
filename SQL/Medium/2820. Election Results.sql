@@ -15,3 +15,15 @@ left join vote b on a.voter = b.voter
 group by 1)
 
 select candidate from rnk where rnk = 1 order by 1
+
+
+-- Python
+import pandas as pd
+
+def get_election_results(votes: pd.DataFrame) -> pd.DataFrame:
+    votes['cnt'] = votes.groupby(['voter']).transform('count')
+    votes['vote'] = 1/votes['cnt']
+    votes = votes.query("~candidate.isna()")
+    votes = votes.groupby(['candidate'],as_index = False).vote.sum()
+    votes['rnk'] = votes.vote.rank(method = 'dense', ascending = False)
+    return votes.query("rnk == 1")[['candidate']].sort_values(['candidate'])
