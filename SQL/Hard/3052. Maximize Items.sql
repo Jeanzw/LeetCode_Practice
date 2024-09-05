@@ -48,3 +48,65 @@ order by 2 desc
 -- CEIL： 返回大于或等于给出数字的最小整数
 -- 格式：ceil(数字)
 -- select CEIL(58.436587) from dual -> 59
+
+
+-- 下面是第二次做的比较简单的做法：
+with cte as
+(select
+    item_type, 
+    count(distinct item_id) as item_n, 
+    sum(square_footage) as unit_square, 
+    floor(500000/sum(square_footage)) * sum(square_footage) as square,
+    floor(500000/sum(square_footage)) * count(distinct item_id) as item_count
+from Inventory 
+where item_type = 'prime_eligible'
+group by 1)
+, not_prime as
+(select
+item_type,
+count(distinct item_id) as item_n, 
+sum(square_footage) as unit_square
+from Inventory 
+where item_type = 'not_prime')
+
+select item_type, item_count from
+(select 
+    item_type,
+    floor((500000 - (select square from cte))/unit_square) * item_n as item_count 
+from not_prime
+
+union 
+
+select 
+    item_type,
+    item_count
+from cte)tmp
+order by 2 desc
+
+
+
+
+-- Python
+import pandas as pd
+
+def maximize_items(inventory: pd.DataFrame) -> pd.DataFrame:
+    prime_eligible = inventory.query("item_type == 'prime_eligible'")
+    prime_eligible = prime_eligible.groupby(['item_type'],as_index = False).agg(
+        item_cnt = ('item_id','nunique'),
+        unit_square = ('square_footage','sum')
+    )
+    prime_eligible['unit'] = floor(500000/prime_eligible['unit_square'])
+    prime_eligible['tt_square'] = prime_eligible['unit_square'] * prime_eligible['unit']
+    prime_eligible['item_count'] = prime_eligible['item_cnt'] * prime_eligible['unit']
+
+    not_prime = inventory.query("item_type == 'not_prime'")
+    not_prime = not_prime.groupby(['item_type'],as_index = False).agg(
+        item_cnt = ('item_id','nunique'),
+        unit_square = ('square_footage','sum')
+    )
+    not_prime['unit'] = floor((500000 - int(prime_eligible['tt_square']))/not_prime['unit_square'])
+    not_prime['item_count'] = not_prime['item_cnt'] * not_prime['unit']
+
+
+    concat = pd.concat([prime_eligible,not_prime])
+    return concat[['item_type','item_count']].sort_values(['item_count'], ascending = False)
