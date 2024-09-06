@@ -37,3 +37,19 @@ order by 1,2
 -- left join with_mutual_friend b on a.user_id1 = b.user and a.user_id2 = b.friend
 -- where b.user is null
 -- order by 1,2
+
+
+
+
+-- Python
+import pandas as pd
+
+def friends_with_no_mutual_friends(friends: pd.DataFrame) -> pd.DataFrame:
+    f1 = friends.rename(columns = {'user_id1':'users','user_id2':'friend'})
+    f2 = friends[['user_id2','user_id1']].rename(columns = {'user_id2':'users','user_id1':'friend'})
+    concat = pd.concat([f1,f2])
+    merge = pd.merge(concat,concat, on = 'friend')
+
+    summary = pd.merge(friends,merge, left_on = ['user_id1','user_id2'], right_on = ['users_x','users_y'], how = 'left')
+    summary = summary.query("users_x.isna()")
+    return summary[['user_id1','user_id2']].drop_duplicates().sort_values(['user_id1','user_id2'])
