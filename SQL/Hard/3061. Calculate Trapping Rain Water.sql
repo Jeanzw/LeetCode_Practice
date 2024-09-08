@@ -29,3 +29,14 @@ WITH CTE AS (
 )
 SELECT SUM(LEAST(left_highest_bar, right_highest_bar) - height) AS total_trapped_water -- MIN() get smallest in a column, LEAST() get smallest among X values put in the function
 FROM CTE
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def calculate_trapped_rain_water(heights: pd.DataFrame) -> pd.DataFrame:
+    A = np.minimum(heights.height.cummax(), heights.height[::-1].cummax())
+    return pd.DataFrame({
+        'total_trapped_water': [np.maximum(A - heights.height, 0).sum()]
+    })
