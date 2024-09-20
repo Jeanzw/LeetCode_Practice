@@ -6,10 +6,9 @@ select
 from Person p 
 left join Address a on p.PersonId = a.PersonId
 
--- 用pandas
+-- Python
 import pandas as pd
 
 def combine_two_tables(person: pd.DataFrame, address: pd.DataFrame) -> pd.DataFrame:
-    result = pd.merge(person, address, on='personId', how='left')
-    result = result[['firstName', 'lastName', 'city', 'state']]
-    return result
+    merge = pd.merge(person,address,on = 'personId', how = 'left')
+    return merge[['firstName','lastName','city','state']]

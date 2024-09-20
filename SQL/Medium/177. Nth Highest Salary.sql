@@ -56,11 +56,8 @@ END
 import pandas as pd
 
 def nth_highest_salary(employee: pd.DataFrame, N: int) -> pd.DataFrame:
-    
-    dist = employee.drop_duplicates(subset='salary')
-    dist['rnk'] = dist['salary'].rank(method='dense', ascending=False)
-    ans = dist[dist.rnk == N][['salary']]
-    if not len(ans):
+    employee['rnk'] = employee.salary.rank(method = 'dense', ascending = False).astype("int")
+    if employee['rnk'].max() < N or N < 1:
         return pd.DataFrame({f'getNthHighestSalary({N})': [None]})
-    ans = ans.rename(columns={'salary':f'getNthHighestSalary({N})'})
-    return ans
+    employee = employee[employee['rnk'] == N]
+    return employee[['salary']].drop_duplicates().rename(columns={'salary':f'getNthHighestSalary({N})'})

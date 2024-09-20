@@ -40,25 +40,23 @@ SELECT
 
 
 
--- 用python
+-- python
+
+-- 下面的写法如果没有任何第二名那么什么都不会返回，在现实工作中是完全可行的，虽然在leetcode里面不能通过测试
 import pandas as pd
 
 def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
-    # 1. drop any duplicate salaries.
-    employee = employee.drop_duplicates(["salary"])
-    
-    # 2. If there are less than two unique salaries, return `np.NaN`.
-    if len(employee["salary"].unique()) < 2:
-        return pd.DataFrame({"SecondHighestSalary": [np.NaN]})
-    
-    # 3. Sort the table by `salary` in descending order.
-    employee = employee.sort_values("salary", ascending=False)
-    
-    # 4. Drop the `id` column.
-    employee.drop("id", axis=1, inplace=True)
-    
-    # 5. Rename the `salary` column.
-    employee.rename({"salary": "SecondHighestSalary"}, axis=1, inplace=True)
-    
-    # 6, 7. Return the second highest salary.
-    return employee.head(2).tail(1)
+    employee['rnk'] = employee.salary.rank(ascending = False)
+    res = employee.query("rnk == 2")[['salary']].rename(columns = {'salary':'SecondHighestSalary'})
+    # return pd.DataFrame({'SecondHighestSalary':[res]})
+    return res
+
+-- 那为了解决这个问题，我们可以用一个if来解决掉特殊值
+import pandas as pd
+
+def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
+    employee['rnk'] = employee.salary.rank(method = 'dense',ascending = False)
+    if employee['rnk'].max() < 2:
+        return pd.DataFrame({'SecondHighestSalary':[None]}).drop_duplicates()
+    res = employee.query("rnk == 2")[['salary']].rename(columns = {'salary':'SecondHighestSalary'}).drop_duplicates()
+    return res
