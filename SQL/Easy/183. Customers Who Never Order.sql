@@ -10,17 +10,18 @@ select
     left join Orders o on c.Id = o.CustomerId
     where o.CustomerId is null
 
-
+-- 或者可以用计数的方式来求
+select
+a.name as Customers
+from Customers a
+left join Orders b on a.id = b.customerId
+group by a.id, a.name
+having count(distinct b.id) = 0
 
 
 -- python
 import pandas as pd
 
 def find_customers(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
-    # Select the rows which `id` is not present in orders['customerId'].
-    df = customers[~customers['id'].isin(orders['customerId'])]
-
-    # Build a dataframe that only contains the column `name` 
-    # and rename the column `name` as `Customers`.
-    df = df[['name']].rename(columns={'name': 'Customers'})
-    return df
+    merge = pd.merge(customers,orders, left_on = 'id', right_on = 'customerId', how = 'left')
+    return merge.query("customerId.isna()")[['name']].rename(columns = {'name':'Customers'})

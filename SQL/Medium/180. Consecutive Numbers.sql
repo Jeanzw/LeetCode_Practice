@@ -40,3 +40,25 @@ from
     --这里 Id + 1 - rnk 是要有顺序的，我们必须保证从左到右计算要一直保证这个是正数
     -- 之所以是要Id + 1是因为有一个case的Id是从0开始的
     having count(*) >= 3
+
+-- 或者这个处理直接在cte里面解决
+with cte as
+(select *, 1 + id - row_number() over (partition by num order by id) as bridge from Logs)
+
+select
+distinct num as ConsecutiveNums
+from cte
+group by num, bridge
+having count(*) >= 3
+
+
+
+-- Python
+import pandas as pd
+
+def consecutive_numbers(logs: pd.DataFrame) -> pd.DataFrame:
+    logs['rnk'] = logs.groupby(['num']).rank(method = 'first')
+    logs['bridge'] = 1 + logs['id'] - logs['rnk']
+
+    summary = logs.groupby(['num','bridge'],as_index = False).size()
+    return summary.query("size >= 3")[['num']].rename(columns = {'num':'ConsecutiveNums'}).drop_duplicates()

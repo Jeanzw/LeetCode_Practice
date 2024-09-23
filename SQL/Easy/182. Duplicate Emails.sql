@@ -12,11 +12,6 @@ having count(*) > 1
 -- Python
 import pandas as pd
 
-def duplicate_emails(person: pd.DataFrame) -> pd.DataFrame:   
-  # Group by 'Email' and count occurrences
-  email_counts = person.groupby('email').size().reset_index(name='num')
-  
-  # Filter for emails that occur more than once
-  duplicated_emails_df = email_counts[email_counts['num'] > 1][['email']]
-  
-  return duplicated_emails_df
+def duplicate_emails(person: pd.DataFrame) -> pd.DataFrame:
+    summary = person.groupby(['email'],as_index = False).id.nunique()
+    return summary.query("id > 1")[['email']]
