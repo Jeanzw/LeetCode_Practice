@@ -78,43 +78,16 @@ order by 1
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def trips_and_users(trips: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
-    # Step 1: Initial Check
-    if trips.empty or users.empty:
-        return pd.DataFrame(columns=["Day", "Cancellation Rate"])
+    merge = pd.merge(trips,users, left_on = 'client_id',right_on = 'users_id').merge(users,left_on = 'driver_id',right_on = 'users_id')
+    merge = merge.query("banned_x == 'No' and banned_y == 'No' and request_at >= '2013-10-01' and request_at <= '2013-10-03'")
+    merge['cancel'] = np.where(merge['status'] != 'completed',1,0)
 
-    # Step 2: Date-based Filtering
-    filtered_trips = trips[trips["request_at"].between("2013-10-01", "2013-10-03")]
-
-    # Step 3: Merge with Non-Banned Clients
-    trips_with_clients = filtered_trips.merge(
-        users.loc[users["banned"] == "No", ["users_id"]],
-        left_on="client_id",
-        right_on="users_id",
-        how="inner",
+    summary = merge.groupby(['request_at'],as_index = False).agg(
+        total_orders = ('cancel','count'),
+        cancel_orders = ('cancel','sum')
     )
-
-    # Step 4: Merge with Non-Banned Drivers
-    trip_status = trips_with_clients.merge(
-        users.loc[users["banned"] == "No", ["users_id"]],
-        left_on="driver_id",
-        right_on="users_id",
-        how="inner",
-    )
-
-    # Step 5: Calculate Day-wise Cancellation Rate
-    result = trip_status.groupby("request_at").apply(
-        lambda group: pd.Series(
-            {"Cancellation Rate": round(
-                 (group["status"] != "completed").sum() / len(group), 2
-                 )
-             }
-        )
-    )
-
-    # Step 6: Format and Return the Result
-    if result.empty:
-        return pd.DataFrame(columns=["Day", "Cancellation Rate"])
-    else:
-        return result.reset_index().rename(columns={"request_at": "Day"})
+    summary['Cancellation Rate'] = (summary['cancel_orders']/summary['total_orders']).round(2)
+    return summary[['request_at','Cancellation Rate']].rename(columns = {'request_at':'Day'})
