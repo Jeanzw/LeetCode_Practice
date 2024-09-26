@@ -35,8 +35,14 @@ where row between cnt/2.0 and cnt/2.0+1;
 
 -- Python
 import pandas as pd
+
 def median_employee_salary(employee: pd.DataFrame) -> pd.DataFrame:
-
-    df = employee.sort_values(['salary', 'id']).groupby('company').apply(lambda x: x.iloc[(len(x) - 1) // 2 : len(x) // 2 + 1])
-
-    return df
+    # 先排个序，求出正序的rnk
+    employee = employee.sort_values(['company','salary','id'])
+    employee['rnk'] = employee.groupby(['company']).salary.rank(method = 'first')
+    # 再排个序，求出倒序的rnk
+    employee = employee.sort_values(['company','salary','id'],ascending = [1,0,0])
+    employee['rnk_desc'] = employee.groupby(['company']).salary.rank(method = 'first', ascending = False)
+    # 然后按照sql的原理，利用query找到满足的条件
+    employee = employee.query("rnk >= rnk_desc - 1 and rnk <= rnk_desc + 1")
+    return employee[['id','company','salary']]

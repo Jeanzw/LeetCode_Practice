@@ -84,3 +84,11 @@ SELECT
 round(avg(num),1) as median
 from cte
 where median_num between (freq - frequency) and freq
+
+
+
+-- Python
+import pandas as pd
+
+def median_frequency(numbers: pd.DataFrame) -> pd.DataFrame:
+    return numbers['num'].repeat(numbers['frequency']).to_frame().median().to_frame('median')

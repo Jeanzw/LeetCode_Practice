@@ -35,3 +35,22 @@ join Vote v on c.id = v.CandidateId
 group by 1
 order by count(*) desc
 limit 1
+
+-- 但我觉得上面解法也有问题，因为还是可能存在同名的情况
+select
+a.name
+from Candidate a
+inner join Vote b on a.id = b.candidateId
+group by a.id, a.name
+order by count(distinct b.id) desc
+limit 1
+
+
+-- Python
+import pandas as pd
+
+def winning_candidate(candidate: pd.DataFrame, vote: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(candidate,vote,left_on = 'id', right_on = 'candidateId')
+    merge = merge.groupby(['id_x','name'],as_index = False).id_y.nunique()
+    merge = merge.sort_values('id_y', ascending = False)
+    return merge[['name']].head(1)
