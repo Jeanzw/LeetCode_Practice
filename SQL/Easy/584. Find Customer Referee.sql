@@ -20,3 +20,10 @@ where id not in (select id from customer where referee_id = 2)
 -- 1          4
 -- 这样子的数据如果只用select name from customer where referee_id != 2 or referee_id is null
 -- 那么我们依旧会抽出id = 1的情况
+
+
+-- Python
+import pandas as pd
+
+def find_customer_referee(customer: pd.DataFrame) -> pd.DataFrame:
+    return customer.query("referee_id != 2 or referee_id.isna()")[['name']]

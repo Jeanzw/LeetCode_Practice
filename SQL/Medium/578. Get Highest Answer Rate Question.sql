@@ -46,3 +46,35 @@ from SurveyLog
 group by 1)
 
 select question_id as survey_log from cte where rnk = 1
+
+
+-- 我不懂为什么之前做的时候如果用cte都是用sum，明显相较于count，sum不是一个好的想法
+with cte as
+(select
+    question_id,
+    count(case when action = 'answer' then question_id end)
+    /
+    count(case when action = 'show' then question_id end) as answer_rate
+from SurveyLog
+group by 1)
+
+select question_id as survey_log
+from cte
+order by answer_rate desc,question_id
+limit 1
+
+
+
+-- 又是奇葩test……如果一个问题回答了两次拥有用一个answer_id，那么我们就当做这个分子是两次
+import pandas as pd
+import numpy as np
+
+def get_the_question(survey_log: pd.DataFrame) -> pd.DataFrame:
+    survey_log['show_flg'] = np.where(survey_log['action'] == 'show', 1, 0)
+    survey_log = survey_log.groupby(['question_id'],as_index = False).agg(
+        answer = ('answer_id','count'),
+        show = ('show_flg','sum')
+    )
+    survey_log['answer_rate'] =  survey_log['answer']/survey_log['show']
+    # return survey_log
+    return survey_log.sort_values(['answer_rate','question_id'],ascending = [0,1]).head(1)[['question_id']].rename(columns = {'question_id':'survey_log'})

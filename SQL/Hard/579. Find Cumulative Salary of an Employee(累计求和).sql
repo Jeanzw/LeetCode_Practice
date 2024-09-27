@@ -71,3 +71,18 @@ select Id,month,sum_salary as Salary from
     where Salary is not null
     and (Id,month) not in (select Id, max(Month) from Employee group by 1)
     order by 1,2 desc
+
+
+
+-- Python
+import pandas as pd
+
+def cumulative_salary(employee: pd.DataFrame) -> pd.DataFrame:
+    employee['max_month'] = employee.groupby(['id']).month.transform('max')
+    employee = employee.query("max_month != month")
+    employee['prev_month'] = employee['month'] - 1
+    employee['prev_2_month'] = employee['month'] - 2
+    
+    merge = pd.merge(employee,employee,left_on = ['id','prev_month'], right_on = ['id','month'],how = 'left').merge(employee, left_on = ['id','prev_2_month_x'], right_on = ['id','month'], how = 'left').fillna(0)
+    merge['Salary'] = merge['salary_x'] + merge['salary_y'] + merge['salary']
+    return merge[['id','month_x','Salary']].rename(columns = {'month_x':'month'}).sort_values(['id','month'], ascending = [1,0])
