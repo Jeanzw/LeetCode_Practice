@@ -49,10 +49,11 @@ limit 1
 
 -- Python
 import pandas as pd
+
 def most_friends(request_accepted: pd.DataFrame) -> pd.DataFrame:
-    
-    values = pd.concat([request_accepted["requester_id"], request_accepted["accepter_id"]]).to_frame('id')
+    list1 = request_accepted[['requester_id','accepter_id']].rename(columns = {'requester_id':'id','accepter_id':'num'})
+    list2 = request_accepted[['accepter_id','requester_id']].rename(columns = {'accepter_id':'id','requester_id':'num'})
+    concat = pd.concat([list1,list2])
 
-    df = values.groupby('id', as_index=False).agg(num=('id', 'count')).sort_values('num', ascending=False).head(1)
-
-    return df
+    res = concat.groupby(['id'],as_index = False).num.nunique().sort_values('num')
+    return res.tail(1)

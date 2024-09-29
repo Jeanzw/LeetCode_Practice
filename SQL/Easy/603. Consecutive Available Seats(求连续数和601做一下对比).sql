@@ -25,3 +25,17 @@ where free = 1)
 select seat_id from diff
 where rnk in
 (select rnk from diff group by 1 having count(*) >= 2)
+
+
+-- Python
+import pandas as pd
+
+def consecutive_available_seats(cinema: pd.DataFrame) -> pd.DataFrame:
+    cinema = cinema.query("free == 1")
+    cinema['rnk'] = cinema.seat_id.rank()
+    cinema['bridge'] = cinema['seat_id'] - cinema['rnk']
+    bridge = cinema.groupby(['bridge'],as_index = False).seat_id.nunique()
+    bridge = bridge.query("seat_id >= 2")[['bridge']]
+
+    res = pd.merge(cinema,bridge,on = 'bridge')[['seat_id']].sort_values('seat_id')
+    return res

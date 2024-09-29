@@ -24,8 +24,6 @@ having count(*) >= 5
 import pandas as pd
 
 def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
-    df = courses.groupby('class').size().reset_index(name='count')
-
-    df = df[df['count'] >= 5]
-
-    return df[['class']]
+    courses = courses.groupby(['class'],as_index = False).student.nunique()
+    courses = courses.query("student >= 5")
+    return courses[['class']]

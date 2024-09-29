@@ -75,13 +75,9 @@ import pandas as pd
 import numpy as np
 
 def tree_node(tree: pd.DataFrame) -> pd.DataFrame:
-    tree["type"] = np.where(
-        tree["p_id"].isna(),
-        "Root",
-        np.where(
-            tree["id"].isin(tree["p_id"].unique()) & tree["p_id"].notna(),
-            "Inner",
-            "Leaf",
-        ),
-    )
-    return tree[["id", "type"]]
+    merge = pd.merge(tree,tree,left_on = 'id', right_on = 'p_id', how = 'left')
+    merge['type'] = np.where(merge['p_id_x'].isna(),'Root',
+                    np.where(merge['p_id_y'].notna(),'Inner','Leaf')
+                    )
+    res = merge[['id_x','type']].rename(columns = {'id_x':'id'}).drop_duplicates()
+    return res

@@ -37,12 +37,9 @@ where b.sales_id is null
 import pandas as pd
 
 def sales_person(sales_person: pd.DataFrame, company: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
-    df = pd.merge(orders, company, on='com_id')
+    red = pd.merge(sales_person,orders,on = 'sales_id').merge(company,on = 'com_id')
+    red = red.query("name_y == 'RED'")
 
-    red_orders = df[df['name'] == 'RED']
-
-    invalid_ids = red_orders.sales_id.unique()
-
-    valid_sales_person = sales_person[~sales_person['sales_id'].isin(invalid_ids)]    
-
-    return valid_sales_person[['name']]
+    res = pd.merge(sales_person,red,on = 'sales_id', how = 'left')
+    res = res.query("name_x.isna()")[['name']]
+    return res

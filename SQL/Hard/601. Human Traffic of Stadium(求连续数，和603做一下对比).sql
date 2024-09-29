@@ -52,16 +52,16 @@ where bridge in (select bridge from diff group by 1 having count(*) >= 3)
 -- 那么我们需要的就是先把id - rnk这个可以作为链接的数给求出来，然后用in来筛选出来满足条件的行
 
 
-
 -- Python
+import pandas as pd
+
 def human_traffic(stadium: pd.DataFrame) -> pd.DataFrame:
+    stadium = stadium.query("people >= 100")
+    stadium['rnk'] = stadium.visit_date.rank()
+    stadium['bridge'] = stadium['id'] + 1 - stadium['rnk']
 
-    stadium = stadium[stadium['people'] >= 100]
+    bridge = stadium.groupby(['bridge'],as_index = False).id.nunique()
+    bridge = bridge.query("id >= 3")[['bridge']]
 
-    stadium['rnk'] = range(len(stadium))
-
-    stadium['island'] = stadium.id - stadium.rnk
-
-    stadium['island_cnt'] = stadium.groupby(['island'], as_index=False).id.transform('count')
-
-    return stadium[stadium['island_cnt'] >= 3][['id', 'visit_date', 'people']].sort_values(by='visit_date')
+    res = pd.merge(stadium,bridge,on = 'bridge')
+    return res[['id','visit_date','people']].sort_values('visit_date')

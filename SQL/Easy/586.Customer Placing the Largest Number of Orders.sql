@@ -19,10 +19,5 @@ order by 1 desc limit 1)
 import pandas as pd
 
 def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
-    # If orders is empty, return an empty DataFrame.
-    if orders.empty:
-        return pd.DataFrame({'customer_number': []})
-
-    df = orders.groupby('customer_number').size().reset_index(name='count')
-    df.sort_values(by='count', ascending = False, inplace=True)
-    return df[['customer_number']][0:1]
+    orders = orders.groupby(['customer_number'],as_index = False).order_number.nunique()
+    return orders.sort_values('order_number',ascending = False).head(1)[['customer_number']]
