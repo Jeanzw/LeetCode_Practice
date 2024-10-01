@@ -87,17 +87,16 @@ left join company c on d.pay_month = c.pay_month
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def average_salary(salary: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame:
-    salary["pay_month"] = salary["pay_date"].dt.strftime("%Y-%m")
-    df = salary.merge(employee, on="employee_id")
-    df["comp_avg"] = df.groupby(["pay_month"])["amount"].transform("mean")
-    df["dep_avg"] = df.groupby(["pay_month", "department_id"])["amount"].transform(
-        "mean"
-    )
-    df["comparison"] = df.apply(
-        lambda row: "lower" if row["dep_avg"] < row["comp_avg"] 
-            else ("higher" if row["dep_avg"] > row["comp_avg"] else "same"),
-        axis=1
-    )
-    return df[["pay_month", "department_id", "comparison"]].drop_duplicates()
+    salary['pay_month'] = salary['pay_date'].dt.strftime('%Y-%m')
+    com = salary.groupby(['pay_month'],as_index = False).amount.mean()
+    merge = pd.merge(salary,employee,on = 'employee_id')
+    dep = merge.groupby(['pay_month','department_id'],as_index = False).amount.mean()
+
+    compare = pd.merge(dep,com, on = 'pay_month',how = 'left')
+    compare['comparison'] = np.where(compare['amount_x'] > compare['amount_y'], 'higher',
+                            np.where(compare['amount_x'] < compare['amount_y'], 'lower','same')
+                            )
+    return compare[['pay_month','department_id','comparison']]
