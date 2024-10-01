@@ -49,3 +49,14 @@ from
      from student) as a
      pivot
      (max(name) for continent in ([America], [Asia], [Europe])) as b
+
+
+
+-- Python
+import pandas as pd
+
+def geography_report(student: pd.DataFrame) -> pd.DataFrame:
+    student['rnk'] = student.groupby(['continent']).name.rank()
+
+    res = student.pivot(index = 'rnk', columns = 'continent',values = 'name')
+    return res
