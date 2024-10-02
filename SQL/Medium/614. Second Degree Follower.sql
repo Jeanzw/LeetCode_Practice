@@ -18,12 +18,3 @@ order by b.followee
 select followee as follower,count(distinct follower) as num from follow
 where followee in (select follower from follow)
 group by 1
-
-
--- Python
-import pandas as pd
-
-def second_degree_follower(follow: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(follow,follow,left_on = 'followee',right_on = 'follower')
-    merge = merge.groupby(['followee_x'],as_index = False).follower_x.nunique()
-    return merge.rename(columns = {'followee_x':'follower','follower_x':'num'}).sort_values('follower')

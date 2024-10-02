@@ -7,3 +7,12 @@ select * from cinema
 where mod(id,2) = 1
 and description != 'boring'
 order by rating desc
+
+
+
+-- Python
+import pandas as pd
+
+def not_boring_movies(cinema: pd.DataFrame) -> pd.DataFrame:
+    cinema = cinema.query("id%2 == 1 and description != 'boring'")
+    return cinema.sort_values('rating', ascending = False)

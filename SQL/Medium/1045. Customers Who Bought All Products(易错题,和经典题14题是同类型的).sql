@@ -98,3 +98,13 @@ from Customer a
 inner join Product b on a.product_key = b.product_key
 group by 1
 having count(distinct a.product_key) = (select count(distinct product_key) from Product)
+
+
+-- Python
+import pandas as pd
+
+def find_customers(customer: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
+    product_cnt = product.product_key.nunique()
+    merge = pd.merge(customer,product,on = 'product_key').groupby(['customer_id'],as_index = False).product_key.nunique()
+    merge = merge[merge['product_key'] == product_cnt]
+    return merge[['customer_id']]
