@@ -7,9 +7,9 @@ group by 1
 
 -- Python
 import pandas as pd
-​
+
 def sales_analysis(sales: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
-
-    pd = sales.groupby(['product_id'], as_index = False)['quantity'].sum().rename(columns = {'quantity': 'total_quantity'})
-
-    return pd 
+    sales = sales.groupby(['product_id'],as_index = False).agg(
+        total_quantity = ('quantity','sum') # 用agg我们就不用使用rename啦
+    )
+    return sales

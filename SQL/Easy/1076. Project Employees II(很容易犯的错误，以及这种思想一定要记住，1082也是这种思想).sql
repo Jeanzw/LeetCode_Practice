@@ -16,3 +16,13 @@ select project_id from
 (select project_id,dense_rank() over (order by count(*) desc) as ranking from Project
 group by project_id)tmp
 where ranking = 1
+
+
+
+-- Python
+import pandas as pd
+
+def project_employees_ii(project: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame:
+    project = project.groupby(['project_id'],as_index = False).employee_id.nunique()
+    project['rnk'] = project.employee_id.rank(ascending = False)
+    return project.query("rnk == 1")[['project_id']]

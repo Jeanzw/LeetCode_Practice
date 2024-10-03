@@ -20,9 +20,8 @@ where rnk = 1
 import pandas as pd
 
 def sales_analysis(sales: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
-  df = sales.groupby('product_id', as_index=False)['year'].min()
-  return sales.merge(df, on='product_id', how='inner')\
-    .query('year_x == year_y')\
-    .rename(columns={'year_x': 'first_year'})\
-    [['product_id', 'first_year', 'quantity', 'price']]
+    sales['rnk'] = sales.groupby(['product_id']).year.rank(method = 'dense')
+    sales = sales.query("rnk == 1")
+    sales = sales.groupby(['product_id','year','price'],as_index = False).quantity.sum()
+    return sales[['product_id','year','quantity','price']].rename(columns = {'year':'first_year'})
   
