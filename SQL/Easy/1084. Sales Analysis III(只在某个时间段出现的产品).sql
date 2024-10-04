@@ -58,17 +58,28 @@ where product_id in (select * from spring_2019)
 and product_id not in (select * from not_spring_2019)
 
 
+-- 思路还是和上面一样的，但是我们下面用了join没有用not in来判断
+with un_product as
+(select distinct product_id from Sales where sale_date > '2019-03-31' or sale_date <'2019-01-01')
+, qu_product as
+(select distinct product_id from Sales where sale_date between '2019-01-01' and '2019-03-31')
+
+select 
+a.product_id, a.product_name
+from Product a
+left join qu_product b on a.product_id = b.product_id
+left join un_product c on a.product_id = c.product_id
+where b.product_id is not null and c.product_id is null
+
 
 
 -- Python
 import pandas as pd
 
 def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
-    start_time = pd.to_datetime('2019-01-01')
-    end_time = pd.to_datetime('2019-03-31')
-    df = sales.groupby('product_id').filter(lambda x:
-        min(x['sale_date']) >= start_time and max(x['sale_date']) <= end_time
-    )
-    df = df.drop_duplicates(subset = 'product_id')
-    df = df.merge(product, left_on = 'product_id', right_on = 'product_id')
-    return df[['product_id', 'product_name']]
+    sales['min_sale_date'] = sales.groupby(['product_id']).sale_date.transform('min')
+    sales['max_sale_date'] = sales.groupby(['product_id']).sale_date.transform('max')
+    sales = sales.query("max_sale_date <= '2019-03-31' and min_sale_date >= '2019-01-01'")
+
+    merge = pd.merge(product,sales,on = 'product_id')
+    return merge[['product_id','product_name']].drop_duplicates()

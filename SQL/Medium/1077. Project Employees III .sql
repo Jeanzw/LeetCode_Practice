@@ -15,3 +15,14 @@ max(experience_years) as max_experience
 from Project p
 left join Employee e on p.employee_id = e.employee_id
 group by 1)
+
+
+
+-- Python
+import pandas as pd
+
+def project_employees(project: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(project,employee,on = 'employee_id')
+    merge['rnk'] = merge.groupby(['project_id']).experience_years.rank(method = 'dense', ascending = False)
+    merge = merge.query("rnk == 1")
+    return merge[['project_id','employee_id']]

@@ -69,3 +69,16 @@ from Sales a
 inner join Product b on a.product_id = b.product_id and b.product_name = 'S8'
 left join iphone c on a.buyer_id = c.buyer_id
 where c.buyer_id is null
+
+
+-- Python
+import pandas as pd
+
+def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(sales,product,on = 'product_id')
+    iphone = merge.query("product_name=='iPhone'")[['buyer_id','product_name']]
+    S8 = merge.query("product_name=='S8'")[['buyer_id','product_name']]
+
+    summary = pd.merge(S8,iphone,on = 'buyer_id', how = 'left')
+    summary = summary.query("product_name_y.isna()")
+    return summary[['buyer_id']].drop_duplicates()
