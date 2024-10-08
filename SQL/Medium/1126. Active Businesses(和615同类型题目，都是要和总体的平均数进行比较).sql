@@ -20,16 +20,27 @@ group by 1
 having count(*) > 1
 -- 将平均数和原表join，那么我们就可以直接比较了
 
+-- 我觉得直接用window function就可以解决了
+with cte as
+(select
+*,
+avg(occurrences) over (partition by event_type) as avg_activity
+from Events)
+
+select
+business_id
+from cte
+where occurrences > avg_activity
+group by 1
+having count(distinct event_type) > 1
 
 
 -- Python
-
 import pandas as pd
 
 def active_businesses(events: pd.DataFrame) -> pd.DataFrame:
-
-    df = events.groupby('event_type', as_index=False).apply(lambda x: x[x['occurrences'] > x['occurrences'].mean()])
-
-    df = df.groupby('business_id', as_index=False).filter(lambda x: x['business_id'].count() > 1)
-
-    return df[['business_id']].drop_duplicates()
+    events['avg_activity'] = events.groupby(['event_type']).occurrences.transform('mean')
+    events = events.query("occurrences > avg_activity")
+    events = events.groupby(['business_id'],as_index = False).event_type.nunique()
+    result = events.query("event_type > 1")
+    return result[['business_id']]

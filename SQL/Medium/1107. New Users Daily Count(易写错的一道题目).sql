@@ -56,3 +56,15 @@ select first_log as login_date, count(distinct user_id) as user_count
 from cte
 where datediff('2019-06-30',first_log) between 0 and 90
 group by 1
+
+
+
+-- Python
+import pandas as pd
+import numpy as np
+def new_users_daily_count(traffic: pd.DataFrame) -> pd.DataFrame:
+    traffic = traffic.query("activity == 'login'").groupby(['user_id'],as_index = False).activity_date.min()
+    traffic['flg'] = np.where((traffic['activity_date'] <= '2019-06-30') & (traffic['activity_date'] >= (pd.to_datetime('2019-06-30') - pd.to_timedelta(90,unit = 'd'))),1,0)
+    traffic = traffic.query("flg == 1").groupby(['activity_date'],as_index = False).user_id.nunique()
+    
+    return traffic.rename(columns = {'activity_date':'login_date','user_id':'user_count'})

@@ -39,3 +39,13 @@ having sum(quantity) <10 or sum(quantity) is null
 -- 上面的having也可以改成：
 -- having ifnull(sum(quantity),0) < 10
 -- 但无论改成什么，这里的意思就是要保证没有卖出去一本书的书也是可以被提取出来的
+
+
+-- Python
+import pandas as pd
+
+def unpopular_books(books: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    books = books.query("available_from < '2019-05-23'")
+    orders = orders.query("dispatch_date >= '2018-06-23' and dispatch_date <= '2019-06-23'").groupby(['book_id'],as_index = False).quantity.sum()
+    merge = pd.merge(books,orders,on = 'book_id', how = 'left').fillna(0).query("quantity < 10")
+    return merge[['book_id','name']]

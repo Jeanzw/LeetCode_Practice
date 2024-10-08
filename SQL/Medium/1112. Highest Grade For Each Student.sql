@@ -46,13 +46,7 @@ order by 1
 -- Python
 import pandas as pd
 
-
 def highest_grade(enrollments: pd.DataFrame) -> pd.DataFrame:
-    max_grades = enrollments.groupby("student_id")["grade"].transform("max")
-    filtered = enrollments[enrollments["grade"] == max_grades]
-    result = (
-        filtered.groupby("student_id")
-        .apply(lambda group: group.nsmallest(1, "course_id"))
-        .reset_index(drop=True)
-    )
-    return result[["student_id", "course_id", "grade"]]
+    enrollments = enrollments.sort_values(['grade','course_id'],ascending = [0,1])
+    enrollments = enrollments.groupby(['student_id'],as_index = False).head(1)
+    return enrollments.sort_values('student_id')
