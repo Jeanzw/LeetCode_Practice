@@ -242,3 +242,25 @@ count(distinct b.user_id) as total_users
 from framework a
 left join users_info b on a.spend_date = b.spend_date and a.platform = b.platform
 group by 1,2
+
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def user_purchase(spending: pd.DataFrame) -> pd.DataFrame:
+    # 构建framework
+    date_spend = spending[['spend_date']].drop_duplicates()
+    platform = pd.DataFrame({'platform':['mobile','desktop','both']})
+    frame = pd.merge(date_spend,platform,how = 'cross')
+    # 计算
+    spending['cnt'] = spending.groupby(['spend_date','user_id']).platform.transform('nunique')
+    spending['platform'] = np.where(spending['cnt'] == 2, 'both',spending['platform'])
+    spending = spending.groupby(['spend_date','platform'],as_index = False).agg(
+        total_amount = ('amount','sum'),
+        total_users = ('user_id','nunique')
+    )
+    # 将framework和计算结合
+    merge = pd.merge(frame,spending,on = ['spend_date','platform'],how = 'left').fillna(0)
+    return merge

@@ -18,3 +18,19 @@ count(distinct session_id) as num_session
 from Activity
 where datediff('2019-07-27',activity_date) <30
 group by 1)tmp
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def user_activity(activity: pd.DataFrame) -> pd.DataFrame:
+    activity['flg'] = np.where((activity['activity_date'] >= pd.to_datetime('2019-07-27') - pd.to_timedelta(29,unit = 'd')) & (activity['activity_date'] <= pd.to_datetime('2019-07-27')),1,0
+    )
+    activity = activity.query("flg == 1")
+    n = activity.session_id.nunique()
+    d = activity.user_id.nunique()
+    if d == 0:
+        return pd.DataFrame({'average_sessions_per_user':[0]})
+    else:
+        return pd.DataFrame({'average_sessions_per_user':[round(n/d,2)]})

@@ -41,20 +41,15 @@ select round(100 * avg(remove_rate),2) as average_daily_percent from daily_remov
 
 -- Python
 import pandas as pd
-​
+import numpy as np
+
 def reported_posts(actions: pd.DataFrame, removals: pd.DataFrame) -> pd.DataFrame:
-
-    spam = actions[actions['extra'] == 'spam'].drop_duplicates(['action_date', 'post_id'])
-
-    removed_spam = spam.merge(removals, on='post_id', how='left')
-
-    df = removed_spam.groupby("action_date", as_index=False).agg(
-        removed_spam=('remove_date', 'count'), 
-        total_spam=('remove_date', 'size')
+    actions = actions.query("action == 'report' and extra == 'spam'").drop_duplicates(['action_date', 'post_id'])
+    merge = pd.merge(actions,removals,on = 'post_id', how = 'left')
+    merge = merge.groupby(['action_date'],as_index = False).agg(
+        n = ('remove_date','count'),
+        d = ('post_id','nunique')
     )
-    
-    df = df.assign(average_daily_percent = df['removed_spam']*100/df['total_spam'])
-
-    avg = df.agg({'average_daily_percent': ['mean']}).round(2)
-
-    return avg
+    merge['pct'] = merge['n']/merge['d']
+    average_daily_percent = (100 * merge['pct'].mean()).round(2)
+    return pd.DataFrame({'average_daily_percent':[average_daily_percent]})
