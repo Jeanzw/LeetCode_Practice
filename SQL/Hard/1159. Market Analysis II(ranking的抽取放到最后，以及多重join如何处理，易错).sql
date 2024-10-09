@@ -128,23 +128,27 @@ select user_id as seller_id, 'no' as 2nd_item_fav_brand
 from Users
 where user_id not in (select * from multi_item)
 
+-- 或者更简单的就是把Items和Orders先联合起来，找到对应的item的名字，然后和Users链接看是否可以匹配上
+with cte as
+(select a.seller_id,a.item_id,b.item_brand,row_number() over (partition by a.seller_id order by order_date) as rnk from Orders a inner join Items b on a.item_id = b.item_id)
+
+select
+a.user_id as seller_id,
+case when b.seller_id is not null then 'yes' else 'no' end as 2nd_item_fav_brand
+from Users a
+left join cte b on a.user_id = b.seller_id and a.favorite_brand = b.item_brand and b.rnk = 2
+
 
 
 -- Python
 import pandas as pd
-
+import numpy as np
 def market_analysis(users: pd.DataFrame, orders: pd.DataFrame, items: pd.DataFrame) -> pd.DataFrame:
+    orders_items = pd.merge(orders,items, on = 'item_id')
+    orders_items['rnk'] = orders_items.groupby(['seller_id']).order_date.transform('rank')
+    orders_items = orders_items.query("rnk == 2")
 
-    orders["rank"] = orders.groupby("seller_id")["order_date"].rank()
 
-    orders_and_items = orders.merge(items, on = 'item_id')
-    
-    second_item = orders_and_items[orders_and_items['rank'] == 2]
-
-    users_and_second_item = users.merge(second_item, left_on = 'user_id', right_on = 'seller_id', how = 'left')
-
-    users_and_second_item['2nd_item_fav_brand'] = (users_and_second_item['favorite_brand'] == users_and_second_item['item_brand']).apply(lambda x: 'yes' if x else 'no')
-
-    final_output = users_and_second_item[['user_id', '2nd_item_fav_brand']].rename(columns= {'user_id': 'seller_id'})
-
-    return final_output
+    merge = pd.merge(users,orders_items,left_on = ['user_id','favorite_brand'], right_on = ['seller_id','item_brand'], how = 'left')
+    merge['2nd_item_fav_brand'] = np.where(merge['buyer_id'].isna(),'no','yes')
+    return merge[['user_id','2nd_item_fav_brand']].rename(columns = {'user_id':'seller_id'})
