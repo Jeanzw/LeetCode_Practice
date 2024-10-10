@@ -96,31 +96,12 @@ where rnk = 1
 -- Python
 import pandas as pd
 
-def tournament_winners(
-    players_df: pd.DataFrame, matches_df: pd.DataFrame
-) -> pd.DataFrame:
-    # Aggregate scores for each player when they are the first player
-    scores_as_first_player = matches_df.groupby("first_player")["first_score"].sum()
+def tournament_winners(players: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
+    matches1 = matches[['first_player','first_score']].rename(columns = {'first_player':'player_id','first_score':'score'})
+    matches2 = matches[['second_player','second_score']].rename(columns = {'second_player':'player_id','second_score':'score'})
+    concat = pd.concat([matches1,matches2])
 
-    # Aggregate scores for each player when they are the second player
-    scores_as_second_player = matches_df.groupby("second_player")["second_score"].sum()
-
-    # Combine the scores from both roles (first and second player)
-    total_scores = scores_as_first_player.add(
-        scores_as_second_player, fill_value=0
-    ).reset_index(name="total_score")
-
-    # Merge the total scores with the players DataFrame
-    players_with_scores = players_df.merge(
-        total_scores, left_on="player_id", right_on="index"
-    )
-
-    # Sort by total score (descending) and player_id (ascending) for tie-breaking
-    players_with_scores.sort_values(
-        ["total_score", "player_id"], ascending=[False, True], inplace=True
-    )
-
-    # Select the top player from each group
-    winners = players_with_scores.groupby("group_id").head(1)[["group_id", "player_id"]]
-
-    return winners
+    merge = pd.merge(players,concat,on = 'player_id').groupby(['group_id','player_id'],as_index = False).score.sum()
+    merge = merge.sort_values(['group_id','score','player_id'], ascending = [1,0,1])
+    merge = merge.groupby(['group_id']).head(1)
+    return merge[['group_id','player_id']]
