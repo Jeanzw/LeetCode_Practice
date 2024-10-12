@@ -42,4 +42,6 @@ def queries_stats(queries: pd.DataFrame) -> pd.DataFrame:
         quality = ('quality_avg', 'mean'),
         poor_query_percentage = ('poor_query_percentage','mean')
     )
-    return queries.round(2)
+    queries['quality'] = (queries['quality'] + 1e-9).round(2)
+    queries['poor_query_percentage'] = (queries['poor_query_percentage'] + 1e-9).round(2)
+    return queries
