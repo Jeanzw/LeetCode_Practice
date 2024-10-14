@@ -89,3 +89,11 @@ def find_reporting_people(employees: pd.DataFrame) -> pd.DataFrame:
     
     res = pd.concat([employee1[['employee_id']],employee2[['employee_id']],employee3[['employee_id']]])
     return res.drop_duplicates()
+
+-- 用python按照我们写sql的思路走
+import pandas as pd
+
+def find_reporting_people(employees: pd.DataFrame) -> pd.DataFrame:
+    employees1 = pd.merge(employees,employees,left_on = 'manager_id',right_on = 'employee_id').merge(employees,left_on = 'manager_id_y', right_on = 'employee_id')
+    employees1 = employees1.query("employee_id_x != 1 and manager_id == 1")
+    return employees1[['employee_id_x']].rename(columns = {'employee_id_x':'employee_id'}).drop_duplicates()

@@ -71,3 +71,38 @@ from cte a
 inner join Likes b on a.friend = b.user_id
 left join user1_like c on b.page_id = c.page_id
 where c.page_id is null
+
+
+-- 或者就是每一步清楚地写出来，最后用page_id来做定位
+with frame as
+(select user1_id as users, user2_id as friend from Friendship
+union
+select user2_id as users, user1_id as friend from Friendship
+)
+, friend_like as
+(select 
+distinct page_id
+from frame a
+inner join Likes b on a.users = 1 and a.friend = b.user_id)
+, user_like as
+(select distinct page_id from Likes where user_id = 1)
+
+select distinct a.page_id as recommended_page from friend_like a
+left join user_like b on a.page_id = b.page_id
+where b.page_id is null
+
+
+
+-- Python
+import pandas as pd
+
+def page_recommendations(friendship: pd.DataFrame, likes: pd.DataFrame) -> pd.DataFrame:
+    friendship1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user','user2_id':'friend'})
+    friendship2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user','user1_id':'friend'})
+    concat = pd.concat([friendship1,friendship2]).query("user == 1")
+
+    user1_like = likes.query("user_id == 1")
+    friend_like = pd.merge(concat,likes,left_on = 'friend',right_on = 'user_id')
+
+    res = pd.merge(friend_like,user1_like,on = 'page_id',how = 'left').query("user_id_y.isna()")[['page_id']].drop_duplicates()
+    return res.rename(columns = {'page_id':'recommended_page'})
