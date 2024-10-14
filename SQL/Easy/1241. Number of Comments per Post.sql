@@ -38,11 +38,6 @@ order by 1
 import pandas as pd
 
 def count_comments(submissions: pd.DataFrame) -> pd.DataFrame:
-    # 先把post和comment取出来，分别放在两张表里面，并且需要剔除重复值
-    post = submissions[submissions['parent_id'].isna()].drop_duplicates()
-    comments = submissions[submissions['parent_id'].notna()].drop_duplicates()
-    # merge两张表
-    merge = pd.merge(post,comments,left_on = 'sub_id', right_on = 'parent_id', how = 'left')
-    # 求和
-    res = merge.groupby(['sub_id_x'],as_index = False).sub_id_y.count()
-    return res.rename(columns = {'sub_id_x':'post_id','sub_id_y':'number_of_comments'})
+    merge = pd.merge(submissions,submissions,left_on  = 'sub_id',right_on = 'parent_id', how = 'left').query("parent_id_x.isna()")
+    merge = merge.groupby(['sub_id_x'],as_index = False).sub_id_y.nunique()
+    return merge.rename(columns = {'sub_id_x':'post_id','sub_id_y':'number_of_comments'}).sort_values('post_id')

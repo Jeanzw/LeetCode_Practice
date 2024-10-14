@@ -95,23 +95,16 @@ ORDER BY start_date
 import pandas as pd
 
 def report_contiguous_dates(failed: pd.DataFrame, succeeded: pd.DataFrame) -> pd.DataFrame:
-    failed['status'] = 'failed'
-    failed = failed.query("fail_date.dt.year == 2019 ").rename(columns = {'fail_date':'day'})
-    succeeded['status'] = 'succeeded'
-    succeeded = succeeded.query("success_date.dt.year == 2019 ").rename(columns = {'success_date':'day'})
-    summary = pd.concat([failed,succeeded]).sort_values(['day'])
+    failed['period_state'] = 'failed'
+    failed.rename(columns = {'fail_date':'dt'},inplace = True)
+    succeeded['period_state'] = 'succeeded'
+    succeeded.rename(columns = {'success_date':'dt'},inplace = True)
+    concat = pd.concat([failed,succeeded])
+    concat['rnk'] = concat.groupby(['period_state']).dt.rank(method = 'first')
+    concat['bridge'] = concat['dt'] - pd.to_timedelta(concat['rnk'],unit = 'd')
 
-    # 我们用shift来对status进行移动，分别向上移动一位
-    summary['before_day_status'] = summary['status'].shift(1)
-    # 然后来判断是否status发生了改变
-    summary['inc'] = summary['before_day_status'] != summary['status']
-    # 下面我们用cumsum()来判断到底哪些行和哪些行是属于一起的，如果属于一起的那么gp就应该是一样的
-    summary['gp'] = summary['inc'].cumsum()
-    # 最后进行汇总
-    res = summary.groupby(['gp'], as_index = False).agg(
-        period_state = ('status', lambda x: x.iloc[0]),
-        start_date = ('day','min'),
-        end_date = ('day',max)
-    )[['period_state','start_date','end_date']]
-    
-    return res.sort_values('start_date')
+    res = concat.query('dt.dt.year == 2019').groupby(['period_state','bridge'],as_index = False).agg(
+        start_date = ('dt','min'),
+        end_date = ('dt','max')
+    )
+    return res[['period_state','start_date','end_date']].sort_values('start_date')
