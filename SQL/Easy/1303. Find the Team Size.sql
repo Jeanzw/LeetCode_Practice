@@ -30,3 +30,10 @@ def team_size(employee: pd.DataFrame) -> pd.DataFrame:
     
     merge = pd.merge(employee,team_size, how = 'left',on = 'team_id')
     return merge[['employee_id','team_size']]
+
+-- 不需要像上面这么复杂
+import pandas as pd
+
+def team_size(employee: pd.DataFrame) -> pd.DataFrame:
+    employee['team_size'] = employee.groupby(['team_id']).employee_id.transform('count')
+    return employee[['employee_id','team_size']]
