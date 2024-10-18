@@ -117,3 +117,44 @@ from rawdata r
 left join Product p on r.product_id = p.product_id
 where total_amount is not null
 order by 1,3
+
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def total_sales(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(product,sales,on = 'product_id')
+    merge['period_start_year'] = merge['period_start'].dt.year
+    merge['period_end_year'] = merge['period_end'].dt.year
+    # 2018
+    merge['2018_data'] = np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] == 2018), (merge['period_end'] - merge['period_start']).dt.days + 1, 
+                    np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] > 2018),(pd.to_datetime('2018-12-31') - merge['period_start']).dt.days + 1,0))
+    # 2020
+    merge['2020_data'] = np.where((merge['period_start_year'] == 2020) &(merge['period_end_year'] == 2020), (merge['period_end'] - merge['period_start']).dt.days + 1, 
+                    np.where((merge['period_start_year'] < 2020) &(merge['period_end_year'] == 2020),(merge['period_end'] - pd.to_datetime('2020-01-01')).dt.days + 1,0))
+    # 2019
+    merge['2019_data'] = np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] == 2020), 365, 
+                    np.where((merge['period_start_year'] == 2019) &(merge['period_end_year'] == 2020),(pd.to_datetime('2019-12-31') - merge['period_start']).dt.days + 1,
+                    np.where((merge['period_start_year'] == 2019) &(merge['period_end_year'] == 2019),(merge['period_end'] - merge['period_start']).dt.days + 1,
+                    np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] == 2019),(merge['period_end'] - pd.to_datetime('2019-01-01')).dt.days + 1,0))))
+
+
+    summary_2018 = merge[['product_id','product_name','average_daily_sales','2018_data']]
+    summary_2018['total_amount'] = summary_2018['average_daily_sales'] * summary_2018['2018_data']
+    summary_2018['report_year'] = '2018'
+    summary_2018 = summary_2018.query("total_amount > 0")[['product_id','product_name','report_year','total_amount']]
+
+    summary_2019 = merge[['product_id','product_name','average_daily_sales','2019_data']]
+    summary_2019['total_amount'] = summary_2019['average_daily_sales'] * summary_2019['2019_data']
+    summary_2019['report_year'] = '2019'
+    summary_2019 = summary_2019.query("total_amount > 0")[['product_id','product_name','report_year','total_amount']]
+
+    summary_2020 = merge[['product_id','product_name','average_daily_sales','2020_data']]
+    summary_2020['total_amount'] = summary_2020['average_daily_sales'] * summary_2020['2020_data']
+    summary_2020['report_year'] = '2020'
+    summary_2020 = summary_2020.query("total_amount > 0")[['product_id','product_name','report_year','total_amount']]
+
+    res = pd.concat([summary_2018,summary_2019,summary_2020])
+    return res.sort_values(['product_id','report_year'])

@@ -57,3 +57,11 @@ def second_most_recent(user_activity: pd.DataFrame) -> pd.DataFrame:
     summary = user_activity.sort_values(['username','startDate'], ascending = [True, False])
     rnk = summary.groupby(['username']).head(2).groupby(['username']).tail(1)
     return rnk
+
+-- 另外的做法
+import pandas as pd
+
+def second_most_recent(user_activity: pd.DataFrame) -> pd.DataFrame:
+    user_activity['rnk'] = user_activity.groupby(['username']).startDate.rank(method = 'first',ascending = False)
+    user_activity['cnt'] = user_activity.groupby(['username']).startDate.transform('count')
+    return user_activity.query("rnk == 2 or cnt == 1")[['username','activity','startDate','endDate']]

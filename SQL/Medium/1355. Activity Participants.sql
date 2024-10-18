@@ -58,3 +58,13 @@ def activity_participants(friends: pd.DataFrame, activities: pd.DataFrame) -> pd
     )
     res = summary[~summary['id'].isin(max_min['id'])][['activity']]
     return max_min
+
+
+-- Python
+import pandas as pd
+
+def activity_participants(friends: pd.DataFrame, activities: pd.DataFrame) -> pd.DataFrame:
+    friends = friends.groupby(['activity'],as_index = False).id.nunique()
+    friends['rnk'] = friends.id.rank(method = 'dense')
+    friends['rnk_desc'] = friends.id.rank(ascending = False, method = 'dense')
+    return friends.query("rnk != 1 and rnk_desc != 1")[['activity']]
