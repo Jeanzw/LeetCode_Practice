@@ -10,3 +10,10 @@ import pandas as pd
 def npv_queries(npv: pd.DataFrame, queries: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(queries,npv,on = ['id','year'], how = 'left').fillna(0)
     return merge
+
+
+import pandas as pd
+
+def npv_queries(npv: pd.DataFrame, queries: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(queries,npv,on = ['id','year'],how = 'left').groupby(['id','year'],as_index = False).npv.sum().fillna(0)
+    return merge[['id','year','npv']]

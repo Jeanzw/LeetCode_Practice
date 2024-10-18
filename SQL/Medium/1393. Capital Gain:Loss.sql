@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 
 def capital_gainloss(stocks: pd.DataFrame) -> pd.DataFrame:
-    stocks['capital'] = np.where(stocks['operation'] == 'Buy', -stocks['price'], stocks['price'])
-    res = stocks.groupby('stock_name', as_index = False).capital.sum()
-
-    return res.rename(columns = {'capital':'capital_gain_loss'})
+-- 直接在建列的时候起好名字
+    stocks['capital_gain_loss'] = np.where(stocks['operation'] == 'Buy', -stocks['price'], stocks['price'])
+    stocks = stocks.groupby(['stock_name'],as_index = False).capital_gain_loss.sum()
+    return stocks
+    

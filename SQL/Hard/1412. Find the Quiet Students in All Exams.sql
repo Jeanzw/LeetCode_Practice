@@ -85,6 +85,22 @@ left join max_min b on a.student_id = b.student_id
 where b.student_id is null
 order by 1
 
+-- 或许我们直接就可以一个cte搞定
+with cte as
+(select
+a.student_id,
+a.student_name,
+score,
+exam_id,
+dense_rank() over (partition by exam_id order by score) as rnk,
+dense_rank() over (partition by exam_id order by score desc) as rnk_desc
+from Student a
+inner join Exam b on a.student_id = b.student_id)
+
+select student_id, student_name from cte
+group by 1,2
+having min(rnk) != 1 and min(rnk_desc) != 1
+order by 1
 
 -- Python
 import pandas as pd
@@ -100,3 +116,14 @@ def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFra
     # 然后使得student表格里面student_id不在not_quiet里面即可
     res = exam[~exam['student_id'].isin(not_quiet['student_id'])]
     return res[['student_id','student_name']].drop_duplicates().sort_values('student_id')
+
+-- Python另外的做法
+import pandas as pd
+
+def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(student,exam,on = 'student_id')
+    merge['rnk'] = merge.groupby(['exam_id']).score.transform('rank',method = 'dense')
+    merge['rnk_desc'] = merge.groupby(['exam_id']).score.transform('rank',method = 'dense',ascending = False)
+    merge['min_rnk'] = merge.groupby(['student_id']).rnk.transform('min')
+    merge['min_rnk_desc'] = merge.groupby(['student_id']).rnk_desc.transform('min')
+    return merge.query("min_rnk != 1 and min_rnk_desc != 1")[['student_id','student_name']].drop_duplicates().sort_values('student_id')
