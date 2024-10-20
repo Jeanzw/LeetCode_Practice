@@ -101,12 +101,42 @@ having count(*) >=5
 order by id
 
 
+-- 现在上面建bridge的做法已经行不通了，因为可能存在某个人一天内连续登录n次的情况
+-- 所以我们在计算count(*)的时候，需要特定login_date
+with frame as
+(select
+a.*, b.name,
+dateadd(day,- dense_rank() over (partition by a.id order by login_date),login_date) as bridge
+from Logins a
+left join Accounts b on a.id = b.id)
+
+select
+distinct id, name
+from frame
+group by id, name, bridge
+having count(distinct login_date) >= 5
+order by 1
+
 
 -- Python
 import pandas as pd
 
 def active_users(accounts: pd.DataFrame, logins: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(logins,accounts,on='id', how = 'left').drop_duplicates().sort_values(['id','login_date'])
-    merge['occ'] = 1
-    merge = merge.groupby(['id','name'],as_index = False).rolling('5D',min_periods = 5, on = 'login_date').sum()
-    return merge.query("occ.notna()")[['id','name']].drop_duplicates()
+    logins = logins.drop_duplicates().sort_values(['id','login_date'])
+    logins['occ'] = 1
+    -- 下面就相当于在组内累计求和，得出来的数：
+-- | id | login_date | occ |
+-- | -- | ---------- | --- |
+-- | 1  | 2020-05-30 | 1   |
+-- | 1  | 2020-06-07 | 1   |
+-- | 7  | 2020-05-30 | 1   |
+-- | 7  | 2020-05-31 | 2   |
+-- | 7  | 2020-06-01 | 3   |
+-- | 7  | 2020-06-02 | 4   |
+-- | 7  | 2020-06-03 | 5   |
+-- | 7  | 2020-06-10 | 1   |
+    logins = logins.groupby(['id'],as_index = False).rolling('5d',on = 'login_date').sum()
+    logins = logins.query("occ >= 5")
+
+    res = pd.merge(logins,accounts,on = 'id')
+    return res[['id','name']].drop_duplicates()

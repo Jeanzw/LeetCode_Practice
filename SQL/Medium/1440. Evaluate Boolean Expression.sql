@@ -23,11 +23,9 @@ import pandas as pd
 import numpy as np
 
 def eval_expression(variables: pd.DataFrame, expressions: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(expressions,variables, left_on = 'left_operand', right_on = 'name', how = 'left').merge(variables, left_on = 'right_operand', right_on = 'name', how = 'left')
-    
-    merge['value'] = np.where(merge['operator'] == '=', merge['value_x'] == merge['value_y'],
-    np.where(merge['operator'] == '<', merge['value_x'] < merge['value_y'],
-    np.where(merge['operator'] == '>', merge['value_x'] > merge['value_y'],merge['value_x'] < merge['value_y'])
-    )
-    )
-    return merge[['left_operand', 'operator','right_operand','value' ]].astype(str).replace({"True":"true","False":"false"})
+    merge = pd.merge(expressions,variables,left_on = 'left_operand',right_on = 'name',how ='left').merge(variables,left_on = 'right_operand',right_on = 'name',how ='left')
+    merge['value'] = np.where((merge['operator'] == '=') & (merge['value_x'] == merge['value_y']),'true',
+                     np.where((merge['operator'] == '>') & (merge['value_x'] > merge['value_y']),'true',
+                     np.where((merge['operator'] == '<') & (merge['value_x'] < merge['value_y']),'true', 'false'
+                     )))
+    return merge[['left_operand','operator','right_operand','value']]

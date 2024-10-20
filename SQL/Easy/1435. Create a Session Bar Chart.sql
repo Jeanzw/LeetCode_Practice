@@ -26,9 +26,8 @@ import numpy as np
 def create_bar_chart(sessions: pd.DataFrame) -> pd.DataFrame:
     frame = pd.DataFrame({'bin':['[0-5>','[5-10>','[10-15>','15 or more']})
     sessions['bin'] = np.where(sessions['duration']/60 < 5, '[0-5>',
-    np.where(sessions['duration']/60 < 10,'[5-10>',
-    np.where(sessions['duration']/60 < 15,'[10-15>','15 or more')))
-    sessions_summary = sessions.groupby(['bin'], as_index = False).session_id.count()
-    
-    res = pd.merge(frame,sessions_summary, on = 'bin', how = 'left').fillna(0)
-    return res.rename(columns = {'session_id':'total'})
+                      np.where(sessions['duration']/60 < 10, '[5-10>',
+                      np.where(sessions['duration']/60 < 15,'[10-15>','15 or more')))
+
+    summary = pd.merge(frame,sessions, on = 'bin', how = 'left').groupby(['bin'],as_index = False).session_id.nunique()
+    return summary.rename(columns = {'session_id':'total'})
