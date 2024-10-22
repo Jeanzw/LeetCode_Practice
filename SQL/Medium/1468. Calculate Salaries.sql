@@ -69,6 +69,21 @@ round(s.salary * (1 - tax),0) as salary
 from Salaries s
 left join tax t on s.company_id = t.company_id
 
+-- 再一次写的时候直接window function来写
+with cte as
+(select 
+*, 
+case when max(salary) over (partition by company_id) < 1000 then 1
+     when max(salary) over (partition by company_id) <= 10000 then (1 - 0.24)
+     else (1 - 0.49) end as tax
+from Salaries)
+
+select 
+    company_id,
+    employee_id,
+    employee_name,
+    round(salary * tax,0) as salary
+from cte
 
 
 -- Python
@@ -76,8 +91,9 @@ import pandas as pd
 import numpy as np
 
 def calculate_salaries(salaries: pd.DataFrame) -> pd.DataFrame:
-    salaries['max_salary'] = salaries.groupby('company_id').salary.transform('max')
-    salaries['salary_after_tax'] = np.where(salaries['max_salary'] < 1000, salaries['salary'], 
-    np.where(salaries['max_salary'] > 10000,(1 - 0.49) * salaries['salary'],(1 - 0.24) * salaries['salary'])
-    ).round(0)
-    return salaries[['company_id','employee_id','employee_name','salary_after_tax']].rename(columns = {'salary_after_tax':'salary'})
+    salaries['max_salary'] = salaries.groupby(['company_id']).salary.transform('max')
+    salaries['tax'] = np.where(salaries['max_salary'] < 1000, 1,
+                      np.where(salaries['max_salary'] <=10000, 1 - 0.24, 1-0.49))
+    salaries['salary'] = round(salaries['tax'] * salaries['salary'] + 1e-9,0)
+
+    return salaries[['company_id','employee_id','employee_name','salary']]
