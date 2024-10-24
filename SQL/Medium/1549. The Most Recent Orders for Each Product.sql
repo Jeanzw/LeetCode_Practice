@@ -38,8 +38,7 @@ order by 1,2,3
 import pandas as pd
 
 def most_recent_orders(customers: pd.DataFrame, orders: pd.DataFrame, products: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(products,orders, on ='product_id')
-    # 用transform(max)来对每个product_id分组求出最大值
-    merge['max_date'] = merge.groupby(['product_id']).order_date.transform(max)
-    res = merge.query("order_date == max_date")
-    return res[['product_name','product_id','order_id','order_date']].sort_values(['product_name','product_id','order_id'])
+    merge = pd.merge(products,orders,on = 'product_id')
+    merge['rnk'] = merge.groupby(['product_id']).order_date.rank(method = 'dense', ascending = False)
+    merge = merge.query("rnk == 1")
+    return merge[['product_name','product_id','order_id','order_date']].sort_values(['product_name','product_id','order_id'])

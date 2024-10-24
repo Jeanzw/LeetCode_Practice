@@ -9,9 +9,12 @@ group by 1
 -- Python
 import pandas as pd
 
-def warehouse_manager(warehouse: pd.DataFrame, products: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(warehouse,products, on = 'product_id', how = 'left')
-    merge['volume'] = merge['units'] * merge['Width']* merge['Length']* merge['Height']
+def unique_orders_and_customers(orders: pd.DataFrame) -> pd.DataFrame:
+    orders = orders.query("invoice > 20")
+    orders['month']  = orders.order_date.dt.strftime('%Y-%m')
 
-    res = merge.groupby(['name'], as_index = False).volume.sum().fillna(0)
-    return res.rename(columns = {'name':'warehouse_name'})
+    res = orders.groupby(['month'],as_index = False).agg(
+        order_count = ('order_id','nunique'),
+        customer_count = ('customer_id','nunique')
+    )
+    return res.query("order_count > 0")
