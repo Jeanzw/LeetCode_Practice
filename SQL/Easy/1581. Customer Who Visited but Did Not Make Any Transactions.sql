@@ -32,6 +32,6 @@ def find_customers(visits: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataF
     merge = pd.merge(visits,transactions, on = 'visit_id', how = 'left')
     merge = merge.query("transaction_id.isna()")
 
-    res = merge.groupby(['customer_id'], as_index = False).visit_id.nunique().rename(columns = {'visit_id':'count_no_trans'}).sort_values(['customer_id','count_no_trans'])
+    res = merge.groupby(['customer_id'], as_index = False).visit_id.nunique().rename(columns = {'visit_id':'count_no_trans'})
 
     return res

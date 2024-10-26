@@ -20,6 +20,7 @@ order by 1
 import pandas as pd
 
 def sellers_with_no_sales(customer: pd.DataFrame, orders: pd.DataFrame, seller: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(seller, orders.query('sale_date.dt.year == 2020'), on = 'seller_id', how = 'left')
-    res = merge.query("order_id.isna()")
-    return res[['seller_name']].sort_values(['seller_name'])
+    orders = orders.query("sale_date.dt.year == 2020")
+    merge = pd.merge(seller,orders, on = 'seller_id',how = 'left')
+    merge = merge.query("order_id.isna()")
+    return merge[['seller_name']].drop_duplicates().sort_values('seller_name')
