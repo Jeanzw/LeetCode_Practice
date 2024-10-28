@@ -32,3 +32,15 @@ from cte
 left join Customers c on cte.id = c.customer_id
 where c.customer_id is null
 order by 1
+
+
+
+-- Python
+import pandas as pd
+
+def find_missing_ids(customers: pd.DataFrame) -> pd.DataFrame:
+    max_number = customers.customer_id.max()
+    df = pd.DataFrame({'ids': range(1, max_number + 1)})
+    merge = pd.merge(df,customers, left_on = 'ids', right_on = 'customer_id', how = 'left')
+    merge = merge.query("customer_id.isna()")
+    return merge[['ids']].sort_values('ids')
