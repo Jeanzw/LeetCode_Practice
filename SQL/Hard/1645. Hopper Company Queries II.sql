@@ -92,20 +92,22 @@ group by 1
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_rides: pd.DataFrame) -> pd.DataFrame:
-    frame = pd.DataFrame({'month':range(1,13)})
+    month = pd.DataFrame({'month':range(1,13)})
+# 先处理drivers的数量
+    drivers = drivers.query("join_date.dt.year < 2021")
+    drivers['active_month'] = np.where(drivers['join_date'].dt.year < 2020, 1, drivers['join_date'].dt.month)
+    drivers = drivers.groupby(['active_month'],as_index = False).driver_id.nunique()
+# 再出来被接受的ride
+    acc_drive = pd.merge(rides,accepted_rides,on = 'ride_id').query("requested_at.dt.year == 2020")
+    acc_drive['acc_month'] = acc_drive.requested_at.dt.month
+    acc_drive = acc_drive.groupby(['acc_month'],as_index = False).driver_id.nunique()
 
-    drivers = drivers.query("join_date.dt.year <= 2020")
-    drivers['month'] = np.where(drivers['join_date'].dt.year < 2020, 1, drivers['join_date'].dt.month)
-    drivers = drivers.groupby(['month'], as_index = False).driver_id.nunique()
-
-    rides = rides.query('requested_at.dt.year == 2020')
-    rides['month'] = rides['requested_at'].dt.month
-    rides_accept = pd.merge(rides,accepted_rides, on = 'ride_id')
-    rides_accept = rides_accept.groupby(['month'], as_index = False).driver_id.nunique()
-
-    summary = pd.merge(frame,drivers, on = 'month', how = 'left').merge(rides_accept,on = 'month', how = 'left').fillna(0)
-    summary['cumsum'] = summary['driver_id_x'].cumsum()
-    summary['working_percentage'] = round(100 * summary['driver_id_y']/summary['cumsum'],2).fillna(0)
-    return summary[['month','working_percentage']]
+# 最后将所有的内容结合起来
+    res = pd.merge(month,drivers, left_on = 'month', right_on = 'active_month',how = 'left').merge(acc_drive,left_on = 'month', right_on = 'acc_month', how = 'left').fillna(0)
+# 对司机的数量累计求和
+    res['active_drivers'] = res.driver_id_x.cumsum()
+    res['working_percentage'] = round(100 * res['driver_id_y']/res['active_drivers'],2).fillna(0)
+    return res[['month','working_percentage']]

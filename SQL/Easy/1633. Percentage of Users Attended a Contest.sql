@@ -35,3 +35,13 @@ from Users a
 inner join Register b on a.user_id = b.user_id
 group by 1
 order by 2 desc, 1
+
+
+-- Python
+import pandas as pd
+
+def users_percentage(users: pd.DataFrame, register: pd.DataFrame) -> pd.DataFrame:
+    cnt_de = users.user_id.nunique()
+    register = register.groupby(['contest_id'], as_index = False).user_id.nunique()
+    register['percentage'] = round(100 * register['user_id']/cnt_de,2)
+    return register[['contest_id','percentage']].sort_values(['percentage','contest_id'], ascending = [0,1])

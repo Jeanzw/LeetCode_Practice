@@ -33,6 +33,7 @@ union all
 select month + 1 as month from month
  where month<= 11
 )
+-- 这里不能起名为drivers，因为leetcode里面会认为drivers和Drivers是一张表
 , driver as
 (select 
     driver_id,
@@ -47,7 +48,6 @@ select month + 1 as month from month
  from Rides r
  join AcceptedRides a on r.ride_id = a.ride_id
  where year(requested_at) = 2020
- group by 1,2
 )
 
 
@@ -90,25 +90,21 @@ group by 1
 
 --  Python
 import pandas as pd
+import numpy as np
 
 def hopper_company(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_rides: pd.DataFrame) -> pd.DataFrame:
-    # 先弄一个大框架
-    frame_month = pd.DataFrame({'month':range(1,13)})
-    # 先对driver进行处理
-    drivers['join_date'] = pd.to_datetime(drivers['join_date'])
+    month = pd.DataFrame({'month':range(1,13)})
+# 先处理drivers的数量
     drivers = drivers.query("join_date.dt.year < 2021")
-    drivers['month'] = np.where(drivers['join_date'].dt.year < 2020, 1, drivers['join_date'].dt.month)
-    # 再对rides进行处理
-    rides['requested_at'] = pd.to_datetime(rides['requested_at'])
-    rides = rides.query("requested_at.dt.year == 2020")
-    rides['month'] = rides['requested_at'].dt.month
-    # 然后去计算被接受的单子的aggregation后的数据
-    rides_accepted = pd.merge(accepted_rides,rides, on = 'ride_id', how = 'inner').groupby(['month'],as_index = False).ride_id.nunique()
-    # 然后计算司机的aggregation之后的数据
-    drivers = drivers.groupby(['month'], as_index = False).driver_id.nunique()
-    # 最后做一个merge，将null值全部替换成0
-    merge = pd.merge(frame_month,drivers,on = 'month', how = 'left').merge(rides_accepted, on = 'month', how = 'left').fillna(0)
-    # 然后累计求和
-    merge['active_drivers'] = merge['driver_id'].cumsum()
-    return merge[['month','active_drivers','ride_id']].rename(columns = {'ride_id':'accepted_rides'})
+    drivers['active_month'] = np.where(drivers['join_date'].dt.year < 2020, 1, drivers['join_date'].dt.month)
+    drivers = drivers.groupby(['active_month'],as_index = False).driver_id.nunique()
+# 再出来被接受的ride
+    acc_drive = pd.merge(rides,accepted_rides,on = 'ride_id').query("requested_at.dt.year == 2020")
+    acc_drive['acc_month'] = acc_drive.requested_at.dt.month
+    acc_drive = acc_drive.groupby(['acc_month'],as_index = False).ride_id.nunique()
 
+# 最后将所有的内容结合起来
+    res = pd.merge(month,drivers, left_on = 'month', right_on = 'active_month',how = 'left').merge(acc_drive,left_on = 'month', right_on = 'acc_month', how = 'left').fillna(0)
+# 对司机的数量累计求和
+    res['active_drivers'] = res.driver_id.cumsum()
+    return res[['month','active_drivers','ride_id']].rename(columns = {'ride_id':'accepted_rides'})

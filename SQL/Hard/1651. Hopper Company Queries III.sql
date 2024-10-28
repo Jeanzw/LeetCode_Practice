@@ -70,17 +70,21 @@ select * from
 import pandas as pd
 
 def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_rides: pd.DataFrame) -> pd.DataFrame:
-    rides = rides.query("requested_at.dt.year == 2020")
-    rides['month'] = rides['requested_at'].dt.month
-    merge = pd.merge(accepted_rides,rides, on ='ride_id').groupby(['month'],as_index = False).agg(
-    sum_ride_distance = ('ride_distance','sum'),
-    sum_ride_duration = ('ride_duration','sum') 
-)
-    frame = pd.DataFrame({'month':range(1,13)})
-    summary = pd.merge(frame,merge, on = 'month', how = 'left').fillna(0).sort_values(['month'],ascending = [False])
-    summary['average_ride_distance'] = summary['sum_ride_distance'].rolling(3).mean().fillna(0).round(2)
-    summary['average_ride_duration'] = summary['sum_ride_duration'].rolling(3).mean().fillna(0).round(2)
-    summary = summary.query("month <= 10")
+    # 建立month表
+    month = pd.DataFrame({'month':range(1,13)})
+    
+    # 处理ride
+    rides_accep = pd.merge(rides,accepted_rides,on = 'ride_id').query("requested_at.dt.year == 2020")
+    rides_accep['month'] = rides_accep.requested_at.dt.month
+    rides_accep = rides_accep.groupby(['month'],as_index = False).agg(
+        ride_distance = ('ride_distance','sum'),
+        ride_duration = ('ride_duration','sum')
+    )
 
-    res = summary[['month','average_ride_distance','average_ride_duration']].sort_values(['month'])
-    return res
+    # 将月份和ride整合一起
+    # 由于rolling是从这一行往上x行rolling，所以我们需要将month倒序
+    merge = pd.merge(month,rides_accep,on = 'month', how = 'left').fillna(0).sort_values('month',ascending = False)
+    # 最后进行rolling求数
+    merge['average_ride_distance'] = merge.ride_distance.rolling(3).mean().fillna(0).round(2)
+    merge['average_ride_duration'] = merge.ride_duration.rolling(3).mean().fillna(0).round(2)
+    return merge[['month','average_ride_distance','average_ride_duration']].sort_values('month').query("month <= 10")
