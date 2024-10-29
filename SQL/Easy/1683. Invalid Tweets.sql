@@ -1,6 +1,10 @@
 select tweet_id from Tweets
 where length(content) > 15
 
+select
+tweet_id
+from Tweets
+where char_length(content) > 15
 /*
 https://leetcode.com/problems/invalid-tweets/discuss/968440/MySQL%3A-LENGTH()-is-incorrect.-Important-difference-between-CHAR_LENGTH()-vs-LENGTH()
 

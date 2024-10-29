@@ -15,10 +15,11 @@ select
 import pandas as pd
 
 def analyze_products(product: pd.DataFrame, invoice: pd.DataFrame) -> pd.DataFrame:
-    summary = pd.merge(product,invoice, on = 'product_id', how = 'left').fillna(0).groupby(['name'], as_index = False).agg(
-    rest = ('rest','sum'),
-    paid = ('paid','sum'),
-    canceled = ('canceled','sum'),
-    refunded = ('refunded','sum')
-)
-    return summary.sort_values('name') 
+    merge = pd.merge(product,invoice,on = 'product_id',how = 'left')
+    merge = merge.groupby(['name'],as_index = False).agg(
+        rest = ('rest','sum'),
+        paid = ('paid','sum'),
+        canceled = ('canceled','sum'),
+        refunded = ('refunded','sum')
+    ).fillna(0)
+    return merge.sort_values('name')

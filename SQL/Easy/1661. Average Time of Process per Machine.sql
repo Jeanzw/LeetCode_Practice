@@ -29,12 +29,10 @@ select
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def get_average_time(activity: pd.DataFrame) -> pd.DataFrame:
-    activity['timestamp'] = np.where(activity['activity_type'] == 'start',-activity['timestamp'], activity['timestamp'])
-    activity = activity.groupby(['machine_id'], as_index = False).agg(
-    sum_time = ('timestamp','sum'),
-    sum_process = ('process_id','nunique')
-)
-    activity['processing_time'] = round(activity['sum_time']/activity['sum_process'],3)
-    return activity[['machine_id','processing_time']]    
+    activity['timestamp'] = np.where(activity['activity_type'] == 'start',-activity['timestamp'],activity['timestamp'])
+    activity = activity.groupby(['machine_id','process_id'],as_index = False).timestamp.sum()
+    activity = activity.groupby(['machine_id'],as_index = False).timestamp.mean().round(3)
+    return activity.rename(columns = {'timestamp':'processing_time'})
