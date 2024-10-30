@@ -22,12 +22,15 @@ select
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def number_of_calls(calls: pd.DataFrame) -> pd.DataFrame:
     calls['person1'] = np.where(calls['from_id'] < calls['to_id'],calls['from_id'],calls['to_id'])
-    calls['person2'] = np.where(calls['from_id'] < calls['to_id'],calls['to_id'],calls['from_id'])
-    res = calls.groupby(['person1','person2'], as_index = False).agg(
-        call_count = ('duration','count'),
-        total_duration = ('duration','sum')
+    calls['person2'] = np.where(calls['from_id'] > calls['to_id'],calls['from_id'],calls['to_id'])
+
+    calls = calls.groupby(['person1','person2'],as_index = False).agg(
+        call_count = ('person1','count'),
+        total_duration = ('duration','sum'),
     )
-    return res   
+
+    return calls
