@@ -41,12 +41,8 @@ WHERE C=1 OR PRIMARY_FLAG='Y'
 
 -- Python
 import pandas as pd
-import numpy as np
 
 def find_primary_department(employee: pd.DataFrame) -> pd.DataFrame:
-    employee['cnt'] = employee.groupby('employee_id').employee_id.transform('count')
-    employee['primary'] = np.where(employee['cnt'] == 1, 1, 
-    np.where(employee['primary_flag']=='Y',1,0)
-    )
-    res = employee.query("primary ==  1")
-    return res[['employee_id','department_id']]
+    employee['cnt'] = employee.groupby(['employee_id']).employee_id.transform('count')
+    employee = employee.query("cnt == 1 or primary_flag == 'Y'")
+    return employee[['employee_id','department_id']]
