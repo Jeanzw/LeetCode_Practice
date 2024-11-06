@@ -82,39 +82,15 @@ ORDER BY t1.account_id
 -- Python
 import pandas as pd
 
-def suspicious_bank_accounts(
-    accounts: pd.DataFrame, transactions: pd.DataFrame
-) -> pd.DataFrame:
-    # Assign a new column 'month' representing the transaction month in 'YYYY-MM' format
-    monthly_transactions = transactions.assign(
-        month=transactions["day"].dt.to_period("M")
-    )
+def suspicious_bank_accounts(accounts: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(accounts,transactions, on = 'account_id')
+    merge['month'] = merge.day.dt.month
+    merge = merge.query("type == 'Creditor'")
 
-    # Filter for 'Creditor' type transactions
-    creditor_transactions = monthly_transactions.query("type == 'Creditor'")
+    merge = merge.groupby(['account_id','max_income','month'],as_index = False).amount.sum()
+    merge = merge.query("max_income < amount")
+    merge = merge.sort_values(['account_id','month'])
+    merge['next_line'] = merge.groupby(['account_id']).month.shift(-1)
+    merge['month_diff'] = (merge['next_line'] - merge['month'])
 
-    # Calculate the previous month for each transaction
-    creditor_transactions = creditor_transactions.assign(
-        prev_month=(transactions["day"] - pd.DateOffset(months=1)).dt.to_period("M")
-    )
-
-    # Group by account_id, previous month, and current month, and sum the transaction amounts
-    monthly_income = creditor_transactions.groupby(
-        ["account_id", "prev_month", "month"], as_index=False
-    )["amount"].sum()
-
-    # Merge with the accounts dataframe to compare with max_income
-    merged_data = monthly_income.merge(accounts, on="account_id")
-
-    # Filter out rows where the monthly income exceeds the max_income
-    over_max_income = merged_data.query("amount > max_income")
-
-    # Merge data with itself to find accounts with excessive income for two consecutive months
-    suspicious_accounts = over_max_income.merge(
-        over_max_income,
-        left_on=["account_id", "prev_month"],
-        right_on=["account_id", "month"],
-    )
-
-    # Return unique account_ids of suspicious accounts
-    return suspicious_accounts[["account_id"]].drop_duplicates()
+    return merge.query("month_diff == 1")[['account_id']].drop_duplicates()

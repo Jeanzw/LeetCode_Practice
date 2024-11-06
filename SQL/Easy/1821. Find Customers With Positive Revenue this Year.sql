@@ -10,6 +10,6 @@ having sum(revenue) > 0
 import pandas as pd
 
 def find_customers(customers: pd.DataFrame) -> pd.DataFrame:
-    customers = customers.query("year == 2021")
-    customers = customers.groupby(['customer_id'], as_index = False).revenue.sum()
-    return customers.query("revenue > 0")[['customer_id']]
+    customers = customers.groupby(['customer_id','year'],as_index = False).revenue.sum()
+    customers = customers.query("year == 2021 and revenue > 0")
+    return customers[['customer_id']]

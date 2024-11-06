@@ -43,7 +43,7 @@ select name,mail from Users
 where user_id in (select * from gold union all select * from three_medal)
 
 
--- 上面这种方法可以在算trhee medal用join来连接
+-- 上面这种方法可以在算three medal用join来连接
 with gold as
 (select b.name,b.mail from Contests a inner join Users b on a.gold_medal = b.user_id
 group by 1,2 having count(distinct contest_id) >= 3)
@@ -117,3 +117,26 @@ def find_interview_candidates(contests: pd.DataFrame, users: pd.DataFrame) -> pd
     summary = pd.concat([gold,medal])
     sumamry = pd.merge(summary,users, on = 'user_id')
     return sumamry[['name','mail']].drop_duplicates()
+
+-- 如果不用shift，那么我们可以按照sql的思路，建一个bridge出来
+import pandas as pd
+
+def find_interview_candidates(contests: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
+    # gold
+    gold = contests.groupby(['gold_medal'],as_index = False).contest_id.nunique()
+    gold = gold.query("contest_id >= 3").rename(columns = {'gold_medal':'id'})
+    # three medal
+    gold_medal = contests[['contest_id','gold_medal']].rename(columns = {'gold_medal':'id'})
+    silver_medal = contests[['contest_id','silver_medal']].rename(columns = {'silver_medal':'id'})
+    bronze_medal = contests[['contest_id','bronze_medal']].rename(columns = {'bronze_medal':'id'})
+    medal = pd.concat([gold_medal,silver_medal,bronze_medal])
+    medal['bridge'] = medal.groupby(['id']).contest_id.transform('rank',method = 'first')
+    medal['bridge'] = medal['contest_id'] - medal['bridge']
+    three_medal = medal.groupby(['id','bridge'],as_index = False).contest_id.nunique()
+    three_medal = three_medal.query("contest_id >= 3")[['id']]
+
+    # candidate
+    candidate = pd.concat([gold,three_medal])[['id']].drop_duplicates()
+
+    merge = pd.merge(candidate,users,left_on = 'id', right_on = 'user_id')
+    return merge[['name','mail']].drop_duplicates()
