@@ -12,6 +12,25 @@ where (l1.user_id,l2.user_id) not in (select user1_id,user2_id from Friendship) 
 group by 1,2,l1.day
 having count(distinct l1.song_id) >= 3
 
+
+-- 将上面的方法改良一下，不用not in来做
+with cte as
+(select
+distinct a.user_id,
+b.user_id as recommended_id
+from Listens a
+inner join Listens b on a.user_id != b.user_id and a.song_id = b.song_id and a.day = b.day
+group by 1,2,a.day
+having count(distinct a.song_id) >= 3)
+
+select
+distinct a.user_id, recommended_id
+from cte a
+left join Friendship b on (a.user_id = b.user1_id and a.recommended_id = b.user2_id) or (a.user_id = b.user2_id and a.recommended_id = b.user1_id)
+where b.user1_id is null
+
+
+
 -- 但是下面这种做法还是超时
 -- 也就是说我们如果用left join但是是在连接条件上有很多条件其实也是不高效的
 select 
@@ -53,10 +72,16 @@ having count(distinct l1.song_id) >= 3
 import pandas as pd
 
 def recommend_friends(listens: pd.DataFrame, friendship: pd.DataFrame) -> pd.DataFrame:
-    user1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user_id','user2_id':'friend'})
-    user2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user_id','user1_id':'friend'})
-    user = pd.concat([user1,user2]).drop_duplicates()
-    merge = pd.merge(listens,listens, on = ['song_id','day']).query("user_id_x != user_id_y")
-    summary = pd.merge(merge,user,left_on = ['user_id_x','user_id_y'], right_on = ['user_id','friend'],how = 'left', indicator = False).query("user_id.isna()")
-    summary = summary.groupby(['user_id_x','user_id_y','day'], as_index = False).song_id.nunique()
-    return summary.query("song_id >= 3")[['user_id_x','user_id_y']].rename(columns = {'user_id_x':'user_id','user_id_y':'recommended_id'}).drop_duplicates()
+    merge = pd.merge(listens,listens, on = ['song_id','day'])
+    merge = merge.query("user_id_x < user_id_y") 
+    -- 这里我们限定了大小，因为python还是不如sql那样，在做join的时候用or
+    -- 也是因为这里我们限定了大小，在最后结果我们需要将其颠倒得到另一个结果
+
+    candidates = merge.groupby(['user_id_x','user_id_y','day'],as_index = False).song_id.nunique()
+    candidates = candidates.query("song_id >= 3")[['user_id_x','user_id_y']].drop_duplicates()
+
+
+    filter_out1 = pd.merge(candidates,friendship, left_on = ['user_id_x','user_id_y'],right_on = ['user1_id','user2_id'], how = 'left')
+    filter_out1 = filter_out1.query("user1_id.isna()").rename(columns = {'user_id_x':'user_id','user_id_y':'recommended_id'})
+    res = pd.concat([filter_out1[['user_id','recommended_id']],filter_out1[['recommended_id','user_id']].rename(columns = {'recommended_id':'user_id','user_id':'recommended_id'})])
+    return res
