@@ -53,8 +53,7 @@ order by 4,1
 import pandas as pd
 
 def employees_of_same_salary(employees: pd.DataFrame) -> pd.DataFrame:
-    employees['cnt_salary'] = employees.groupby(['salary']).employee_id.transform('count')
-    employees = employees.query("cnt_salary > 1")
+    employees['cnt'] = employees.groupby(['salary']).employee_id.transform('nunique')
+    employees = employees.query("cnt > 1")
     employees['team_id'] = employees.salary.rank(method = 'dense')
-    employees = employees[['employee_id','name','salary','team_id']]
-    return employees.sort_values(['team_id','employee_id'])
+    return employees[['employee_id','name','salary','team_id']].sort_values(['team_id','employee_id'])

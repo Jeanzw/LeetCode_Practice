@@ -28,6 +28,16 @@ WHERE max_quantity > (SELECT MAX(avg_quantity) AS max_avg_quantity
 FROM tb1)
 
 
+-- 我们还是可以用window function来做
+with cte as
+(select *, max(quantity) over (partition by order_id) as max_quantity, avg(quantity) over (partition by order_id) as avg_quantity from OrdersDetails)
+
+select
+distinct order_id
+from cte
+where max_quantity > (select max(avg_quantity) from cte)
+
+
 -- Python
 import pandas as pd
 

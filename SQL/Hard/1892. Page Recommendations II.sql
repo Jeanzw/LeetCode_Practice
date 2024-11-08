@@ -53,13 +53,13 @@ select
 import pandas as pd
 
 def recommend_page(friendship: pd.DataFrame, likes: pd.DataFrame) -> pd.DataFrame:
-    user1 = friendship.rename(columns = {'user1_id':'user_id','user2_id':'friend'})
-    user2 = friendship.rename(columns = {'user2_id':'user_id','user1_id':'friend'})
-    user = pd.concat([user1,user2]).drop_duplicates()
+    friendship1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'id','user2_id':'friend'})
+    friendship2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'id','user1_id':'friend'})
 
-    merge = pd.merge(user,likes, left_on = 'friend', right_on = 'user_id', how = 'left').rename(columns = {'user_id_x':'user_id'})
-    
-    merge = pd.merge(merge,likes, on = ['user_id','page_id'],how = 'left',indicator = True)
-    merge = merge.query("_merge == 'left_only'")
+    concat = pd.concat([friendship1,friendship2]).drop_duplicates()
 
-    return merge.groupby(['user_id','page_id'],as_index = False).user_id_y.nunique().rename(columns = {'user_id_y':'friends_likes'})
+    merge = pd.merge(concat,likes,left_on = 'friend',right_on = 'user_id').merge(likes,left_on = ['id','page_id'],right_on = ['user_id','page_id'],how = 'left')
+    merge = merge.query("user_id_y.isna()")
+
+    res = merge.groupby(['id','page_id'],as_index = False).user_id_x.nunique()
+    return res.rename(columns = {'id':'user_id','user_id_x':'friends_likes'})

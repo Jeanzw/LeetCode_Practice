@@ -21,6 +21,6 @@ group by 1
 import pandas as pd
 
 def latest_login(logins: pd.DataFrame) -> pd.DataFrame:
-    logins = logins.query("time_stamp.dt.year == 2020").sort_values(['user_id','time_stamp'], ascending = [True, False])
-    logins = logins.groupby(['user_id']).head(1)
+    logins = logins.query("time_stamp.dt.year == 2020")
+    logins = logins.groupby(['user_id'],as_index = False).time_stamp.max()
     return logins.rename(columns = {'time_stamp':'last_stamp'})
