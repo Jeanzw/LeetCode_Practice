@@ -24,6 +24,21 @@ WHERE name IS NULL or salary IS NULL          -- get the ones without proper inf
 ORDER BY employee_id
 
 
+-- 或者这样做
+with frame as
+(select employee_id from Employees
+union
+select employee_id from Salaries)
+
+select
+distinct a.employee_id
+from frame a
+left join Employees b on a.employee_id = b.employee_id
+left join Salaries c on a.employee_id = c.employee_id
+where b.employee_id is null or c.employee_id is null
+order by 1
+
+
 -- Python
 import pandas as pd
 
