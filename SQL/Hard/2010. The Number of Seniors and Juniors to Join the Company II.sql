@@ -13,3 +13,22 @@ from Candidates)
 select employee_id from senior
 union all
 select employee_id from junior
+
+
+-- Python
+import pandas as pd
+
+def number_of_joiners(candidates: pd.DataFrame) -> pd.DataFrame:
+    senior = candidates.query("experience == 'Senior'").sort_values("salary")
+    junior = candidates.query("experience == 'Junior'").sort_values("salary")
+
+    senior['cum_sum'] = senior.salary.cumsum()
+    junior['cum_sum'] = junior.salary.cumsum()
+
+    senior = senior.query("cum_sum <= 70000")
+    left_money = 70000 - senior.salary.sum()
+    junior = junior[junior['cum_sum'] <= left_money]
+
+    res = pd.concat([senior[['employee_id']],junior[['employee_id']]])
+
+    return res

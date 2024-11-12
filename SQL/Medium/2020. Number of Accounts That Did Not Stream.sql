@@ -27,11 +27,12 @@ import pandas as pd
 import numpy as np
 
 def find_target_accounts(subscriptions: pd.DataFrame, streams: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(subscriptions,streams,on = 'account_id',how = 'left')
-    merge['active_subs_2021'] = np.where(merge['start_date'].dt.year == 2021, 1, 
-    np.where(merge['end_date'].dt.year == 2021,1,
-    np.where((merge['end_date'].dt.year > 2021) & (merge['start_date'].dt.year < 2021), 1, 0)))
-    merge['stream_2021'] = np.where(merge['stream_date'].dt.year == 2021, 1, 0)
+    subscriptions['flg'] = np.where(subscriptions.start_date.dt.year == 2021, 1,
+                           np.where(subscriptions.end_date.dt.year == 2021, 1,
+                           np.where((subscriptions.start_date.dt.year < 2021) & (subscriptions.end_date.dt.year) > 2021,1,0)))
+    subscriptions = subscriptions.query("flg == 1")
+    streams = streams.query("stream_date.dt.year == 2021")
 
-    res = merge.query("active_subs_2021 == 1 and stream_2021 == 0")
-    return pd.DataFrame({'accounts_count': [len(res)]})
+    merge = pd.merge(subscriptions,streams,on = 'account_id',how = 'left').query("session_id.isna()")
+    res = merge.account_id.nunique()
+    return pd.DataFrame({'accounts_count':[res]})

@@ -25,11 +25,7 @@ select
 distinct r1.id1 as user_id
 from rnk r1
 join rnk r2 on 
-(r1.id1 = r2.id1 and r1.id2 = r2.id2 and r1.call_time != r2.call_time and r1.call_day = r2.call_day) 
--- 我们第一个条件就是保证对应的id1和id2都是一样的，同时时间不一样并且保证是同一天
-or (r1.rnk  = 1 and r1.rnk_desc = 1 and r1.call_day = r2.call_day)
--- 我们第二个条件是为了只打了一个电话的人设计的，对于这波人，rnk以及rnk desc都是一样的就是1，但是我们要保证是同一天打的电话
-
+on r1.rnk = 1 and r2.rnk_desc = 1 and r1.user_id= r2.user_id and r1.call_day = r2.call_day and r1.id = r2.id
 
 
 -- 下面是别人做的
@@ -96,4 +92,22 @@ def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
 
     merge = pd.merge(concat, concat, on = ['user_id','id','day'])
     res = merge.query("(first_call_x == 1 and last_call_x == 1) or call_time_x != call_time_y")
+    return res[['user_id']].drop_duplicates()
+
+
+-- 或者我们python可以按照sql的最后一种方法来做
+import pandas as pd
+
+def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
+    calls['call_day'] = calls.call_time.dt.strftime("%Y-%m-%d")
+    calls1 = calls[['caller_id','recipient_id','call_time','call_day']].rename(columns = {'caller_id':'user_id','recipient_id':'id'})
+    calls2 = calls[['recipient_id','caller_id','call_time','call_day']].rename(columns = {'recipient_id':'user_id','caller_id':'id'})
+    call = pd.concat([calls1,calls2]).drop_duplicates()
+    call['rnk'] = call.groupby(['call_day','user_id']).call_time.rank(method = 'dense')
+    call['rnk_desc'] = call.groupby(['call_day','user_id']).call_time.rank(method = 'dense',ascending = False)
+
+    call = call.query("rnk == 1 or rnk_desc == 1")
+    call = call.groupby(['user_id','call_day'],as_index = False).id.nunique()
+
+    res = call.query("id == 1")
     return res[['user_id']].drop_duplicates()

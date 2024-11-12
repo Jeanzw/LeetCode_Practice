@@ -62,22 +62,23 @@ def count_seniors_and_juniors(candidates: pd.DataFrame) -> pd.DataFrame:
     # Constants
     BUDGET = 70000
 
-    # Separate seniors and juniors and sort by salary
+    # 把Senior和junior给分别抽出来，并且排序号
     seniors = candidates[candidates["experience"] == "Senior"].sort_values(by="salary")
     juniors = candidates[candidates["experience"] == "Junior"].sort_values(by="salary")
 
-    # Calculate cumulative salaries
+    # 分别计算各自的累计求和
     seniors["cumulative_salary"] = seniors["salary"].cumsum()
     juniors["cumulative_salary"] = juniors["salary"].cumsum()
 
-    # Determine how many seniors can be hired
+    # 先算Senior可以找的数量
     seniors_hired = seniors[seniors["cumulative_salary"] <= BUDGET]
     remaining_budget = BUDGET - seniors_hired["salary"].sum()
+    -- 这里我们用sum()因为如果我们用max()，如果不存在，那么返回的是null不是0
 
-    # Determine how many juniors can be hired with the remaining budget
+    # 用剩下的钱去看可以招多少junior
     juniors_hired = juniors[juniors["cumulative_salary"] <= remaining_budget]
 
-    # Prepare the result
+    # 最后整理数据
     result = pd.DataFrame(
         {
             "experience": ["Senior", "Junior"],

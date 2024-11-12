@@ -5,7 +5,7 @@ from
 (select 
     s.school_id,
     score,
-    rank() over (partition by s.school_id order by student_count desc, score asc) as rnk
+    rank() over (partition by s.school_id order by score asc) as rnk
     from
     Schools s
     left join Exam e on s.capacity >= e.student_count)tmp
@@ -16,15 +16,11 @@ from
 import pandas as pd
 
 def find_cutoff_score(schools: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame:
-    df = schools.merge(exam, how="cross")
+    merge = pd.merge(schools,exam,how = 'cross')
+    merge = merge.query("capacity >= student_count")
+    merge['rnk'] = merge.groupby(['school_id']).score.rank()
 
-    result = (
-        df[df.capacity >= df.student_count]
-        .groupby("school_id")["score"]
-        .min()
-        .reset_index()
-        .merge(schools, how="right")
-        .fillna(-1)
-    )
+    merge = merge.query("rnk == 1")[['school_id','score']]
 
-    return result[["school_id", "score"]]
+    res = pd.merge(schools,merge,on = 'school_id',how = 'left').fillna(-1)
+    return res[['school_id','score']]

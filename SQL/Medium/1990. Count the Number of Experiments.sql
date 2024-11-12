@@ -36,8 +36,8 @@ import pandas as pd
 def count_experiments(experiments: pd.DataFrame) -> pd.DataFrame:
     platform = pd.DataFrame({'platform':['Android','IOS','Web']})
     experiment_name = pd.DataFrame({'experiment_name':['Reading','Sports','Programming']})
-    summary = pd.merge(platform,experiment_name,how = 'cross')
+    frame = pd.merge(platform,experiment_name,how = 'cross')
+    merge = pd.merge(frame,experiments,on = ['platform','experiment_name'], how = 'left')
 
-    res = pd.merge(summary,experiments, on = ['platform','experiment_name'], how = 'left').groupby(['platform','experiment_name'],as_index = False).experiment_id.nunique().rename(columns = {'experiment_id':'num_experiments'})
-
-    return res
+    res = merge.groupby(['platform','experiment_name'],as_index = False).experiment_id.nunique()
+    return res.rename(columns = {'experiment_id':'num_experiments'})
