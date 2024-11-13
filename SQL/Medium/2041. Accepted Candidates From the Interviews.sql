@@ -12,9 +12,8 @@ having sum(score) > 15
 import pandas as pd
 
 def accepted_candidates(candidates: pd.DataFrame, rounds: pd.DataFrame) -> pd.DataFrame:
-    candidates = candidates.query("years_of_exp >= 2")
-    rounds = rounds.groupby(['interview_id'],as_index = False).score.sum()
-    rounds = rounds.query("score > 15")
+    merge = pd.merge(candidates,rounds,on = 'interview_id')
+    merge = merge.groupby(['candidate_id','years_of_exp'],as_index = False).score.sum()
+    merge = merge.query("score > 15 and years_of_exp >= 2")
 
-    res = pd.merge(candidates,rounds,on = 'interview_id')
-    return res[['candidate_id']]
+    return merge[['candidate_id']]

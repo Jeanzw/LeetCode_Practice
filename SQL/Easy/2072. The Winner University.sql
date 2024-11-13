@@ -8,24 +8,22 @@ case when (select ny from ny) > (select cali from cali) then 'New York Universit
      when (select ny from ny) < (select cali from cali) then 'California University'
      else 'No Winner' end as winner
 
-
+-- 或者不用cte直接一条写下来
+select
+case when (select count(distinct student_id) from NewYork where score >= 90) > (select count(distinct student_id) from California where score >= 90) then 'New York University'
+     when (select count(distinct student_id) from NewYork where score >= 90) < (select count(distinct student_id) from California where score >= 90) then 'California University'  
+     else 'No Winner' end as winner
 
 
 --  Python
 import pandas as pd
 
 def find_winner(new_york: pd.DataFrame, california: pd.DataFrame) -> pd.DataFrame:
-    # Counting the number of excellent students from each university
-    ny_excellent_count = new_york[new_york["score"] >= 90].shape[0]
-    ca_excellent_count = california[california["score"] >= 90].shape[0]
-
-    # Comparing the counts to determine the winner
-    if ny_excellent_count > ca_excellent_count:
-        winner = "New York University"
-    elif ny_excellent_count < ca_excellent_count:
-        winner = "California University"
+    new_york = new_york.query("score >= 90").student_id.nunique()
+    california = california.query("score >= 90").student_id.nunique()
+    if new_york > california:
+        return pd.DataFrame({'winner':['New York University']})
+    elif new_york < california:
+        return pd.DataFrame({'winner':['California University']})
     else:
-        winner = "No Winner"
-
-    # Returning the result as a DataFrame
-    return pd.DataFrame({"winner": [winner]})
+        return pd.DataFrame({'winner':['No Winner']})
