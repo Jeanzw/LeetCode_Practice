@@ -1,3 +1,15 @@
+-- 再一次做，其实我们不需要任何union直接来写就好了
+with type_0 as
+(select distinct customer_id from Orders where order_type = 0)
+
+select
+a.*
+from Orders a
+left join type_0 b on a.customer_id = b.customer_id
+where b.customer_id is null or a.order_type = 0
+
+
+
 with type0 as
 (select distinct customer_id from Orders where order_type = 0)
 
@@ -44,8 +56,9 @@ select order_id,customer_id,order_type from cte where flg != 0
 import pandas as pd
 
 def drop_specific_orders(orders: pd.DataFrame) -> pd.DataFrame:
-    orders['flg'] = orders.groupby(['customer_id']).order_type.transform(min)
-    flg_0 = orders.query("order_type != 1 and flg == 0")[['order_id','customer_id','order_type']]
-    flg_1 = orders.query("flg == 1")[['order_id','customer_id','order_type']]
+    type0 = orders[orders['order_type'] == 0][['customer_id']].drop_duplicates()
+    type0['flg'] = 1
+    merge = pd.merge(orders,type0,on = 'customer_id',how = 'left')
 
-    return pd.concat([flg_0,flg_1])
+    res = merge[(merge['flg'].isna())|(merge['order_type'] == 0)]
+    return res[['order_id','customer_id','order_type']]

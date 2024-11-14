@@ -39,15 +39,12 @@ order by 1
 import pandas as pd
 
 def count_passengers_in_bus(buses: pd.DataFrame, passengers: pd.DataFrame) -> pd.DataFrame:
-    buses = buses.sort_values('arrival_time')
-    buses['last_time'] = buses.arrival_time.shift(1).fillna(0)
+    buses.sort_values('arrival_time', inplace = True)
+    buses['last'] = buses.arrival_time.shift(1).fillna(0)
 
-    merge = pd.merge(buses,passengers, how = 'cross')
-    merge = merge.query("arrival_time_y <= arrival_time_x and arrival_time_y > last_time")
+    merge = pd.merge(buses, passengers,how = 'cross')
+    merge = merge[(merge['arrival_time_y'] > merge['last'])&(merge['arrival_time_y'] <= merge['arrival_time_x'])]
+    merge = merge.groupby(['bus_id'],as_index = False).passenger_id.nunique()
 
-    summary = merge.groupby(['bus_id'], as_index = False).agg(
-        passengers_cnt = ('passenger_id','nunique')
-    )
-
-    res = pd.merge(buses,summary, on = 'bus_id', how = 'left').fillna(0)
-    return res[['bus_id','passengers_cnt']].sort_values('bus_id')
+    res = pd.merge(buses,merge, on = 'bus_id', how = 'left').fillna(0)
+    return res[['bus_id','passenger_id']].rename(columns = {'passenger_id':'passengers_cnt'}).sort_values('bus_id')
