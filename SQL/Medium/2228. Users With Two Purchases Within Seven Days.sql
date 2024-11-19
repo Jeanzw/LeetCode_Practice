@@ -22,3 +22,14 @@ def find_valid_users(purchases: pd.DataFrame) -> pd.DataFrame:
 
     res = purchases.query("diff <= 7 and diff >= 0")
     return res[['user_id']].drop_duplicates().sort_values(['user_id'])
+
+
+-- 第二次写
+import pandas as pd
+
+def find_valid_users(purchases: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(purchases,purchases, on = 'user_id')
+    merge['diff'] = (merge.purchase_date_x - merge.purchase_date_y).dt.days
+
+    res = merge[(merge['purchase_id_x'] != merge['purchase_id_y'])&(merge['diff'] >= 0)&(merge['diff'] <= 7)]
+    return res[['user_id']].sort_values('user_id').drop_duplicates()

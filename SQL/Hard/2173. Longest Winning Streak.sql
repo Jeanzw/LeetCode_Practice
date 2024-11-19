@@ -37,15 +37,16 @@ group by 1
 
 -- Python
 import pandas as pd
-import numpy as np
 
 def longest_winning_streak(matches: pd.DataFrame) -> pd.DataFrame:
-    matches = matches.sort_values(['player_id','match_day'])
-    matches['not_win'] = np.where(matches['result'] == 'Win',0,1)
-    matches['group_id'] = matches.groupby(['player_id']).not_win.cumsum()
+    matches['rnk1'] = matches.groupby(['player_id']).match_day.rank()
+    matches['rnk2'] = matches.groupby(['player_id','result']).match_day.rank()
+    matches['bridge'] = matches['rnk1'] - matches['rnk2']
 
-    df = matches.groupby(['player_id','group_id'], as_index = False).agg(
-        streak = ('result',lambda x: (x == "Win").sum())
-    )
-    df = df.groupby(['player_id'],as_index = False).streak.max()
-    return df.rename(columns = {'streak':'longest_streak'})
+    win = matches[matches['result'] == 'Win']
+    win = win.groupby(['player_id','bridge'],as_index = False).match_day.nunique()
+
+    merge = pd.merge(matches,win,on = 'player_id', how = 'left')
+    merge = merge.groupby(['player_id'],as_index = False).match_day_y.max().fillna(0)
+
+    return merge.rename(columns = {'match_day_y':'longest_streak'})
