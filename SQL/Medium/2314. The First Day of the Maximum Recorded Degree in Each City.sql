@@ -12,5 +12,5 @@ import pandas as pd
 
 def find_the_first_day(weather: pd.DataFrame) -> pd.DataFrame:
     weather = weather.sort_values(['city_id','degree','day'], ascending = [1,0,1])
-    weather['rnk'] = weather.groupby(['city_id']).degree.rank(method = 'first', ascending = False)
-    return weather.query("rnk == 1")[['city_id','day','degree']]
+    weather = weather.groupby(['city_id'],as_index = False).head(1)
+    return weather

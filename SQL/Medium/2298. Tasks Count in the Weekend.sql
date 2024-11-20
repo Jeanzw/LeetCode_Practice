@@ -12,11 +12,10 @@ from tasks
 
 -- Python
 import pandas as pd
-import numpy as np
 
 def count_tasks(tasks: pd.DataFrame) -> pd.DataFrame:
-    tasks['weekday'] = tasks['submit_date'].dt.weekday
-    tasks['weekday'] = np.where((tasks['weekday'] >= 0) & (tasks['weekday'] <= 4),'working','weekend')
-    working_cnt = tasks.query("weekday == 'working'").shape[0]
-    weekend_cnt = tasks.query("weekday == 'weekend'").shape[0]
-    return pd.DataFrame({'weekend_cnt':[weekend_cnt],'working_cnt':[working_cnt]})
+    tasks['weekday'] = tasks.submit_date.dt.weekday
+    
+    weekday = tasks[tasks['weekday'] <= 4].task_id.nunique()
+    weekend = tasks[tasks['weekday'] > 4].task_id.nunique()
+    return pd.DataFrame({'weekend_cnt':[weekend],'working_cnt':[weekday]})

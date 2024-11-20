@@ -16,7 +16,9 @@ import pandas as pd
 
 def product_sales_analysis(sales: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(sales,product,on = 'product_id')
-    merge['summ'] = merge['quantity'] * merge['price']
-    summary = merge.groupby(['user_id','product_id'],as_index = False).summ.sum()
-    summary['rnk'] = summary.groupby(['user_id']).summ.rank(method = 'dense', ascending = False)
-    return summary.query("rnk == 1")[['user_id','product_id']]
+    merge['money'] = merge['quantity'] * merge['price']
+    
+    agg = merge.groupby(['user_id','product_id'], as_index = False).money.sum()
+    agg['rnk'] = agg.groupby(['user_id']).money.rank(method = 'dense', ascending = False)
+    agg = agg[agg['rnk'] == 1]
+    return agg[['user_id','product_id']]

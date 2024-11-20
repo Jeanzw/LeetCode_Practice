@@ -18,6 +18,7 @@ import numpy as np
 
 def arrange_table(genders: pd.DataFrame) -> pd.DataFrame:
     genders['rnk'] = genders.groupby(['gender']).user_id.rank()
-    genders['cate_rnk'] = np.where(genders['gender'] == 'female', 1, np.where(genders['gender'] == 'male',3,2))
-    genders = genders.sort_values(['rnk','cate_rnk'])
-    return genders[['user_id','gender']]
+    genders['gender_cate'] = np.where(genders['gender'] == 'female',1,
+                             np.where(genders['gender'] == 'other',2,3))
+
+    return genders.sort_values(['rnk','gender_cate'])[['user_id','gender']]

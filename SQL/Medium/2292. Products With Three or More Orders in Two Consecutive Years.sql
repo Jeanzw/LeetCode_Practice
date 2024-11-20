@@ -14,18 +14,31 @@ group by 1, year - rnk
 having count(*) >= 2
 
 
+-- 其实我觉得这道题不需要按照之前找连续数这样做，这样太复杂了
+with cte as
+(select
+year(purchase_date) as year,
+product_id
+from Orders
+group by 1,2
+having count(distinct order_id) >= 3)
+
+select
+distinct a.product_id
+from cte a
+inner join cte b on a.product_id = b.product_id and a.year + 1 = b.year
+
+
 
 -- Python
 import pandas as pd
 
 def find_valid_products(orders: pd.DataFrame) -> pd.DataFrame:
     orders['year'] = orders.purchase_date.dt.year
-    orders = orders.groupby(['product_id','year'], as_index = False).order_id.nunique()
-    orders = orders.query("order_id >= 3")
-    orders['rnk'] = orders.groupby(['product_id']).year.rank()
-    orders['bridge'] =orders['year'] - orders['rnk']
 
-    summary = orders.groupby(['product_id','bridge'],as_index = False).year.nunique()
-    summary = summary.query("year >= 2")
+    summary = orders.groupby(['year','product_id'],as_index = False).order_id.nunique()
+    summary = summary[summary['order_id'] >= 3]
 
-    return summary[['product_id']].drop_duplicates()
+    merge = pd.merge(summary,summary,on = 'product_id')
+    merge = merge[merge['year_x'] + 1 == merge['year_y']]
+    return merge[['product_id']].drop_duplicates()
