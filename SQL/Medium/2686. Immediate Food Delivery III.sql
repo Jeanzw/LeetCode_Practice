@@ -13,10 +13,12 @@ import pandas as pd
 import numpy as np
 
 def immediate_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
-    delivery['immediate'] = np.where(delivery['order_date'] == delivery['customer_pref_delivery_date'],1,0)
-    delivery = delivery.groupby(['order_date'],as_index = False).agg(
-        n = ('immediate','sum'),
-        d = ('delivery_id','count')
+    delivery['immediate'] = np.where(delivery['order_date'] == delivery['customer_pref_delivery_date'], delivery['delivery_id'], None)
+    -- 返回null值在python里面是None
+    delivery = delivery.groupby(['order_date'], as_index = False).agg(
+        n = ('immediate','nunique'),
+        d = ('delivery_id','nunique')
     )
     delivery['immediate_percentage'] = round(100 * delivery['n']/delivery['d'],2)
-    return delivery[['order_date','immediate_percentage']].sort_values(['order_date'])
+
+    return delivery[['order_date','immediate_percentage']].sort_values('order_date')
