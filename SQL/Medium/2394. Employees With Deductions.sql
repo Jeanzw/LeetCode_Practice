@@ -11,8 +11,9 @@ having ifnull(sum(ceiling(timestampdiff(second,in_time,out_time)/60)),0) < neede
 import pandas as pd
 
 def employees_with_deductions(employees: pd.DataFrame, logs: pd.DataFrame) -> pd.DataFrame:
-    logs['time'] = (logs['out_time'] - logs['in_time']).dt.ceil('1min').dt.seconds // 60
-    logs = logs.groupby(['employee_id'], as_index = False).time.sum()
-    logs['time'] = logs['time'] // 60
-    summary = pd.merge(employees,logs, on = 'employee_id', how = 'left').fillna(0)
-    return summary.query("needed_hours > time")[['employee_id']]
+    logs['working'] = (logs['out_time'] - logs['in_time']).dt.ceil('min').dt.total_seconds() // 60
+    logs = logs.groupby(['employee_id'],as_index = False).working.sum()
+
+    merge = pd.merge(employees,logs, on = 'employee_id', how = 'left').fillna(0)
+    merge['needed_min'] = merge['needed_hours'] * 60
+    return merge[merge['working'] < merge['needed_min']][['employee_id']]

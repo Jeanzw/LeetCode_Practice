@@ -9,6 +9,7 @@ where a.type = 'Metal' and b.type = 'Nonmetal'
 import pandas as pd
 
 def form_bond(elements: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(elements,elements,how = 'cross')
-    merge = merge.query("type_x == 'Metal' and type_y == 'Nonmetal'")
-    return merge[['symbol_x','symbol_y']].rename(columns = {'symbol_x':'metal','symbol_y':'nonmetal'})
+    metal = elements[elements['type'] == 'Metal'][['symbol']]
+    nonmetal = elements[elements['type'] == 'Nonmetal'][['symbol']]
+    merge = pd.merge(metal,nonmetal,how = 'cross')
+    return merge.rename(columns = {'symbol_x':'metal','symbol_y':'nonmetal'})

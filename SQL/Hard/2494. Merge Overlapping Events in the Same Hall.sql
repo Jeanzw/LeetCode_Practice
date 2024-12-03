@@ -54,3 +54,26 @@ WITH maxx AS (
 SELECT hall_id, MIN(start_day) AS start_day, MAX(end_day) AS end_day
 FROM decide
 GROUP BY hall_id, decision
+
+
+
+-- Python
+import pandas as pd
+import numpy as np
+
+def merge_events(hall_events: pd.DataFrame) -> pd.DataFrame:
+    hall_events.sort_values(['hall_id','start_day'], inplace = True)
+    hall_events['maxx'] = hall_events.groupby(['hall_id']).end_day.cummax()
+    hall_events['lmaxx'] = hall_events.groupby(['hall_id']).maxx.shift(1)
+    hall_events['idk'] = 0
+
+    hall_events['flg'] = np.where(hall_events['start_day'] <= hall_events['lmaxx'], 0, 1)
+    hall_events['flg'] = hall_events['flg'] + hall_events['idk']
+
+    hall_events['bridge'] = hall_events.groupby(['hall_id']).flg.cumsum()
+
+    res = hall_events.groupby(['hall_id','bridge'],as_index = False).agg(
+        start_day = ('start_day','min'),
+        end_day = ('end_day','max')
+    )
+    return res[['hall_id','start_day','end_day']]

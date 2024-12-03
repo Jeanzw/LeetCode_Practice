@@ -1,23 +1,29 @@
-WITH RECURSIVE a AS (
-    SELECT  id,
-            ROW_NUMBER() OVER () AS new_id,
-            drink
-    FROM CoffeeShop
-), cte AS (
-    SELECT  id,
-            drink,
-            new_id
-    FROM a
-    WHERE new_id = 1
-    
-    UNION ALL
-    
-    SELECT  a.id,
-            (CASE WHEN a.drink iS NULL THEN cte.drink ELSE a.drink END) AS drink,
-            a.new_id
-    FROM cte JOIN a ON cte.new_id + 1 = a.new_id   
+with recursive cte as
+(select
+*,
+row_number() over () as rnk
+from CoffeeShop)
+, frame as
+(select 
+    id,
+    drink,
+    rnk 
+from cte where rnk = 1
+
+union all
+
+select 
+    b.id,
+    case when b.drink is null then a.drink else b.drink end as drink,
+    b.rnk 
+from frame a join cte b on a.rnk + 1 = b.rnk
 )
 
-SELECT  id,
-        drink
-FROM cte
+select id,drink from frame
+
+
+-- Python
+import pandas as pd
+
+def change_null_values(coffee_shop: pd.DataFrame) -> pd.DataFrame:
+    return coffee_shop.fillna(method='ffill')

@@ -9,6 +9,8 @@ group by 1,2)
 
 -- 这一道题求递增的方式很巧妙，前面join之类的还是按照我们之前的做法
 -- 但是用最后的count(*) - count(b.customer_id)=  1来看是否每一年都有对应的值
+-- 因为我们需要有一个条件把符合题目标准的行给抽出来
+-- 我们不能直接使用null来进行筛选，因为很可能出现对于某些customer，有几年符合题目有几年不符合题目，如果按照null筛选，这类客人也会被抽出来
 select
 a.customer_id
 from summary a
@@ -72,20 +74,20 @@ where customer_id not in (select customer_id from summary_last_year where sum_pr
 
 -- Python
 import pandas as pd
-import numpy as np
 
 def find_specific_customers(orders: pd.DataFrame) -> pd.DataFrame:
-    orders['year'] = orders['order_date'].dt.year
-    orders = orders.groupby(['customer_id','year'], as_index = False).price.sum()
-    orders['next_year'] = orders.groupby(['customer_id']).year.shift(1)
-    orders['next_price'] = orders.groupby(['customer_id']).price.shift(1)
-    -- 这一个code是解决掉edge case：只有一年的记录
-    orders['total_year'] = orders.groupby(['customer_id']).year.transform('count')
+    orders['year'] = orders.order_date.dt.year
+    orders = orders.groupby(['customer_id','year'], as_index = False).price.sum().sort_values(['customer_id','year'])
+    orders['next_line_year'] = orders.groupby(['customer_id']).year.shift(-1)
+    orders['next_line_price'] = orders.groupby(['customer_id']).price.shift(-1)
+    -- 下把下一行对应的年份和价格搞出来
 
-    orders = orders.query("~next_year.isna() or total_year == 1")
-    orders['flg'] = np.where((orders['year'] - 1 == orders['next_year']) & (orders['price'] > orders['next_price']), 1, np.where(orders['total_year'] == 1, 1, 0))
+    total_line = orders.groupby(['customer_id'],as_index = False).year.nunique()
+    -- 先求原本表中总共有多少行
+    meet_require = orders[(orders['year'] + 1 == orders['next_line_year']) & (orders['price'] < orders['next_line_price'])]
+    -- 满足条件后，每个customer对应多少航
+    meet_require = meet_require.groupby(['customer_id'],as_index = False).year.nunique()
 
-    remove = orders.query("flg == 0")
-
-    res = orders[~orders['customer_id'].isin(remove['customer_id'])]
-    return res[['customer_id']].drop_duplicates()
+    merge = pd.merge(total_line,meet_require, on = 'customer_id', how ='left')
+    return merge[(merge['year_x'] - 1 == merge['year_y'])|(merge['year_x'] == 1)][['customer_id']]
+    -- 如果某个customer只有一年有购买记录，那么我们是当做这个客人满足条件，需要将其抽出来
