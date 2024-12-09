@@ -17,3 +17,15 @@ from bridge
 group by customer_id, bridge)
 
 select customer_id from cal where rnk = 1 order by 1
+
+
+
+-- Python
+import pandas as pd
+
+def find_customers(transactions: pd.DataFrame) -> pd.DataFrame:
+    transactions['rnk'] = transactions.groupby(['customer_id']).transaction_date.rank()
+    transactions['bridge'] = transactions['transaction_date'] - pd.to_timedelta(transactions['rnk'],unit = 'D')
+    transactions = transactions.groupby(['customer_id','bridge'],as_index = False).transaction_id.nunique()
+    transactions['rnk'] = transactions.transaction_id.rank(method = 'dense', ascending = False)
+    return transactions[transactions['rnk'] == 1][['customer_id']].sort_values('customer_id')

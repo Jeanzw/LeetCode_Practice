@@ -25,7 +25,8 @@ import pandas as pd
 
 def find_active_users(users: pd.DataFrame) -> pd.DataFrame:
     users['ind'] = users.index
-    merge = pd.merge(users,users, on = 'user_id')
+
+    merge = pd.merge(users, users, on = 'user_id')
     merge['day_diff'] = (merge['created_at_x'] - merge['created_at_y']).dt.days
-    merge = merge.query("ind_x != ind_y and day_diff >= 0 and day_diff <= 7")
+    merge = merge[(merge['ind_x'] != merge['ind_y']) & (merge['day_diff'] <= 7)& (merge['day_diff'] >= 0)]
     return merge[['user_id']].drop_duplicates()
