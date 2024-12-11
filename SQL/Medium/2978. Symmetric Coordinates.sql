@@ -1,3 +1,6 @@
+
+-- 我们要注意的一点：可能会存在(6,6)这样的一组数据
+
 with cte as
 (select *, row_number() over () as rnk from Coordinates)
 
@@ -10,10 +13,11 @@ order by 1, 2
 
 
 -- Python
+
 import pandas as pd
 
 def symmetric_pairs(coordinates: pd.DataFrame) -> pd.DataFrame:
     coordinates['rnk'] = coordinates.index
-    merge = pd.merge(coordinates,coordinates,how = 'cross')
-    merge = merge.query("rnk_x != rnk_y and X_x == Y_y and Y_x == X_y and X_x <= Y_x")
-    return merge[['X_x','Y_x']].drop_duplicates().rename(columns = {'X_x':'x','Y_x':'y'}).sort_values(['x','y'])
+    merge = pd.merge(coordinates,coordinates,left_on = ['X','Y'], right_on = ['Y','X'])
+    merge = merge[(merge['X_x'] <= merge['Y_x']) & (merge['rnk_x'] != merge['rnk_y'])]
+    return merge[['X_x','Y_x']].rename(columns = {'X_x':'X','Y_x':'Y'}).drop_duplicates().sort_values(['X','Y'])
