@@ -4,8 +4,8 @@ a.*,
 row_number() over (partition by flight_id order by booking_time) as rnk,
 b.capacity
 from Passengers a
-inner join Flights b on a.flight_id = b.flight_id)
--- 这里要用inner，因为存在在Passengers里面出现的flightid不在Flights表里面的情况（虽然我觉得这个情况过于扯淡……）
+left join Flights b on a.flight_id = b.flight_id)
+
 
 select 
     passenger_id,
