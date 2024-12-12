@@ -7,6 +7,13 @@ from Scores)
 select max(total_score) - min(total_score) as difference_in_score from cte
 
 
+
+-- 可以直接写
+select
+max(assignment1 + assignment2 + assignment3) - min(assignment1 + assignment2 + assignment3) as difference_in_score
+from Scores
+
+
 -- Python
 import pandas as pd
 
