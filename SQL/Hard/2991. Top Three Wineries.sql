@@ -19,20 +19,19 @@ order by 1
 import pandas as pd
 
 def top_three_wineries(wineries: pd.DataFrame) -> pd.DataFrame:
-    # 1. get agg points
-    wineries = wineries.groupby(['country', 'winery']).agg(
-        ttl_points = ('points', 'sum')
-    ).reset_index()
-    # 2. sort and rank
-    wineries = wineries.sort_values(by = ['country', 'ttl_points', 'winery'], ascending = [1, 0, 1])
-    wineries['rnk'] = wineries.groupby('country')['ttl_points'].rank(ascending=False, method='first') # method = 'first' is used to order wineries by winery name in ascending order if they have same points
-    # 3. get concat winery_points
-    wineries['winery_points'] = wineries['winery'] + ' (' + wineries['ttl_points'].astype(str) + ')'
-    # 4. get unique countries
-    df = pd.DataFrame(data = wineries['country'].unique(), columns = ['country'])
-    # 5. merge and get top second and third columns
-    df = df.merge(wineries[wineries['rnk'] == 1][['country', 'winery_points']], how = 'left', on = 'country').rename(columns = {'winery_points':'top_winery'})
-    df = df.merge(wineries[wineries['rnk'] == 2][['country', 'winery_points']], how = 'left', on = 'country').rename(columns = {'winery_points':'second_winery'}).fillna('No second winery')
-    df = df.merge(wineries[wineries['rnk'] == 3][['country', 'winery_points']], how = 'left', on = 'country').rename(columns = {'winery_points':'third_winery'}).fillna('No third winery')
-    # 6. sort and return
-    return df.sort_values(by = 'country', ascending = True)
+-- 先求和
+    wineries = wineries.groupby(['country','winery'],as_index = False).points.sum()
+-- 再排序
+    wineries.sort_values(['points','winery'], ascending = [0,1])
+-- 给个序列
+    wineries['rnk'] = wineries.groupby(['country']).points.rank(method = 'first',ascending = False)
+-- 将名字+分数进行数据处理
+    wineries['name_point'] = wineries['winery'] + ' (' + wineries['points'].astype(str) + ')'
+
+    first = wineries[wineries['rnk'] == 1][['country','name_point']]
+    second = wineries[wineries['rnk'] == 2][['country','name_point']]
+    third = wineries[wineries['rnk'] == 3][['country','name_point']]
+
+    merge = pd.merge(first,second, on = 'country',how = 'left').fillna('No second winery')
+    merge = pd.merge(merge,third,on = 'country',how = 'left').fillna('No third winery')
+    return merge.rename(columns = {'name_point_x':'top_winery','name_point_y':'second_winery','name_point':'third_winery'}).sort_values('country')
