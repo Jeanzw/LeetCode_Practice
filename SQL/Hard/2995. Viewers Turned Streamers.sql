@@ -10,6 +10,22 @@ where a.session_type = 'Streamer'
 group by 1
 order by 2 desc,1 desc
 
+-- 将上面的给处理一下
+with users_candidate as
+(select *, row_number() over (partition by user_id order by session_start) as rnk, count(*) over (partition by user_id) as cnt from Sessions)
+
+select
+a.user_id,
+count(distinct b.session_id) as sessions_count
+from users_candidate a
+left join Sessions b on a.user_id = b.user_id
+where rnk = 1 and a.session_type = 'Viewer' and cnt > 1 and b.session_type = 'Streamer'
+group by 1
+order by 2 desc, 1 desc
+
+
+
+
 -- 直接来算不用join
 # Write your MySQL query statement below
 with cte as
@@ -41,3 +57,16 @@ def count_turned_streamers(sessions: pd.DataFrame) -> pd.DataFrame:
     # merge
     merge = pd.merge(first_session_viewer,streamer, on = 'user_id')
     return merge[['user_id','session_id_y']].rename(columns = {'session_id_y':'sessions_count'}).sort_values(['sessions_count','user_id'], ascending = [0,0])
+
+
+
+-- 也可以
+import pandas as pd
+
+def count_turned_streamers(sessions: pd.DataFrame) -> pd.DataFrame:
+    sessions['rnk'] = sessions.groupby(['user_id']).session_start.rank()
+    candidate = sessions[(sessions['rnk'] == 1) & (sessions['session_type'] == 'Viewer')]
+
+    stream = sessions[sessions['session_type'] == 'Streamer']
+    merge = pd.merge(candidate,stream,on = 'user_id').groupby(['user_id'], as_index = False).session_id_y.nunique()
+    return merge.rename(columns = {'session_id_y':'sessions_count'}).sort_values(['sessions_count','user_id'], ascending = [0,0])
