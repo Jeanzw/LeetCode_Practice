@@ -90,23 +90,25 @@ order by 2 desc
 import pandas as pd
 
 def maximize_items(inventory: pd.DataFrame) -> pd.DataFrame:
-    prime_eligible = inventory.query("item_type == 'prime_eligible'")
+    prime_eligible = inventory[inventory['item_type'] == 'prime_eligible']
     prime_eligible = prime_eligible.groupby(['item_type'],as_index = False).agg(
-        item_cnt = ('item_id','nunique'),
-        unit_square = ('square_footage','sum')
+        square_sum = ('square_footage','sum'),
+        item_sum = ('item_id','nunique')
     )
-    prime_eligible['unit'] = floor(500000/prime_eligible['unit_square'])
-    prime_eligible['tt_square'] = prime_eligible['unit_square'] * prime_eligible['unit']
-    prime_eligible['item_count'] = prime_eligible['item_cnt'] * prime_eligible['unit']
+    prime_eligible['unit'] = floor(500000/prime_eligible['square_sum'])
+    prime_eligible['tt_square'] = floor(500000/prime_eligible['square_sum']) * prime_eligible['square_sum']
+    prime_eligible['item_count'] = prime_eligible['unit'] * prime_eligible['item_sum']
+    prime_eligible['remaining'] = 500000 - prime_eligible['tt_square']
 
-    not_prime = inventory.query("item_type == 'not_prime'")
-    not_prime = not_prime.groupby(['item_type'],as_index = False).agg(
-        item_cnt = ('item_id','nunique'),
-        unit_square = ('square_footage','sum')
+
+    nonprime_eligible = inventory[inventory['item_type'] == 'not_prime']
+    nonprime_eligible = nonprime_eligible.groupby(['item_type'],as_index = False).agg(
+        square_sum = ('square_footage','sum'),
+        item_sum = ('item_id','nunique')
     )
-    not_prime['unit'] = floor((500000 - int(prime_eligible['tt_square']))/not_prime['unit_square'])
-    not_prime['item_count'] = not_prime['item_cnt'] * not_prime['unit']
+    nonprime_eligible['unit'] = floor(prime_eligible['remaining']/nonprime_eligible['square_sum'])
+    nonprime_eligible['tt_square'] = floor(prime_eligible['remaining']/nonprime_eligible['square_sum']) * nonprime_eligible['square_sum']
+    nonprime_eligible['item_count'] = nonprime_eligible['unit'] * nonprime_eligible['item_sum']
 
-
-    concat = pd.concat([prime_eligible,not_prime])
-    return concat[['item_type','item_count']].sort_values(['item_count'], ascending = False)
+    res = pd.concat([prime_eligible[['item_type','item_count']],nonprime_eligible[['item_type','item_count']]])
+    return res
