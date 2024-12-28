@@ -11,8 +11,10 @@ import pandas as pd
 import numpy as np
 
 def type_of_triangle(triangles: pd.DataFrame) -> pd.DataFrame:
-    triangles['triangle_type'] = np.where((triangles['A'] + triangles['B']<= triangles['C']) | (triangles['B'] + triangles['C']<= triangles['A']) | (triangles['A'] + triangles['C']<= triangles['B']),'Not A Triangle',
-    np.where((triangles['A'] == triangles['B']) & (triangles['B'] == triangles['C']),'Equilateral',
-    np.where((triangles['A'] == triangles['B']) |(triangles['B'] == triangles['C'])|(triangles['C'] == triangles['A']),'Isosceles','Scalene')
-    ))
+    triangles['triangle_type'] = np.where((triangles['A'] + triangles['B'] <= triangles['C']) | (triangles['B'] + triangles['C'] <= triangles['A']) | (triangles['A'] + triangles['C'] <= triangles['B']),'Not A Triangle',
+                                 np.where((triangles['A'] == triangles['B']) & (triangles['B'] == triangles['C']) & (triangles['A'] == triangles['C']), 'Equilateral',
+                                 np.where((triangles['A'] == triangles['B']) | (triangles['B'] == triangles['C']) | (triangles['A'] == triangles['C']), 'Isosceles','Scalene'
+
+                                 )))
+
     return triangles[['triangle_type']]

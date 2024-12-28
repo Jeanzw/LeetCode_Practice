@@ -9,14 +9,21 @@ group by 1
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def snap_analysis(activities: pd.DataFrame, age: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(age,activities,on = 'user_id', how = 'left')
-    
-    summary = merge.groupby(['age_bucket','activity_type'],as_index = False).time_spent.sum()
-    summary['total_time'] = summary.groupby(['age_bucket']).time_spent.transform(sum)
-    summary['pct'] = round(100 * summary['time_spent']/summary['total_time'],2)
-    open_ = summary.query("activity_type == 'open'")
-    send_ = summary.query("activity_type == 'send'")
-    result = pd.merge(send_,open_, on = 'age_bucket', how = 'left').fillna(0)
-    return result[['age_bucket','pct_x','pct_y']].rename(columns = {'pct_x':'send_perc','pct_y':'open_perc'})
+    activities['open'] = np.where(activities['activity_type'] == 'open',activities['time_spent'],0)
+    activities['send'] = np.where(activities['activity_type'] == 'send',activities['time_spent'],0)
+
+    merge = pd.merge(age,activities, on = 'user_id', how = 'left')
+
+    merge = merge.groupby(['age_bucket'],as_index = False).agg(
+        total = ('time_spent','sum'),
+        open = ('open','sum'),
+        send = ('send','sum')
+    )
+
+    merge['send_perc'] = round(100 * merge['send']/merge['total'],2)
+    merge['open_perc'] = round(100 * merge['open']/merge['total'],2)
+
+    return merge[['age_bucket','send_perc','open_perc']]
