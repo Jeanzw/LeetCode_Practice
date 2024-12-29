@@ -12,9 +12,11 @@ limit 3
 import pandas as pd
 
 def find_trending_hashtags(tweets: pd.DataFrame) -> pd.DataFrame:
-    tweets = tweets.query("tweet_date.dt.year == 2024 and tweet_date.dt.month == 2")
-    tweets['after_hashtag'] = tweets['tweet'].str.split('#').str[1]
+    tweets['after_hashtag'] = tweets.tweet.str.split('#').str[1]
     tweets['hashtag'] = tweets['after_hashtag'].str.split(' ').str[0]
     tweets['hashtag'] = '#' + tweets['hashtag']
-    result = tweets.groupby(['hashtag'],as_index = False).tweet_id.nunique()
-    return result.sort_values(['tweet_id','hashtag'], ascending = [0,0]).rename(columns = {'tweet_id':'hashtag_count'}).head(3)
+
+    tweets = tweets[(tweets['tweet_date'].dt.year == 2024) & (tweets['tweet_date'].dt.month == 2)]
+
+    tweets = tweets.groupby(['hashtag'],as_index = False).tweet_id.nunique()
+    return tweets.rename(columns = {'tweet_id':'hashtag_count'}).sort_values(['hashtag_count','hashtag'],ascending = [0,0]).head(3)

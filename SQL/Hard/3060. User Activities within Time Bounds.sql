@@ -20,8 +20,9 @@ order by 1
 import pandas as pd
 
 def user_activities(sessions: pd.DataFrame) -> pd.DataFrame:
-    sessions['rnk'] = sessions.groupby(['user_id']).session_start.transform('rank')
-    merge = pd.merge(sessions, sessions, on = ['user_id','session_type'])
-    merge['hour_diff'] = (merge['session_start_y'] - merge['session_end_x']).dt.total_seconds()
-    merge  = merge.query("rnk_x < rnk_y and hour_diff <= 43200")
-    return merge[['user_id']].sort_values('user_id').drop_duplicates()
+    sessions['rnk'] = sessions.groupby(['user_id']).session_start.rank()
+
+    merge = pd.merge(sessions,sessions,on = ['user_id','session_type'])
+    merge = merge[(merge['rnk_x'] < merge['rnk_y']) & ((merge['session_start_y'] - merge['session_end_x']).dt.total_seconds() <= 12 * 60 * 60) ]
+
+    return merge[['user_id']].drop_duplicates().sort_values('user_id')

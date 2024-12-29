@@ -31,7 +31,8 @@ import pandas as pd
 
 def find_unique_email_domains(emails: pd.DataFrame) -> pd.DataFrame:
     emails['end'] = emails['email'].str[-4:]
-    emails = emails.query("end == '.com'")
+    -- emails = emails.query("end == '.com'")
+    emails = emails[emails['end'] == '.com']
     emails['email_domain'] = emails['email'].str.split('@').str[1]
     result = emails.groupby(['email_domain'], as_index = False).id.nunique()
     return result.rename(columns = {'id':'count'}).sort_values('email_domain')
