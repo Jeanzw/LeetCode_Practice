@@ -20,3 +20,15 @@ def find_longest_calls(contacts: pd.DataFrame, calls: pd.DataFrame) -> pd.DataFr
     merge = pd.merge(calls,contacts, left_on = 'contact_id', right_on = 'id', how = 'left').sort_values(['type','duration_formatted'], ascending = [0,0])
     merge = merge.groupby(['type']).head(3)
     return merge[['first_name','type','duration_formatted']]
+
+
+-- 另外的做法
+import pandas as pd
+
+def find_longest_calls(contacts: pd.DataFrame, calls: pd.DataFrame) -> pd.DataFrame:
+    calls['duration_formatted'] = pd.to_datetime(calls['duration'], unit = 's').dt.strftime('%H:%M:%S')
+    calls['rnk'] = calls.groupby(['type']).duration.transform('rank', ascending = False, method = 'dense')
+    
+    merge = pd.merge(calls, contacts, left_on = 'contact_id', right_on = 'id', how = 'left')
+    merge = merge[merge['rnk'] <= 3]
+    return merge[['first_name','type','duration_formatted']].sort_values(['type','duration_formatted','first_name'], ascending = [0,0,0])

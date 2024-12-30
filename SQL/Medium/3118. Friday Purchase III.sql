@@ -72,3 +72,21 @@ def friday_purchases(purchases: pd.DataFrame, users: pd.DataFrame) -> pd.DataFra
 
     result = pd.merge(cross,purchases_users, on = ['week_of_month','membership'], how = 'left')
     return result.rename(columns = {'amount_spend':'total_amount'}).sort_values(['week_of_month','membership']).fillna(0)
+
+
+
+-- 再一次做
+import pandas as pd
+
+def friday_purchases(purchases: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
+    purchase_date = pd.DataFrame({'week_of_month':[1,2,3,4],'purchase_date':['2023-11-03','2023-11-10','2023-11-17','2023-11-24']})
+    # 改成日期形式
+    purchase_date['purchase_date'] = pd.to_datetime(purchase_date['purchase_date'])
+    membership = pd.DataFrame({'membership':['Premium','VIP']})
+    frame = pd.merge(purchase_date,membership,how = 'cross')
+
+    merge = pd.merge(frame,users,on = 'membership', how = 'left').merge(purchases, on = ['purchase_date','user_id'], how = 'left').fillna(0)
+
+    merge = merge.groupby(['week_of_month','membership'],as_index = False).amount_spend.sum()
+
+    return merge.rename(columns = {'amount_spend':'total_amount'}).sort_values(['week_of_month','membership'])
