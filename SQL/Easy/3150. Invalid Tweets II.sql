@@ -9,6 +9,6 @@ order by 1
 import pandas as pd
 
 def find_invalid_tweets(tweets: pd.DataFrame) -> pd.DataFrame:
-    tweets['len'] = tweets['content'].str.len()
-    tweets = tweets.query("content.str.len()>140 or content.str.count('#') > 3 or content.str.count('@') > 3")
+    tweets = tweets[(tweets['content'].str.len() > 140) | (tweets['content'].str.count('#') > 3) | (tweets['content'].str.count('@') > 3) ]
+
     return tweets[['tweet_id']].sort_values('tweet_id')

@@ -22,16 +22,13 @@ order by 1
 import pandas as pd
 
 def consecutive_available_seats(cinema: pd.DataFrame) -> pd.DataFrame:
-    cinema['free'] = cinema['free'].astype('int16')
-    cinema = cinema.query("free == 1")
-    cinema['bridge'] = cinema.seat_id.rank()
-    cinema['bridge'] = cinema['seat_id'] - cinema['bridge']
-
-    summary = cinema.groupby(['bridge'],as_index = False).agg(
+    cinema['bridge'] = cinema['seat_id'] - cinema.groupby(['free']).seat_id.rank()
+    cinema = cinema[cinema['free'] == 1] 
+    cinema = cinema.groupby(['bridge'], as_index = False).agg(
         first_seat_id = ('seat_id','min'),
         last_seat_id = ('seat_id','max'),
-        consecutive_seats_len = ('seat_id','nunique'),
+        consecutive_seats_len = ('seat_id','nunique')
     )
-    summary['rnk'] = summary.consecutive_seats_len.rank(method = 'dense', ascending = False)
-    return summary.query("rnk == 1")[['first_seat_id','last_seat_id','consecutive_seats_len']].sort_values('first_seat_id')
-    
+    cinema['rnk'] = cinema.consecutive_seats_len.rank(method = 'dense', ascending = False)
+    cinema = cinema[cinema['rnk'] == 1]
+    return cinema[['first_seat_id','last_seat_id','consecutive_seats_len']].sort_values(['first_seat_id'])

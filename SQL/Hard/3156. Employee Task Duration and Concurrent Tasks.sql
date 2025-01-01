@@ -29,24 +29,25 @@ order by 1
 
 -- Python
 import pandas as pd
+import numpy as np
 
 def find_total_duration(tasks: pd.DataFrame) -> pd.DataFrame:
-    # 1. get next start time
+    # 1. 首先排个序
     tasks = tasks.sort_values(by = ['employee_id', 'start_time'], ascending = [1, 1])
     tasks['next_start_time'] = tasks.groupby('employee_id')['start_time'].shift(-1)
-    # 2. compute duration for each task
+    # 2. 我们直接用shift将下一行给弄出来
     tasks['duration'] = (tasks['end_time'] - tasks['start_time']).dt.total_seconds()
-    # 3. check overlap
-    tasks['is_overlap'] = np.where(tasks['next_start_time'] < tasks['end_time'], 1, 0)
-    # 4. compute overlap time
-    tasks['overlap_duration'] = np.where(tasks['is_overlap'] == 1, (tasks['end_time'] - tasks['next_start_time']).dt.total_seconds(), 0)
-    # 5. aggregate and get final result
-    tasks = tasks.groupby('employee_id').agg(
+    # 3. 判断是否存在overlap
+    tasks['overlap_flg'] = np.where(tasks['next_start_time'] < tasks['end_time'], 1, 0)
+    # 4. 如果有overlap就减去对应时间，没有overlap就直接做计算
+    -- 这一步的目的就是为了求出真正的duration
+    tasks['duration'] = np.where(tasks['overlap_flg'] == 1, tasks['duration'] - (tasks['end_time'] - tasks['next_start_time']).dt.total_seconds(),tasks['duration'])
+    # 5. 计算结果
+    tasks = tasks.groupby(['employee_id'], as_index = False).agg(
         total_duration_in_seconds = ('duration', 'sum'),
-        total_overlap_duration_in_seconds = ('overlap_duration', 'sum'),
         concurrent_tasks_exclude_self = ('is_overlap', 'max')
-    ).reset_index()
-    # 6. compute total_task_hours and max_concurrent_tasks
-    tasks['total_task_hours'] = (tasks['total_duration_in_seconds'] - tasks['total_overlap_duration_in_seconds']) // 3600
+    )
+    # 6. 最后处理
+    tasks['total_task_hours'] = tasks['total_duration_in_seconds'] // 3600
     tasks['max_concurrent_tasks'] = tasks['concurrent_tasks_exclude_self'] + 1
-    return tasks[['employee_id', 'total_task_hours', 'max_concurrent_tasks']].sort_values(by = 'employee_id')
+    return tasks[['employee_id', 'total_task_hours', 'max_concurrent_tasks']].sort_values('employee_id')
