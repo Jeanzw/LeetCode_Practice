@@ -1,6 +1,7 @@
 select 
 state,
 group_concat(distinct city order by city separator ', ') as cities
+-- 注意这里的分隔号是,+空格
 from cities
 group by 1
 order by 1

@@ -19,7 +19,9 @@ import numpy as np
 
 def find_top_scoring_students(enrollments: pd.DataFrame, students: pd.DataFrame, courses: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(students,courses,on = 'major').merge(enrollments,on = ['student_id','course_id'],how = 'left')
-    merge['A_sum'] = np.where(merge['grade'] == 'A',1,0)
+    -- merge['A_sum'] = np.where(merge['grade'] == 'A',1,0)
+    -- 我觉得用sum来做还是有风险，最保险就是用计数
+    merge['A_grade'] = np.where(merge['grade'] == 'A', merge['course_id'],None)
     merge = merge.groupby(['student_id'],as_index = False).agg(
         course_sum = ('course_id','nunique'),
         grade = ('A_sum','sum')
