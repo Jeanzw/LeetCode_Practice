@@ -1,6 +1,7 @@
 with cte as
 (select
 a.customer_id,b.category,
+-- 上面只能有customerid和category，如果我们加上product_id那么在排序的时候其实是在Product的层面上排序而不是在category层面上
 sum(amount) as total_amount,
 count(distinct a.transaction_id) as transaction_count,
 -- 我们下面的order by要注意用max(transaction_date)，因为我们以category来做groupby，我们去找每个类别中最大的日期，然后进行比较
@@ -27,24 +28,23 @@ order by 7 desc, 1
 import pandas as pd
 
 def analyze_customer_behavior(transactions: pd.DataFrame, products: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(transactions,products,on = 'product_id')
-
-    summary = merge.groupby(['customer_id'], as_index = False).agg(
+    merge = pd.merge(transactions,products,on = 'product_id', how = 'left')
+    merge = merge.groupby(['customer_id','category'], as_index = False).agg(
         total_amount = ('amount','sum'),
         transaction_count = ('transaction_id','nunique'),
-        unique_categories = ('category','nunique'),
-        avg_transaction_amount = ('amount','mean')
+        transaction_date = ('transaction_date','max')
     )
-    summary['loyalty_score'] = (summary['transaction_count'] * 10 + (summary['total_amount']/100)).round(2)
-
-    top_cat = merge.groupby(['customer_id','category'], as_index = False).agg(
-        tt = ('transaction_id','nunique'),
-        max_date = ('transaction_date','max'),
+    merge.sort_values(['customer_id','transaction_count','transaction_date'], ascending = [1,0,0],inplace = True)
+    top_category = merge.groupby(['customer_id'],as_index = False).head(1)[['customer_id','category']]
+    
+    summary = merge.groupby(['customer_id'],as_index = False).agg(
+        total_amount = ('total_amount','sum'),
+        transaction_count = ('transaction_count','sum'),
+        unique_categories = ('category','nunique')
     )
-    top_cat['rnk'] = top_cat.groupby(['customer_id']).tt.rank(method = 'dense', ascending = False)
-    top_cat['ture_rnk'] = top_cat.groupby(['customer_id','rnk']).max_date.rank(method = 'first', ascending = False)
-    top_cat = top_cat.query("rnk == 1 and ture_rnk == 1")[['customer_id','category']]
+    summary['avg_transaction_amount'] = round(summary['total_amount']/ summary['transaction_count'] + 1e-9,2)
+    summary['loyalty_score'] = round(summary['transaction_count'] * 10 + summary['total_amount']/100 + 1e-9 ,2)
+    
 
-    result = pd.merge(summary,top_cat, on = 'customer_id',how ='left')
-    result['avg_transaction_amount'] = result['avg_transaction_amount'].round(2)
-    return result[['customer_id','total_amount','transaction_count','unique_categories','avg_transaction_amount','category','loyalty_score']].rename(columns = {'category':'top_category'}).sort_values(['loyalty_score','customer_id'], ascending = [0,1])
+    res = pd.merge(summary,top_category,on = 'customer_id')
+    return res[['customer_id','total_amount','transaction_count','unique_categories','avg_transaction_amount','category','loyalty_score']].sort_values(['loyalty_score','customer_id'], ascending = [0,1]).rename(columns = {'category':'top_category'})
