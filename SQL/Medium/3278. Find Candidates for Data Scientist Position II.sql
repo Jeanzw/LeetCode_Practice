@@ -31,20 +31,17 @@ order by 1
 -- Python
 import pandas as pd
 import numpy as np
-def find_best_candidates(candidates: pd.DataFrame, projects: pd.DataFrame) -> pd.DataFrame:
-    projects_cnt = projects.groupby(['project_id'], as_index = False).skill.nunique()
-    merge = pd.merge(projects,candidates,on = 'skill')
-    merge['score'] = np.where(merge['importance']>merge['proficiency'],-5,
-                     np.where(merge['importance']<merge['proficiency'],10,0)
-                     )
-    merge = merge.groupby(['project_id','candidate_id'],as_index = False).agg(
-        skill_has = ('skill','nunique'),
-        score = ('score','sum')
-    ).sort_values(['project_id','score','candidate_id'], ascending = [0,0,1])
 
-    summary = pd.merge(projects_cnt,merge,on = 'project_id')
-    summary = summary.query("skill == skill_has")
-    summary['rnk'] = summary.groupby(['project_id']).score.transform('rank',method = 'first',ascending = False)
-    summary = summary.query("rnk == 1")
-    summary['score'] = 100 + summary['score']
-    return summary[['project_id','candidate_id','score']].sort_values('project_id')
+def find_best_candidates(candidates: pd.DataFrame, projects: pd.DataFrame) -> pd.DataFrame:
+    projects['skill_required'] = projects.groupby(['project_id']).skill.transform('nunique')
+    merge = pd.merge(projects, candidates, on = 'skill')
+    merge['score'] = np.where(merge['proficiency'] > merge['importance'], 10,
+                           np.where(merge['proficiency'] < merge['importance'], -5,0))
+    merge = merge.groupby(['project_id','candidate_id','skill_required'], as_index = False).agg(
+        skill_have = ('skill','nunique'),
+        score = ('score','sum')
+        )
+    merge = merge[merge['skill_required'] == merge['skill_have']]
+    merge['score'] = 100 + merge['score']
+    merge.sort_values(['project_id','score','candidate_id'], ascending = [1,0,1],inplace = True)
+    return merge.groupby(['project_id']).head(1)[['project_id','candidate_id','score']]

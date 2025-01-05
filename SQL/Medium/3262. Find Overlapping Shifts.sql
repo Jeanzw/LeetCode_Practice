@@ -12,7 +12,8 @@ group by 1
 import pandas as pd
 
 def find_overlapping_shifts(employee_shifts: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(employee_shifts,employee_shifts, on = 'employee_id')
-    merge = merge.query("end_time_x > start_time_y and start_time_x < start_time_y")
+    merge = pd.merge(employee_shifts,employee_shifts,on = 'employee_id')
+    merge = merge[(merge['start_time_y'] > merge['start_time_x']) & (merge['start_time_y'] < merge['end_time_x'])]
+    
     merge = merge.groupby(['employee_id'],as_index = False).size()
     return merge.rename(columns = {'size':'overlapping_shifts'}).sort_values('employee_id')
