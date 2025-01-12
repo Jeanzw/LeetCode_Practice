@@ -44,6 +44,7 @@ from
 -- 或者这个处理直接在cte里面解决
 with cte as
 (select *, 1 + id - row_number() over (partition by num order by id) as bridge from Logs)
+-- 我们要注意，rownumber里面是order by id不是order by num
 
 select
 distinct num as ConsecutiveNums
@@ -57,8 +58,7 @@ having count(*) >= 3
 import pandas as pd
 
 def consecutive_numbers(logs: pd.DataFrame) -> pd.DataFrame:
-    logs['rnk'] = logs.groupby(['num']).rank(method = 'first')
-    logs['bridge'] = 1 + logs['id'] - logs['rnk']
-
-    summary = logs.groupby(['num','bridge'],as_index = False).size()
-    return summary.query("size >= 3")[['num']].rename(columns = {'num':'ConsecutiveNums'}).drop_duplicates()
+    logs['bridge'] = logs['id'] + 1 - logs.groupby(['num']).id.rank(method = 'first')
+    logs = logs.groupby(['num','bridge'], as_index = False).id.nunique()
+    logs = logs[logs['id'] >= 3]
+    return logs[['num']].rename(columns = {'num':'ConsecutiveNums'}).drop_duplicates()

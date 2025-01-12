@@ -51,12 +51,21 @@ def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
     # return pd.DataFrame({'SecondHighestSalary':[res]})
     return res
 
+
 -- 那为了解决这个问题，我们可以用一个if来解决掉特殊值
 import pandas as pd
 
 def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
-    employee['rnk'] = employee.salary.rank(method = 'dense',ascending = False)
-    if employee['rnk'].max() < 2:
-        return pd.DataFrame({'SecondHighestSalary':[None]}).drop_duplicates()
-    res = employee.query("rnk == 2")[['salary']].rename(columns = {'salary':'SecondHighestSalary'}).drop_duplicates()
-    return res
+    employee['rnk'] = employee.salary.rank(ascending = False, method = 'dense')
+    if len(employee['rnk']) < 2 or employee['rnk'].max() < 2:
+        return pd.DataFrame({'SecondHighestSalary':[None]})
+
+-- 之所以if里面有两个条件是因为，如果没有len，那么下面的test通不过：
+-- | id | salary |
+-- | -- | ------ |
+-- 如果没有employee['rnk'].max() < 2，则下面的test通不过：
+-- | id | salary |
+-- | -- | ------ |
+-- | 1  | 100    |
+-- | 2  | 100    |
+    return employee[employee['rnk'] == 2][['salary']].rename(columns = {'salary':'SecondHighestSalary'}).drop_duplicates()
