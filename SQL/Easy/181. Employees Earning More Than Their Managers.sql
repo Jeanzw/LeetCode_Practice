@@ -13,5 +13,6 @@ join Employee b on a.ManagerId = b.Id and a.Salary > b.Salary
 import pandas as pd
 
 def find_employees(employee: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(employee,employee,left_on = 'managerId',right_on = 'id')
-    return merge.query("salary_x > salary_y")[['name_x']].rename(columns = {'name_x':'Employee'})
+    merge = pd.merge(employee,employee,left_on = 'managerId', right_on = 'id')
+    merge = merge[merge['salary_x'] > merge['salary_y']]
+    return merge[['name_x']].rename(columns = {'name_x':'Employee'})
