@@ -16,6 +16,6 @@ where rnk <= 3
 import pandas as pd
 
 def top_three_salaries(employee: pd.DataFrame, department: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(employee,department,left_on = 'departmentId',right_on = 'id')
-    merge['rnk'] = merge.groupby(['departmentId']).salary.rank(method = 'dense', ascending = False)
-    return merge.query("rnk <= 3")[['name_y','name_x','salary']].rename(columns = {'name_y':'Department','name_x':'Employee'})
+    merge = pd.merge(department,employee,left_on = 'id', right_on = 'departmentId')
+    merge['rnk'] = merge.groupby(['id_x']).salary.rank(method = 'dense', ascending = False)
+    return merge[merge['rnk'] <= 3][['name_x','name_y','salary']].rename(columns = {'name_x':'Department','name_y':'Employee'})

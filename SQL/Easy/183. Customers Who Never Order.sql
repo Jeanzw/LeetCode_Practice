@@ -24,4 +24,4 @@ import pandas as pd
 
 def find_customers(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(customers,orders, left_on = 'id', right_on = 'customerId', how = 'left')
-    return merge.query("customerId.isna()")[['name']].rename(columns = {'name':'Customers'})
+    return merge[merge['customerId'].isna()][['name']].rename(columns = {'name':'Customers'})

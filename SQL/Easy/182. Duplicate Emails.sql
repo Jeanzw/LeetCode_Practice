@@ -13,5 +13,5 @@ having count(*) > 1
 import pandas as pd
 
 def duplicate_emails(person: pd.DataFrame) -> pd.DataFrame:
-    summary = person.groupby(['email'],as_index = False).id.nunique()
-    return summary.query("id > 1")[['email']]
+    person = person.groupby(['email'],as_index = False).id.nunique()
+    return person[person['id'] > 1][['email']]
