@@ -31,3 +31,13 @@ def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
     activity['rnk'] = activity.groupby(['player_id']).event_date.rank()
     activity = activity.query("rnk == 1")
     return activity[['player_id','device_id']]
+
+
+
+-- 也可以
+import pandas as pd
+
+def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
+    activity.sort_values(['player_id','event_date'], inplace = True)
+    activity = activity.groupby(['player_id'],as_index = False).head(1)
+    return activity[['player_id','device_id']]

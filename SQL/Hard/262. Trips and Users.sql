@@ -81,13 +81,14 @@ import pandas as pd
 import numpy as np
 
 def trips_and_users(trips: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(trips,users, left_on = 'client_id',right_on = 'users_id').merge(users,left_on = 'driver_id',right_on = 'users_id')
-    merge = merge.query("banned_x == 'No' and banned_y == 'No' and request_at >= '2013-10-01' and request_at <= '2013-10-03'")
-    merge['cancel'] = np.where(merge['status'] != 'completed',1,0)
+    merge = pd.merge(trips,users,left_on = 'client_id', right_on = 'users_id').merge(users, left_on = 'driver_id', right_on = 'users_id')
+    merge = merge[(merge['banned_x'] == 'No') & (merge['banned_y'] == 'No') & (merge['request_at'] >= '2013-10-01') & (merge['request_at'] <= '2013-10-03')]
 
-    summary = merge.groupby(['request_at'],as_index = False).agg(
-        total_orders = ('cancel','count'),
-        cancel_orders = ('cancel','sum')
+    merge['cancel'] = np.where(merge['status'] != 'completed', merge['id'], None)
+
+    merge = merge.groupby(['request_at'],as_index = False).agg(
+        n = ('cancel','nunique'),
+        d = ('id','nunique')
     )
-    summary['Cancellation Rate'] = (summary['cancel_orders']/summary['total_orders']).round(2)
-    return summary[['request_at','Cancellation Rate']].rename(columns = {'request_at':'Day'})
+    merge['Cancellation Rate'] = round(merge['n']/merge['d'],2)
+    return merge[['request_at','Cancellation Rate']].rename(columns = {'request_at':'Day'})

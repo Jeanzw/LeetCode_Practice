@@ -42,3 +42,13 @@ def rising_temperature(weather: pd.DataFrame) -> pd.DataFrame:
     merge['index_date'] = merge['recordDate_x'] - pd.to_timedelta(1, unit='D')
     merge = merge.query("recordDate_y == index_date and temperature_x > temperature_y")
     return merge[['id_x']].rename(columns = {'id_x':'Id'})
+
+
+
+-- 也可以
+import pandas as pd
+
+def rising_temperature(weather: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(weather,weather,how = 'cross')
+    merge['datediff'] = (merge['recordDate_x'] - merge['recordDate_y']).dt.days
+    return merge[(merge['datediff'] == 1) & (merge['temperature_x'] > merge['temperature_y'])][['id_x']].rename(columns = {'id_x':'id'})
