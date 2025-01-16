@@ -69,13 +69,12 @@ left join Activity b on datediff(b.event_date,a.min_day) = 1 and a.player_id = b
 
 -- Python
 import pandas as pd
-import numpy as np
 
 def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
-    first_login = activity.groupby(['player_id'], as_index = False).event_date.min()
-    first_login['next_day'] = first_login['event_date'] + pd.to_timedelta(1,unit = 'D')
-    merge = pd.merge(first_login,activity,on = 'player_id')
-    merge['flg'] = np.where(merge['next_day'] == merge['event_date_y'],1,0)
-    n = merge.flg.sum()
-    d = merge.player_id.nunique()
-    return pd.DataFrame({'fraction':[(n/d).round(2)]})
+    first_login = activity.groupby(['player_id'],as_index = False).event_date.min()
+    merge = pd.merge(first_login,activity, on = 'player_id')
+    merge['day_diff'] = (merge['event_date_y'] - merge['event_date_x']).dt.days
+    d = first_login.player_id.nunique()
+    n = merge[merge['day_diff'] == 1].player_id.nunique()
+    fraction = round(n/d,2)
+    return pd.DataFrame({'fraction':[fraction]})

@@ -38,11 +38,11 @@ import pandas as pd
 
 def median_employee_salary(employee: pd.DataFrame) -> pd.DataFrame:
     # 先排个序，求出正序的rnk
-    employee = employee.sort_values(['company','salary','id'])
-    employee['rnk'] = employee.groupby(['company']).salary.rank(method = 'first')
+    employee.sort_values(['company','salary','id'],inplace = True)
+    employee['rnk1'] = employee.groupby(['company']).salary.rank(method = 'first')
     # 再排个序，求出倒序的rnk
-    employee = employee.sort_values(['company','salary','id'],ascending = [1,0,0])
-    employee['rnk_desc'] = employee.groupby(['company']).salary.rank(method = 'first', ascending = False)
+    employee.sort_values(['company','salary','id'],ascending = [1,0,0],inplace = True)
+    employee['rnk2'] = employee.groupby(['company']).salary.rank(method = 'first',ascending = False)
     # 然后按照sql的原理，利用query找到满足的条件
-    employee = employee.query("rnk >= rnk_desc - 1 and rnk <= rnk_desc + 1")
+    employee = employee[(employee['rnk1'] >= employee['rnk2'] - 1) & (employee['rnk1'] <= employee['rnk2'] + 1)]
     return employee[['id','company','salary']]
