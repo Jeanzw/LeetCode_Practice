@@ -26,4 +26,5 @@ where id not in (select id from customer where referee_id = 2)
 import pandas as pd
 
 def find_customer_referee(customer: pd.DataFrame) -> pd.DataFrame:
-    return customer.query("referee_id != 2 or referee_id.isna()")[['name']]
+    customer = customer[(customer['referee_id'] != 2) | (customer['referee_id'].isna())]
+    return customer[['name']]

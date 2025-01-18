@@ -8,8 +8,6 @@ order by student_number desc, dept_name
 import pandas as pd
 
 def count_students(student: pd.DataFrame, department: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(department,student,on = 'dept_id',how = 'left')
-    summary = merge.groupby(['dept_name'],as_index = False).agg(
-        student_number = ('student_id','nunique')
-    )
-    return summary.sort_values(['student_number','dept_name'],ascending = [0,1])
+    merge = pd.merge(department,student, on = 'dept_id', how = 'left')
+    merge = merge.groupby(['dept_id','dept_name'],as_index = False).student_id.nunique()
+    return merge[['dept_name','student_id']].rename(columns = {'student_id':'student_number'}).sort_values(['student_number','dept_name'], ascending = [0,1])
