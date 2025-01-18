@@ -20,5 +20,5 @@ import pandas as pd
 
 def employee_bonus(employee: pd.DataFrame, bonus: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(employee,bonus,on = 'empId', how = 'left')
-    merge = merge.query("bonus.isna() or bonus < 1000")
+    merge = merge[(merge['bonus'] < 1000) | (merge['bonus'].isna())]
     return merge[['name','bonus']]
