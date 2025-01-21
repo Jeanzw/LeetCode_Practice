@@ -65,3 +65,16 @@ def human_traffic(stadium: pd.DataFrame) -> pd.DataFrame:
 
     res = pd.merge(stadium,bridge,on = 'bridge')
     return res[['id','visit_date','people']].sort_values('visit_date')
+
+
+
+-- 另外的做法，我不用groupby，直接用transform找到对应的bridge数量，然后直接处理
+import pandas as pd
+
+def human_traffic(stadium: pd.DataFrame) -> pd.DataFrame:
+    stadium = stadium[stadium['people'] >= 100]
+    stadium['bridge'] =  stadium['id'] + 1 - stadium.id.rank()
+    stadium['cnt_bridge'] = stadium.groupby(['bridge']).id.transform('nunique')
+    
+    stadium = stadium[stadium['cnt_bridge'] >= 3]
+    return stadium[['id','visit_date','people']].sort_values('visit_date')

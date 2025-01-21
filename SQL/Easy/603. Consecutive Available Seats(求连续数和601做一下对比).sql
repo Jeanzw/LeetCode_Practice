@@ -39,3 +39,14 @@ def consecutive_available_seats(cinema: pd.DataFrame) -> pd.DataFrame:
 
     res = pd.merge(cinema,bridge,on = 'bridge')[['seat_id']].sort_values('seat_id')
     return res
+
+
+
+-- 也可以这么做
+import pandas as pd
+
+def consecutive_available_seats(cinema: pd.DataFrame) -> pd.DataFrame:
+    cinema = cinema[cinema['free'] == 1]
+    cinema['bridge'] = cinema['seat_id'] - cinema.seat_id.rank()
+    cinema['cnt_bridge'] = cinema.groupby(['bridge']).seat_id.transform('nunique')
+    return cinema[cinema['cnt_bridge'] >= 2][['seat_id']].sort_values('seat_id')
