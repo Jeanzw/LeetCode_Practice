@@ -57,6 +57,27 @@ group by 1,2)tmp
 
 
 
+-- 我再一次做的时候就会发现，这道题其实要满足两个条件
+-- 1. tiv_2015 要有多行一样
+-- 2. lat，lon 要唯一
+-- 既然是这样我们完全就可以用window function来计数，看tiv_2015对应的数字有几行一样，lat，lon 对应的坐标有几行一样
+-- 然后最后用where去满足1和2即可
+
+with cte as 
+(select
+*, 
+count(pid) over (partition by tiv_2015) as cnt_sum,
+count(pid) over (partition by lat,lon) as location_sum
+from Insurance)
+
+select round(sum(tiv_2016),2) as tiv_2016
+from cte
+where cnt_sum > 1 and location_sum = 1
+
+
+
+
+
 -- Python
 import pandas as pd
 
@@ -67,3 +88,14 @@ def find_investments(insurance: pd.DataFrame) -> pd.DataFrame:
     summary = merge2.groupby(['pid_x','tiv_2016_x'],as_index = False).pid.nunique()
     summary = summary.query("pid == 1").tiv_2016_x.sum()
     return pd.DataFrame({'tiv_2016':[summary]})
+
+
+
+-- 也可以这么做
+import pandas as pd
+
+def find_investments(insurance: pd.DataFrame) -> pd.DataFrame:
+    insurance['tiv_2015_count'] = insurance.groupby(['tiv_2015']).pid.transform('nunique')
+    insurance['location_count'] = insurance.groupby(['lat','lon']).pid.transform('nunique')
+    insurance = insurance[(insurance['tiv_2015_count'] > 1) & (insurance['location_count'] == 1)]
+    return pd.DataFrame({'tiv_2016': [insurance.tiv_2016.sum()]})

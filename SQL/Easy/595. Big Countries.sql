@@ -6,5 +6,4 @@ where area >= 3000000 or population >= 25000000
 import pandas as pd
 
 def big_countries(world: pd.DataFrame) -> pd.DataFrame:
-    world = world.query("area >= 3000000 or population >= 25000000")
-    return world[['name','population','area']]
+    return world[(world['population'] >= 25000000) | (world['area'] >= 3000000)][['name','population','area']]

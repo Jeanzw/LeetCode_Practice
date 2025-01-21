@@ -25,5 +25,4 @@ import pandas as pd
 
 def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
     courses = courses.groupby(['class'],as_index = False).student.nunique()
-    courses = courses.query("student >= 5")
-    return courses[['class']]
+    return courses[courses['student'] >= 5][['class']]

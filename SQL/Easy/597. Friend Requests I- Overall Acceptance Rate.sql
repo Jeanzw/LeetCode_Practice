@@ -49,8 +49,8 @@ import pandas as pd
 def acceptance_rate(friend_request: pd.DataFrame, request_accepted: pd.DataFrame) -> pd.DataFrame:
     friend_request = len(friend_request[['sender_id','send_to_id']].drop_duplicates())
     request_accepted = len(request_accepted[['requester_id','accepter_id']].drop_duplicates())
-    if request_accepted == 0:
-        res = 0
+    if friend_request == 0:
+        accept_rate = 0
     else:
-        res = round((request_accepted/friend_request),2)
-    return pd.DataFrame({'accept_rate':[res]})
+        accept_rate = round(request_accepted/friend_request,2)
+    return pd.DataFrame({'accept_rate':[accept_rate]})
