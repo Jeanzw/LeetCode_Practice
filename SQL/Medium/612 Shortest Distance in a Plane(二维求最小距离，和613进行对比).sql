@@ -16,7 +16,7 @@ import numpy as np
 
 def shortest_distance(point2_d: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(point2_d,point2_d,how = 'cross')
-    merge = merge.query("x_x != x_y or y_x != y_y")
-    merge['distance'] = np.sqrt((merge['x_x'] - merge['x_y']).pow(2) + (merge['y_x'] - merge['y_y']).pow(2)).round(2)
-    shortest = merge.distance.min()
+    merge = merge[(merge['x_x'] != merge['x_y']) | (merge['y_x'] != merge['y_y'])]
+    merge['length'] = np.sqrt((merge['x_x'] - merge['x_y']).pow(2) + (merge['y_x'] - merge['y_y']).pow(2)).round(2)
+    shortest = merge['length'].min()
     return pd.DataFrame({'shortest':[shortest]})

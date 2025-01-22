@@ -84,6 +84,31 @@ from dep d
 left join company c on d.pay_month = c.pay_month
 
 
+-- 也可以用window function
+with cte as
+(select
+date_format(pay_date,'%Y-%m') as pay_month,
+b.department_id,
+amount
+from Salary a
+left join Employee b on a.employee_id = b.employee_id)
+, cal as
+(select 
+pay_month,
+department_id,
+avg(amount) over (partition by pay_month, department_id) as dep_amount,
+avg(amount) over (partition by pay_month) as com_amount
+from cte)
+
+select
+pay_month,
+department_id,
+case when dep_amount > com_amount then 'higher' 
+     when dep_amount = com_amount then 'same' 
+     else 'lower' end as comparison
+from cal
+group by 1,2,3
+
 
 -- Python
 import pandas as pd
@@ -100,3 +125,18 @@ def average_salary(salary: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame
                             np.where(compare['amount_x'] < compare['amount_y'], 'lower','same')
                             )
     return compare[['pay_month','department_id','comparison']]
+
+
+
+-- 也可以这么做
+import pandas as pd
+import numpy as np
+
+def average_salary(salary: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(salary,employee,on = 'employee_id')
+    merge['pay_month'] = merge['pay_date'].dt.strftime('%Y-%m')
+    merge['dep_avg'] = merge.groupby(['pay_month','department_id']).amount.transform('mean')
+    merge['com_avg'] = merge.groupby(['pay_month']).amount.transform('mean')
+    merge['comparison'] = np.where(merge['dep_avg'] > merge['com_avg'], 'higher',
+                          np.where(merge['dep_avg'] == merge['com_avg'], 'same','lower'))
+    return merge[['pay_month','department_id','comparison']].drop_duplicates()
