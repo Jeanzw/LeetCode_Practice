@@ -18,8 +18,8 @@ SELECT ifnull ((SELECT num FROM MyNumbers GROUP BY num HAVING COUNT(num) = 1 ORD
 import pandas as pd
 
 def biggest_single_number(my_numbers: pd.DataFrame) -> pd.DataFrame:
-    my_numbers = my_numbers.groupby(['num'], as_index = False).size()
-    my_numbers = my_numbers.query('size == 1')
-    max_num = my_numbers.num.max()
-    return pd.DataFrame({'num':[max_num]})
+    my_numbers = my_numbers.groupby(['num'],as_index = False).size()
+    my_numbers = my_numbers[my_numbers['size'] == 1]
+    max_number = my_numbers.num.max()
+    return pd.DataFrame({'num':[max_number]})
     

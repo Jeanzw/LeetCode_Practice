@@ -94,7 +94,7 @@ import pandas as pd
 import numpy as np
 
 def exchange_seats(seat: pd.DataFrame) -> pd.DataFrame:
-    seat['max_id'] = seat.id.max()
-    seat['id'] = np.where(seat['id']%2 == 0, seat['id'] - 1,
-                     np.where((seat['id']%2 == 1) & (seat['id'] != seat['max_id']),seat['id'] + 1, seat['id']))
+    seat['total'] = seat.id.nunique()
+    seat['id'] = np.where(seat['id'] % 2 == 0, seat['id'] - 1,
+                 np.where((seat['id'] % 2 == 1) & (seat['id'] != seat['total']), seat['id'] + 1, seat['id']))
     return seat[['id','student']].sort_values('id')

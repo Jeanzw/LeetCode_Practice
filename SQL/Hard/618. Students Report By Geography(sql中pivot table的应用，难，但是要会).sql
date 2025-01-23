@@ -60,3 +60,20 @@ def geography_report(student: pd.DataFrame) -> pd.DataFrame:
 
     res = student.pivot(index = 'rnk', columns = 'continent',values = 'name')
     return res
+-- 上面的code对于以下情况是过不了的。
+-- | name    | continent |
+-- | ------- | --------- |
+-- | Tzvetan | America   |
+-- 因为我们最后还是想要返回三个大陆的信息，即使某个大陆根本没有数据：
+-- | America | Asia | Europe |
+-- | ------- | ---- | ------ |
+-- | Tzvetan | null | null   |
+
+-- 所以我们只好把各个部分分别拎出来，然后再合并
+import pandas as pd
+
+def geography_report(student: pd.DataFrame) -> pd.DataFrame:
+    america = student[student['continent'] == 'America'][['name']].rename(columns = {'name':'America'}).sort_values('America').reset_index(drop=True)
+    asia = student[student['continent'] == 'Asia'][['name']].rename(columns = {'name':'Asia'}).sort_values('Asia').reset_index(drop=True)
+    europe = student[student['continent'] == 'Europe'][['name']].rename(columns = {'name':'Europe'}).sort_values('Europe').reset_index(drop=True)
+    return pd.concat([america,asia,europe],axis=1)

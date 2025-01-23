@@ -14,5 +14,5 @@ order by rating desc
 import pandas as pd
 
 def not_boring_movies(cinema: pd.DataFrame) -> pd.DataFrame:
-    cinema = cinema.query("id%2 == 1 and description != 'boring'")
+    cinema = cinema[(cinema['id']%2 == 1) & (cinema['description'] != 'boring')]
     return cinema.sort_values('rating', ascending = False)
