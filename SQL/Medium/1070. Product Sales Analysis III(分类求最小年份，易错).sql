@@ -11,7 +11,7 @@ select product_id,year as first_year,quantity,price from
 where rnk = 1
 
 
--- 之所以用rank可以但是用row_number不可以是因为这道题目可能出现同一年里有多条records
+-- 之所以用rank可以,但是用row_number不可以是因为这道题目可能出现同一年里有多条records
 -- 而题目最后想要实现的是：如果同一年里有多条records那么我们就把这些records全部抽出来
 
 
@@ -25,3 +25,12 @@ def sales_analysis(sales: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
     sales = sales.groupby(['product_id','year','price'],as_index = False).quantity.sum()
     return sales[['product_id','year','quantity','price']].rename(columns = {'year':'first_year'})
   
+
+
+-- 也可以这么做
+import pandas as pd
+
+def sales_analysis(sales: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
+    sales['first_year'] = sales.groupby(['product_id']).year.transform('min')
+    sales = sales[sales['year'] == sales['first_year']]
+    return sales[['product_id','first_year','quantity','price']]

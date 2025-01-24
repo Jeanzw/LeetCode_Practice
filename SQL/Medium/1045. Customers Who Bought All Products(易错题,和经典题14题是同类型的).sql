@@ -104,7 +104,9 @@ having count(distinct a.product_key) = (select count(distinct product_key) from 
 import pandas as pd
 
 def find_customers(customer: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
-    product_cnt = product.product_key.nunique()
-    merge = pd.merge(customer,product,on = 'product_key').groupby(['customer_id'],as_index = False).product_key.nunique()
-    merge = merge[merge['product_key'] == product_cnt]
+    merge = pd.merge(customer,product,on = 'product_key')
+    merge = merge.groupby(['customer_id'],as_index = False).product_key.nunique()
+    tt_product = len(product)
+
+    merge = merge[merge['product_key'] == tt_product]
     return merge[['customer_id']]
