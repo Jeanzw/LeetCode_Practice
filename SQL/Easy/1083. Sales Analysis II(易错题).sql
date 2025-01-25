@@ -75,10 +75,9 @@ where c.buyer_id is null
 import pandas as pd
 
 def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(sales,product,on = 'product_id')
-    iphone = merge.query("product_name=='iPhone'")[['buyer_id','product_name']]
-    S8 = merge.query("product_name=='S8'")[['buyer_id','product_name']]
+    merge = pd.merge(sales,product, on = 'product_id', how = 'left')
+    S8 = merge[merge['product_name'] == 'S8']
+    iPhone = merge[merge['product_name'] == 'iPhone']
 
-    summary = pd.merge(S8,iphone,on = 'buyer_id', how = 'left')
-    summary = summary.query("product_name_y.isna()")
-    return summary[['buyer_id']].drop_duplicates()
+    res = pd.merge(S8,iPhone,on = 'buyer_id', how = 'left')
+    return res[res['seller_id_y'].isna()][['buyer_id']].drop_duplicates()

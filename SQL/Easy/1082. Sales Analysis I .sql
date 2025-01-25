@@ -20,4 +20,5 @@ import pandas as pd
 def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
     sales = sales.groupby(['seller_id'],as_index = False).price.sum()
     sales['rnk'] = sales.price.rank(method = 'dense', ascending = False)
-    return sales.query("rnk == 1")[['seller_id']]
+    sales = sales[sales['rnk'] == 1]
+    return sales[['seller_id']]

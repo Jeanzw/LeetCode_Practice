@@ -26,3 +26,13 @@ def project_employees(project: pd.DataFrame, employee: pd.DataFrame) -> pd.DataF
     merge['rnk'] = merge.groupby(['project_id']).experience_years.rank(method = 'dense', ascending = False)
     merge = merge.query("rnk == 1")
     return merge[['project_id','employee_id']]
+
+
+-- 也可以这么做
+import pandas as pd
+
+def project_employees(project: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(project,employee,on = 'employee_id')
+    merge['max_years'] = merge.groupby(['project_id']).experience_years.transform('max')
+    merge = merge[merge['max_years'] == merge['experience_years']]
+    return merge[['project_id','employee_id']]
