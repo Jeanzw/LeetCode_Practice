@@ -45,7 +45,10 @@ having sum(quantity) <10 or sum(quantity) is null
 import pandas as pd
 
 def unpopular_books(books: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
-    books = books.query("available_from < '2019-05-23'")
-    orders = orders.query("dispatch_date >= '2018-06-23' and dispatch_date <= '2019-06-23'").groupby(['book_id'],as_index = False).quantity.sum()
-    merge = pd.merge(books,orders,on = 'book_id', how = 'left').fillna(0).query("quantity < 10")
+    books = books[books['available_from'] < '2019-05-23']
+    orders = orders[orders['dispatch_date'] > '2018-06-23']
+
+    merge = pd.merge(books,orders, on = 'book_id', how = 'left').fillna(0)
+    merge = merge.groupby(['book_id','name'],as_index = False).quantity.sum()
+    merge = merge[merge['quantity'] < 10]
     return merge[['book_id','name']]

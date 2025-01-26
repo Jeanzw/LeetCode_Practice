@@ -77,9 +77,8 @@ where b.product_id is not null and c.product_id is null
 import pandas as pd
 
 def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
-    sales['min_sale_date'] = sales.groupby(['product_id']).sale_date.transform('min')
-    sales['max_sale_date'] = sales.groupby(['product_id']).sale_date.transform('max')
-    sales = sales.query("max_sale_date <= '2019-03-31' and min_sale_date >= '2019-01-01'")
-
     merge = pd.merge(product,sales,on = 'product_id')
+    merge['max_sale'] = merge.groupby(['product_id']).sale_date.transform('max')
+    merge['min_sale'] = merge.groupby(['product_id']).sale_date.transform('min')
+    merge = merge[(merge['min_sale'] >= '2019-01-01') & (merge['max_sale'] <= '2019-03-31')]
     return merge[['product_id','product_name']].drop_duplicates()

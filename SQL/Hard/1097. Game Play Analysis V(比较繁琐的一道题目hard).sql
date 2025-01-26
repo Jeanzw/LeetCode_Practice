@@ -84,12 +84,12 @@ import pandas as pd
 import numpy as np
 
 def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
-    install = activity.groupby(['player_id'],as_index = False).event_date.min()
-    merge = pd.merge(install,activity,on = 'player_id',how = 'left')
-    merge['flg'] = np.where(merge['event_date_x'] + pd.to_timedelta(1, unit='d') == merge['event_date_y'],1,0)
-    merge = merge.groupby(['event_date_x'],as_index = False).agg(
-        installs = ('player_id','nunique'),
-        n = ('flg','sum')
+    install_dt = activity.groupby(['player_id'],as_index = False).event_date.min()
+    merge = pd.merge(install_dt,activity,on = 'player_id')
+    merge['second_login'] = np.where((merge['event_date_y'] - merge['event_date_x']).dt.days == 1, merge['player_id'],None)
+    merge = merge.groupby(['event_date_x'], as_index = False).agg(
+        n = ('second_login','nunique'),
+        installs = ('player_id','nunique')
     )
-    merge['Day1_retention'] = (merge['n'] / merge['installs'] + 1e-9).round(2)
+    merge['Day1_retention'] = round(merge['n']/merge['installs'] + 1e-9,2)
     return merge[['event_date_x','installs','Day1_retention']].rename(columns = {'event_date_x':'install_dt'})
