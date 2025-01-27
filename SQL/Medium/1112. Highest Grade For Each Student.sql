@@ -47,6 +47,6 @@ order by 1
 import pandas as pd
 
 def highest_grade(enrollments: pd.DataFrame) -> pd.DataFrame:
-    enrollments = enrollments.sort_values(['grade','course_id'],ascending = [0,1])
+    enrollments.sort_values(['student_id','grade','course_id'],ascending = [1,0,1], inplace = True)
     enrollments = enrollments.groupby(['student_id'],as_index = False).head(1)
-    return enrollments.sort_values('student_id')
+    return enrollments

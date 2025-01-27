@@ -68,3 +68,14 @@ def new_users_daily_count(traffic: pd.DataFrame) -> pd.DataFrame:
     traffic = traffic.query("flg == 1").groupby(['activity_date'],as_index = False).user_id.nunique()
     
     return traffic.rename(columns = {'activity_date':'login_date','user_id':'user_count'})
+
+
+-- 也可以这么做
+import pandas as pd
+
+def new_users_daily_count(traffic: pd.DataFrame) -> pd.DataFrame:
+    traffic = traffic[traffic['activity'] == 'login']
+    traffic = traffic.groupby(['user_id'],as_index = False).activity_date.min()
+    traffic = traffic[(pd.to_datetime('2019-06-30') - traffic['activity_date']).dt.days <=90]
+    traffic = traffic.groupby(['activity_date'],as_index = False).user_id.nunique()
+    return traffic[['activity_date','user_id']].rename(columns = {'activity_date':'login_date','user_id':'user_count'})
