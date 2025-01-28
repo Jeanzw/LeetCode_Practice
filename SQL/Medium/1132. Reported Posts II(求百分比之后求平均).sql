@@ -7,6 +7,7 @@ ON a.post_id = r.post_id
 WHERE extra='spam' and action = 'report'
 GROUP BY action_date)tmp
 
+------------------------
 
 -- 下面是容易错的点：
 -- 1. Actions这张表的post_id在被移走之前可能会反复出现，所以直接来计算个数是会有dummy的存在的
@@ -22,6 +23,7 @@ from Actions a left join Removals r on a.post_id = r.post_id
 where extra = 'spam' and action = 'report'
 group by 1)tmp
 
+------------------------
 
 -- 更加清楚就是用cte
 with spam as
@@ -38,18 +40,19 @@ group by 1)
 
 select round(100 * avg(remove_rate),2) as average_daily_percent from daily_remove
 
+------------------------
 
 -- Python
 import pandas as pd
-import numpy as np
 
 def reported_posts(actions: pd.DataFrame, removals: pd.DataFrame) -> pd.DataFrame:
-    actions = actions.query("action == 'report' and extra == 'spam'").drop_duplicates(['action_date', 'post_id'])
-    merge = pd.merge(actions,removals,on = 'post_id', how = 'left')
+    actions = actions[(actions['action'] == 'report') & (actions['extra'] == 'spam')]
+    merge = pd.merge(actions,removals,on = 'post_id', how = 'left').drop_duplicates(['action_date', 'post_id'])
+    -- 这里filter和merge的顺序如果弄反了，结果就是不对的
     merge = merge.groupby(['action_date'],as_index = False).agg(
         n = ('remove_date','count'),
         d = ('post_id','nunique')
     )
-    merge['pct'] = merge['n']/merge['d']
-    average_daily_percent = (100 * merge['pct'].mean()).round(2)
+
+    average_daily_percent = (100 * merge['n']/merge['d']).mean().round(2)
     return pd.DataFrame({'average_daily_percent':[average_daily_percent]})

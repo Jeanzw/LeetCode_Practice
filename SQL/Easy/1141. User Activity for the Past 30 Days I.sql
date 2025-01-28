@@ -15,10 +15,8 @@ group by 1
 
 -- Python
 import pandas as pd
-import numpy as np
 
 def user_activity(activity: pd.DataFrame) -> pd.DataFrame:
-    activity['flg'] = np.where((activity['activity_date'] > (pd.to_datetime('2019-07-27') - pd.to_timedelta(30,unit = 'd'))) & (activity['activity_date'] <= pd.to_datetime('2019-07-27')),1,0)
-    activity = activity.query("flg == 1")
+    activity = activity[((pd.to_datetime('2019-07-27') - activity['activity_date']).dt.days <= 29) & ((pd.to_datetime('2019-07-27') - activity['activity_date']).dt.days >= 0)]
     activity = activity.groupby(['activity_date'],as_index = False).user_id.nunique()
     return activity.rename(columns = {'activity_date':'day','user_id':'active_users'})

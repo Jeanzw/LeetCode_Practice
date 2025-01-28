@@ -8,6 +8,6 @@ group by 1
 import pandas as pd
 
 def reported_posts(actions: pd.DataFrame) -> pd.DataFrame:
-    actions = actions.query("action_date == '2019-07-04' and action == 'report'")
+    actions = actions[(actions['action'] == 'report') & (actions['action_date'] == '2019-07-04')]
     actions = actions.groupby(['extra'],as_index = False).post_id.nunique()
     return actions.rename(columns = {'extra':'report_reason','post_id':'report_count'})

@@ -87,6 +87,7 @@ GROUP BY spend_date,platform
 order by spend_date) o
 on p.platform = o.platform and p.spend_date = o.spend_date
 
+----------------------------------------------------------------------------------------
 
 -- 上面的query修改一下就更容易理解了
 with platform as
@@ -210,9 +211,8 @@ left join purchase p on dp.spend_date = p.spend_date and dp.platform = p.platfor
 group by 1,2
 -- 而最后就是很简单的left join了
 
-
-
 ---------------------------------------------------------------------------------------
+
 -- 再做一遍
 with framework as
 -- 首先把框架给搭起来，因为最后的output是无论是否有3种platform，但只要有对应的spend_date那么对应的platform就有三种
@@ -243,7 +243,7 @@ from framework a
 left join users_info b on a.spend_date = b.spend_date and a.platform = b.platform
 group by 1,2
 
-
+----------------------------------------------------------------------------------------
 
 -- Python
 import pandas as pd
