@@ -7,17 +7,20 @@ group by 1,2
 having n > 1)tmp
 order by id
 
+------------------------------
+
 -- 其实也可以直接算不需要两步
 select distinct viewer_id as id from Views
 group by view_date,viewer_id  --我不懂为什么我之后写的时候没有group by id
 having count(distinct article_id) > 1
 order by 1
 
+------------------------------
 
 -- Python
 import pandas as pd
 
 def article_views(views: pd.DataFrame) -> pd.DataFrame:
-    views = views.groupby(['viewer_id','view_date'],as_index = False).article_id.nunique()
-    views = views.query("article_id > 1")[['viewer_id']].drop_duplicates()
-    return views.rename(columns = {'viewer_id':'id'})
+    views = views.groupby(['viewer_id','view_date'], as_index = False).article_id.nunique()
+    views = views[views['article_id'] > 1]
+    return views[['viewer_id']].rename(columns = {'viewer_id':'id'}).drop_duplicates().sort_values('id')

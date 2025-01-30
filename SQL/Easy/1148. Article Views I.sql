@@ -6,5 +6,6 @@ order by author_id
 import pandas as pd
 
 def article_views(views: pd.DataFrame) -> pd.DataFrame:
-    views = views.query("author_id == viewer_id")[['author_id']].drop_duplicates()
-    return views.rename(columns = {'author_id':'id'}).sort_values('id')
+    views = views[views['author_id'] == views['viewer_id']]
+    views = views[['author_id']].rename(columns = {'author_id':'id'}).drop_duplicates()
+    return views.sort_values('id')

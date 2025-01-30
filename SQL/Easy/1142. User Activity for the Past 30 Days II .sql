@@ -3,9 +3,13 @@ select ifnull(round(count(session_id)/count(distinct user_id),2),0) as  average_
 where activity_date between '2019-06-28' and '2019-07-27'
 group by 1,2)tmp
 
+----------------------
+
 -- 这道题注意可能会有null的情况存在
 select ifnull(round(count(distinct session_id)/count(distinct user_id),2),0.00) as average_sessions_per_user from Activity
 where datediff('2019-07-27',activity_date) < 30
+
+----------------------
 
 -- 这道题之后再做我是这样的
 -- 当时考虑，可能同一个session会在不同的userid中出现，这是因为我忽略了题目中的：
@@ -19,6 +23,14 @@ from Activity
 where datediff('2019-07-27',activity_date) <30
 group by 1)tmp
 
+----------------------
+
+select
+ifnull(round(count(distinct session_id) / count(distinct user_id),2),0) as  average_sessions_per_user
+from Activity
+where datediff('2019-07-27',activity_date) between 0 and 29
+
+----------------------
 
 -- Python
 import pandas as pd
@@ -34,3 +46,17 @@ def user_activity(activity: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame({'average_sessions_per_user':[0]})
     else:
         return pd.DataFrame({'average_sessions_per_user':[round(n/d,2)]})
+
+
+-- 另外的做法
+import pandas as pd
+
+def user_activity(activity: pd.DataFrame) -> pd.DataFrame:
+    activity = activity[((pd.to_datetime('2019-07-27') - activity['activity_date']).dt.days < 30) & ((pd.to_datetime('2019-07-27') - activity['activity_date']).dt.days >= 0)]
+    n = activity.session_id.nunique()
+    d = activity.user_id.nunique()
+    if d == 0:
+        average_sessions_per_user = 0
+    else:
+        average_sessions_per_user = round(n/d,2)
+    return pd.DataFrame({'average_sessions_per_user':[average_sessions_per_user]})
