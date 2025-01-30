@@ -7,6 +7,7 @@ and year(order_date) = '2019'
 */
 group by user_id
 
+---------------------
 
 -- 或者根本不需要考虑什么时候进行筛选的问题
 with 2019_order as
@@ -18,13 +19,13 @@ group by 1)
 select user_id as buyer_id, join_date, ifnull(order_num,0) as orders_in_2019 from Users u
 left join 2019_order o on u.user_id = o.buyer_id
 
+---------------------
 
 -- Python
-
 import pandas as pd
 
 def market_analysis(users: pd.DataFrame, orders: pd.DataFrame, items: pd.DataFrame) -> pd.DataFrame:
-    orders = orders.query("order_date.dt.year == 2019")
-    merge = pd.merge(users,orders,left_on = 'user_id',right_on = 'buyer_id',how = 'left')
-    merge = merge.groupby(['user_id','join_date'],as_index = False).order_id.nunique()
-    return merge[['user_id','join_date','order_id']].rename(columns = {'user_id':'buyer_id','order_id':'orders_in_2019'})
+    orders = orders[orders['order_date'].dt.year == 2019]
+    merge = pd.merge(users,orders,left_on = 'user_id',right_on = 'buyer_id', how = 'left')
+    merge = merge.groupby(['user_id','join_date'], as_index = False).order_id.nunique()
+    return merge.rename(columns = {'user_id':'buyer_id', 'order_id':'orders_in_2019'})

@@ -13,6 +13,7 @@ left join
  on u.user_id = b.seller_id and b.ranking = 2
  /*最后抽取ranking的内容*/
 
+-----------------------------------------
 
 --  我第二次做的时候是：
 select user_id as seller_id,
@@ -24,9 +25,7 @@ left join Items i
 on a.item_id = i.item_id
 -- 我们的rnk抽取在join的时候已经完成了，为的就是保留Users里面全部的user_id
 
-
-
-
+-----------------------------------------
 
 -- 上面的query真的太不容易看了
 with raw_data as
@@ -47,6 +46,8 @@ select user_id as seller_id,
 case when fav is null then 'no' else fav end as '2nd_item_fav_brand'
 from Users u 
 
+-----------------------------------------
+
 -- 我做了这么多遍还是觉得上面这个query才是最应该写的内容，但是我们的rnk = 2可以直接放在最后处理
 with second_sell as
 (select
@@ -64,13 +65,7 @@ ifnull(fav_qual_sell,'no') as 2nd_item_fav_brand
 from Users u
 left join second_sell s on u.user_id = s.user_id and s.rnk = 2
 
-
-
-
-
-
-
-
+-----------------------------------------
 
 -- 我再一次做的时候相当于是把有2nd和没有2nd的分开来看
 with rank_sell as
@@ -96,9 +91,7 @@ left join Users u on rs.seller_id = u.user_id
 where rnk = 2
 -- 下面就是有rank = 2 的情况，这个时候就是来看join的熟悉度的问题了
 
-
-
-
+-----------------------------------------
 
 -- 或者也可以这样做
 with multi_item as
@@ -128,6 +121,8 @@ select user_id as seller_id, 'no' as 2nd_item_fav_brand
 from Users
 where user_id not in (select * from multi_item)
 
+-----------------------------------------
+
 -- 或者更简单的就是把Items和Orders先联合起来，找到对应的item的名字，然后和Users链接看是否可以匹配上
 with cte as
 (select a.seller_id,a.item_id,b.item_brand,row_number() over (partition by a.seller_id order by order_date) as rnk from Orders a inner join Items b on a.item_id = b.item_id)
@@ -138,17 +133,17 @@ case when b.seller_id is not null then 'yes' else 'no' end as 2nd_item_fav_brand
 from Users a
 left join cte b on a.user_id = b.seller_id and a.favorite_brand = b.item_brand and b.rnk = 2
 
-
+-----------------------------------------
 
 -- Python
 import pandas as pd
 import numpy as np
+
 def market_analysis(users: pd.DataFrame, orders: pd.DataFrame, items: pd.DataFrame) -> pd.DataFrame:
-    orders_items = pd.merge(orders,items, on = 'item_id')
-    orders_items['rnk'] = orders_items.groupby(['seller_id']).order_date.transform('rank')
-    orders_items = orders_items.query("rnk == 2")
+    sec_order = pd.merge(orders,items,on = 'item_id')
+    sec_order['rnk'] = sec_order.groupby(['seller_id']).order_date.rank()
+    sec_order = sec_order[sec_order['rnk'] == 2]
 
-
-    merge = pd.merge(users,orders_items,left_on = ['user_id','favorite_brand'], right_on = ['seller_id','item_brand'], how = 'left')
-    merge['2nd_item_fav_brand'] = np.where(merge['buyer_id'].isna(),'no','yes')
+    merge = pd.merge(users,sec_order, left_on = 'user_id', right_on = 'seller_id', how = 'left')
+    merge['2nd_item_fav_brand'] = np.where(merge['favorite_brand'] == merge['item_brand'], 'yes','no')
     return merge[['user_id','2nd_item_fav_brand']].rename(columns = {'user_id':'seller_id'})

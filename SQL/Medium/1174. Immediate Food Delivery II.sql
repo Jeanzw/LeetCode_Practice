@@ -6,7 +6,7 @@ from
 (select *, rank() over (partition by customer_id order by order_date) as rnk from Delivery)tmp
 where rnk = 1
 
-
+--------------------------------------------
 
 -- 我之后做就不太愿意用rank了 
 -- 而是直接用customerid和order date来做定位了
@@ -18,6 +18,8 @@ select
     (select customer_id,min(order_date) as first_order_date from Delivery 
     group by 1)
 
+--------------------------------------------
+
 -- 其实我个人并不推荐用sum来计数，因为就是可能存在表出问题的情况（虽然在面试中可能不存在这样的情况）
 select
 round(100 * count(distinct case when order_date = customer_pref_delivery_date then delivery_id else null end)
@@ -26,7 +28,7 @@ count(distinct delivery_id),2) as immediate_percentage
 from Delivery
 where (customer_id , order_date) in (select customer_id, min(order_date) from Delivery group by 1)
 
-
+--------------------------------------------
 
 -- Python
 import pandas as pd
@@ -37,3 +39,17 @@ def immediate_food_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
     n = delivery.query("order_date == customer_pref_delivery_date").customer_id.nunique()
     d = delivery.customer_id.nunique()
     return pd.DataFrame({'immediate_percentage':[round(100 * n/d,2)]})
+
+
+-- 另外的做法
+import pandas as pd
+import numpy as np
+
+def immediate_food_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
+    delivery.sort_values(['customer_id','order_date'], inplace = True)
+    delivery = delivery.groupby(['customer_id']).head(1)
+    delivery['delivery'] = np.where(delivery['order_date'] == delivery['customer_pref_delivery_date'], delivery['delivery_id'], None)
+    n = delivery['delivery'].nunique()
+    d = delivery['delivery_id'].nunique()
+    immediate_percentage = round(100 * n/d,2)
+    return pd.DataFrame({'immediate_percentage':[immediate_percentage]})

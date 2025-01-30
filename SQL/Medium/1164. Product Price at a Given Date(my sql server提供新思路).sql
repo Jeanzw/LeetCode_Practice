@@ -8,7 +8,7 @@ where change_date<='2019-08-16'
 group by product_id))b
 on a.product_id = b.product_id
 
-
+----------------------------------
 
 /*但是这道题也可以用MS SQL Server去做，但是要注意的就是这里提供了一个新的思路：如果我们只是用rank来进行解题，其实只能得到1和2，因为在where change_date <= '2019-08-16'这一步的时候3已经被淘汰出局了
 那么这个时候，我们需要思考的问题就是，如果让3重新回到局内呢？
@@ -28,7 +28,7 @@ select product_id, new_price price, change_date, rank() over (partition by produ
 where change_date <= '2019-08-16'
 ) A where Ranking = 1)
 
-
+----------------------------------
 
 -- 上面的做法是用union all来将所有选手回到局内
 -- 但其实大可不必
@@ -50,9 +50,7 @@ left join raw r on p.product_id = r.product_id
 -- 然后利用原表Products将所有的product_id抽出来成为一列
 -- 然后将cte重的内容与之join即可
 
-
-
-
+----------------------------------
 
 -- 我再一次做的时候：
 with price as
@@ -74,10 +72,7 @@ left join price pp on p.product_id = pp.product_id and rnk = 1
 -- 然后将两张表join起来
 -- 这里注意如果我们的rnk = 1是在where处join，那么其实不会有productid = 3的情况，只有将其放在join里面，那么对于productid = 3的情况会出现，但是是null
 
-
-
-
-
+----------------------------------
 
 -- 在做一次的时候
 with framework as
@@ -94,8 +89,7 @@ select
     from framework f
     left join latest l on f.product_id = l.product_id
 
-
-
+----------------------------------
 
 -- 用Python写
 import pandas as pd
@@ -106,4 +100,14 @@ def price_at_given_date(products: pd.DataFrame) -> pd.DataFrame:
     products_filter = products_filter.query("rnk == 1")
 
     merge = pd.merge(products,products_filter, on = 'product_id', how = 'left').fillna(10)
+    return merge[['product_id','new_price_y']].rename(columns = {'new_price_y':'price'}).drop_duplicates()
+
+-- 也可以这么做
+import pandas as pd
+
+def price_at_given_date(products: pd.DataFrame) -> pd.DataFrame:
+    new_price = products[products['change_date'] <= pd.to_datetime('2019-08-16')].sort_values(['product_id','change_date'],ascending = [1,0])
+    new_price = new_price.groupby(['product_id']).head(1)
+
+    merge = pd.merge(products,new_price, on = 'product_id', how = 'left').fillna(10)
     return merge[['product_id','new_price_y']].rename(columns = {'new_price_y':'price'}).drop_duplicates()
