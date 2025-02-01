@@ -9,6 +9,8 @@ select
 from Transactions
 group by month, country
 
+------------------------
+
 -- 其实我个人还是会习惯在计数的时候不用1和0来计数，因为我们并不知道是否会有重复值
 -- 所以我个人目前更倾向于还是保留id这个选项来进行计数
 select
@@ -21,7 +23,7 @@ select
     from Transactions
     group by 1,2
 
-
+------------------------
 
 -- Python
 import pandas as pd
@@ -43,3 +45,23 @@ def monthly_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     # 因为之前把null变成了“null”，但是我们最后结果还是想要的是null，所以就用replace把属于“null”的值赋值null
     transactions['country'] = np.where(transactions['country'] == 'null',nan,transactions['country'])
     return transactions
+
+
+-- 另外的做法，total和approve分别来算
+import pandas as pd
+import numpy as np
+def monthly_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
+    transactions['country'].fillna('null',inplace=True)
+    transactions['month'] = transactions['trans_date'].dt.strftime('%Y-%m')
+    total = transactions.groupby(['month','country'],as_index = False).agg(
+        trans_count = ('id','nunique'),
+        trans_total_amount = ('amount','sum')
+    )
+    approve = transactions[transactions['state'] == 'approved'].groupby(['month','country'],as_index = False).agg(
+        approved_count = ('id','nunique'),
+        approved_total_amount = ('amount','sum')
+    )
+
+    res = pd.merge(total,approve,on = ['month','country'], how = 'left').fillna(0)
+    res['country'] = np.where(res['country'] == 'null',nan,res['country'])
+    return res

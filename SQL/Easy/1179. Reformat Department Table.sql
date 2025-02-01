@@ -14,6 +14,8 @@ max(case month when 'Dec' then revenue else null end) as 'Dec_Revenue'
 from Department
 group by id order by id
 
+---------------------------------------------
+
 -- 我其实无论做多少次，我都不能理解这个max的逻辑
 -- 但是如果直接用if那么其实就容易理解多了
 select id,
@@ -32,6 +34,7 @@ sum(if(month = 'Dec',revenue,null)) as Dec_Revenue
 from Department
 group by 1 
 
+---------------------------------------------
 
 -- 其实直接用case when就可以了呀……
 select 
@@ -51,8 +54,7 @@ select
     from Department 
     group by 1
 
-
-
+---------------------------------------------
 
 -- Python
 import pandas as pd

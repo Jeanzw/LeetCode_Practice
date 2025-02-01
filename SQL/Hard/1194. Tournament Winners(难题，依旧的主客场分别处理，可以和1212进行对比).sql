@@ -1,3 +1,22 @@
+-- 这一道题是不能做到直接按照下面写的，因为当我们第一个matches连接后可以保证每场比赛是出现一场，但是当我们第二个matches连起来后很可能第一个matches的同一场比赛的数据就变成多行了
+-- with cte as
+-- (select
+-- a.group_id,
+-- a.player_id,
+-- sum(ifnull(b.first_score,0) + ifnull(c.second_score,0)) as score,
+-- row_number() over (partition by a.group_id order by sum(ifnull(b.first_score,0) + ifnull(c.second_score,0)) desc, player_id) as rnk
+-- from Players a
+-- left join Matches b on a.player_id = b.first_player
+-- left join Matches c on a.player_id = c.second_player
+-- group by 1,2)
+
+-- select
+-- group_id, player_id
+-- from cte
+-- where rnk = 1
+
+---------------------------------------
+
 /*
 第一种解法是用MS SQL SEVER来解题
 首先我们先把主客场的player_id的分数分别统计出来
@@ -21,6 +40,7 @@ group by a.player_id,group_id) c
 where rank = 1
 group by group_id
 
+---------------------------------------
 
 /*
 而如果是用mysql来做就比较复杂了
@@ -39,6 +59,8 @@ LEFT JOIN
 Players p1
 ON sc.player = p1.player_id
 WHERE ( sc.score,p1.group_id) IN
+
+---------------------------------------
 
 -- #其实我下面的这一部分都是为了提供一个条件，就是我抽出最高的score,然后让上面抽出的内容满足下面的条件就好
 
@@ -60,7 +82,7 @@ ON sc.player = p1.player_id   #在下面有GROUP BY p1.group_id 之前都是正�
 GROUP BY p1.group_id  )
 GROUP BY p1.group_id
 
-
+---------------------------------------
 
 /*另一种mysql的做法：利用group by是抽出最上面一层的内容*/
 select group_id, player_id from (
@@ -72,7 +94,7 @@ select group_id, player_id from (
 	group by ps.player_id order by group_id, score desc, player_id) top_scores
 group by group_id
 
-
+---------------------------------------
 
 -- 或者直接用rank来看排序的情况
 with raw_data as
@@ -92,6 +114,7 @@ group by 1,2)tmp)
 select group_id,id as player_id from player_team
 where rnk = 1
 
+---------------------------------------
 
 -- Python
 import pandas as pd
