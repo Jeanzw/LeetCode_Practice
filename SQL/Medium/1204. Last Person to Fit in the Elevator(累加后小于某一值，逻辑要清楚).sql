@@ -96,14 +96,13 @@ where sum_weight <= 1000
 order by sum_weight desc 
 limit 1
 
-
-
+-----------------------------------
 
 -- Python
 import pandas as pd
 
 def last_passenger(queue: pd.DataFrame) -> pd.DataFrame:
     queue.sort_values('turn',inplace = True)
-    queue['tt_weight'] = queue['weight'].cumsum()
-    queue = queue.query('tt_weight <= 1000').tail(1)
-    return queue[['person_name']]
+    queue['cum_sum'] = queue.weight.cumsum()
+    queue = queue[queue['cum_sum'] <= 1000]
+    return queue.tail(1)[['person_name']]
