@@ -2,10 +2,6 @@
 -- 我们的month其实是各论各的，如果一个id在1月份交易，但是2月份chargeback，那么交易放在一月份统计，而chargeback放在二月份统计
 
 
-
-
-
-
 select month,country,
 sum(case when type = 'approved' then 1 else 0 end) as approved_count,
 sum(case when type = 'approved' then amount else 0 end) as approved_amount,
@@ -21,6 +17,7 @@ union all
 )tmp
 group by month, country
 
+--------------------------------------------
 
 -- 用cte应该会更加看起来简洁一点
 with trans_charge as
@@ -51,7 +48,7 @@ sum(case when state = 'chargeback' then amount else 0 end) as chargeback_amount
 from trans_charge
 group by 1,2
 
-
+--------------------------------------------
 
 -- 我对上面的解法进行修改，我还是倾向于用count来计数
 with rawdata as
@@ -86,7 +83,7 @@ sum(case when state = 'chargeback' then amount else 0 end) as chargeback_amount
 from rawdata
 group by 1,2
 
-
+--------------------------------------------
 
 import pandas as pd
 

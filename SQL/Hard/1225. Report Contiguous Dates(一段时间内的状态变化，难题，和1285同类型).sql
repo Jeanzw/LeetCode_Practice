@@ -36,6 +36,8 @@ where success_date >= '2019-01-01' and success_date <= '2019-12-31'))tmp
 group by period_state,dateadd(day,-rank,date)
 order by start_date
 
+---------------------------------
+
 -- 我们对上面的内容进行修改一下
 with rawdata as
 (select
@@ -62,10 +64,7 @@ where day between '2019-01-01' and '2019-12-31')tmp
 group by status, dateadd(day,- rnk ,day)
 order by start_date
 
-
-
-
-
+---------------------------------
 
 -- 如果要在mysql中处理，那么我们在group by之前需要处理一下
 SELECT stats AS period_state, MIN(day) AS start_date, MAX(day) AS end_date
@@ -89,21 +88,23 @@ FROM (
 GROUP BY inv, stats
 ORDER BY start_date
 
-
+---------------------------------
 
 -- Python
 import pandas as pd
 
 def report_contiguous_dates(failed: pd.DataFrame, succeeded: pd.DataFrame) -> pd.DataFrame:
     failed['period_state'] = 'failed'
-    failed.rename(columns = {'fail_date':'dt'},inplace = True)
+    failed = failed.rename(columns = {'fail_date':'dt'})
     succeeded['period_state'] = 'succeeded'
-    succeeded.rename(columns = {'success_date':'dt'},inplace = True)
+    succeeded = succeeded.rename(columns = {'success_date':'dt'})
     concat = pd.concat([failed,succeeded])
-    concat['rnk'] = concat.groupby(['period_state']).dt.rank(method = 'first')
-    concat['bridge'] = concat['dt'] - pd.to_timedelta(concat['rnk'],unit = 'd')
 
-    res = concat.query('dt.dt.year == 2019').groupby(['period_state','bridge'],as_index = False).agg(
+    concat = concat[concat['dt'].dt.year == 2019]
+    concat['rnk'] = concat.groupby(['period_state']).dt.rank()
+    concat['bridge'] = concat['dt'] - pd.to_timedelta(concat['rnk'],unit ='d')
+
+    res = concat.groupby(['period_state','bridge'],as_index = False).agg(
         start_date = ('dt','min'),
         end_date = ('dt','max')
     )
