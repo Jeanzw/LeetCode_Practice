@@ -9,10 +9,10 @@ on a.student_id = b.student_id and a.subject_name = b.subject_name
 order by a.student_id, a.subject_name
 
 -- 这一道题我犯了几个错误：
--- 1. 我最开始意味Subjects这张表就是一张废表，然后就被教做人了...
+-- 1. 我最开始以为Subjects这张表就是一张废表，然后就被教做人了...
 -- 2. 由于Subjects和Subjects两张表其实没有key作为连接，而我又需要将Subjects给加到所有student上面，这种方法我忘记了
 
-
+----------------------------------------------------
 
 -- 第二次做
 with frame as
@@ -33,8 +33,7 @@ left join course e on f.student_id = e.student_id
 and f.subject_name = e.subject_name
 order by 1,3
 
-
-
+----------------------------------------------------
 
 -- 再一次做的时候
 with frame_work as
@@ -53,7 +52,7 @@ and fw.subject_name = e.subject_name
 group by 1,2,3
 order by 1,3
 
-
+----------------------------------------------------
 
 -- Python
 import pandas as pd
@@ -65,3 +64,8 @@ def students_and_examinations(students: pd.DataFrame, subjects: pd.DataFrame, ex
     merge = pd.merge(frame,acc, how = 'left', on = ['student_id','subject_name']).rename(columns = {'size':'attended_exams'})
     merge['attended_exams'] = merge['attended_exams'].fillna(0)
     return merge.sort_values(['student_id','subject_name'])
+
+
+
+-- 我是完全不理解为什么leetcode里面的test总有这些乱七八糟的东西存在
+-- 这道题中test里面存在student_name是null的情况……简直无语了

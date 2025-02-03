@@ -10,6 +10,7 @@ where page_id not in
 -- 我在第二次做的时候其实没有做出来，问题就在于，我没考虑用page_id来作为定位，因为我们保证user_id = 1的page_id其实是不能用的，所以需要将此给剔除掉
 -- 如果不这样做，其实我们回发现，在Likes里面的6号选手，他的page和1号选手其实是一样的，所以我们需要将此剔除掉
 
+----------------------------------
 
 -- 上面的做法还是太复杂了
 with friend as
@@ -27,10 +28,7 @@ and user_id in (select user_id from friend)
 -- 然后需要保证的就是page_id不是在user_id = 1看的page中
 -- 同时要保证这些user_id是user_id = 1的朋友
 
-
-
-
-
+----------------------------------
 
 -- 或者把user_id = 1的处理放到最后
 with friend as
@@ -38,7 +36,7 @@ with friend as
 user1_id as user_id,
  user2_id as friend_id
  from Friendship
- union --用union比较好，因为可以提出重复值
+ union --用union比较好，因为可以剔除重复值
  select 
  user2_id as user_id,
  user1_id as friend_id
@@ -51,6 +49,7 @@ from Likes l
 join friend f on l.user_id = f.friend_id and f.user_id = 1
 where page_id not in (select page_id from Likes where user_id = 1)
 
+----------------------------------
 
 -- 个人不推荐用not in来做
 # Write your MySQL query statement below
@@ -72,6 +71,7 @@ inner join Likes b on a.friend = b.user_id
 left join user1_like c on b.page_id = c.page_id
 where c.page_id is null
 
+----------------------------------
 
 -- 或者就是每一步清楚地写出来，最后用page_id来做定位
 with frame as
@@ -91,18 +91,19 @@ select distinct a.page_id as recommended_page from friend_like a
 left join user_like b on a.page_id = b.page_id
 where b.page_id is null
 
-
+----------------------------------
 
 -- Python
 import pandas as pd
 
 def page_recommendations(friendship: pd.DataFrame, likes: pd.DataFrame) -> pd.DataFrame:
-    friendship1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user','user2_id':'friend'})
-    friendship2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user','user1_id':'friend'})
-    concat = pd.concat([friendship1,friendship2]).query("user == 1")
+    friendship1 = friendship[friendship['user1_id'] == 1][['user1_id','user2_id']].rename(columns ={'user1_id':'user_id','user2_id':'friend_id'})
+    friendship2 = friendship[friendship['user2_id'] == 1][['user2_id','user1_id']].rename(columns ={'user2_id':'user_id','user1_id':'friend_id'})
+    concat = pd.concat([friendship1,friendship2])
 
-    user1_like = likes.query("user_id == 1")
-    friend_like = pd.merge(concat,likes,left_on = 'friend',right_on = 'user_id')
+    user_like = likes[likes['user_id'] == 1]
+    friend_like = pd.merge(concat,likes,left_on = 'friend_id', right_on = 'user_id')
 
-    res = pd.merge(friend_like,user1_like,on = 'page_id',how = 'left').query("user_id_y.isna()")[['page_id']].drop_duplicates()
-    return res.rename(columns = {'page_id':'recommended_page'})
+    res = pd.merge(friend_like,user_like, on = 'page_id', how = 'left')
+    res = res[res['user_id'].isna()]
+    return res[['page_id']].rename(columns = {'page_id':'recommended_page'}).drop_duplicates()
