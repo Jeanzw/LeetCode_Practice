@@ -10,8 +10,7 @@ order by visited_on  --有了order by才会按照时间顺序来加起来
 offset 6 rows  --这个offset只有在MS SQL才能起作用，在mysql中是不能起作用的
 -- 这个相当于就是把最开始的六行给淘汰掉
 
-
-
+-------------------------------------------------
 
 -- 如果不会offset的应用，那么可以用下面的query，也就是用rank定位
 with daily_amount as
@@ -33,6 +32,7 @@ select
     from daily_amount)tmp
     where rnk >= 7
 
+-------------------------------------------------
 
 -- MYSQL
 SELECT 
@@ -45,6 +45,7 @@ FROM
 GROUP BY a.visited_on
 HAVING a.visited_on >= MIN(b.visited_on) + 6;
 
+-------------------------------------------------
 
 /*
 如果我们只看
@@ -93,6 +94,7 @@ from
 LIMIT 100000
 offset 6
 
+-------------------------------------------------
 
 -- Python
 
@@ -104,10 +106,7 @@ def restaurant_growth(customer: pd.DataFrame) -> pd.DataFrame:
     # 这里我们先给summary进行排序，然后直接用排序之后的index作为我们判定排名的依据
     # 因为最后我们要把前6行给直接删去
     summary.sort_values('visited_on',inplace = True)
-    summary['rank'] = summary.index
     # 开始用rolling来进行滚动求和
-    summary['rolling_7'] = summary['amount'].rolling(window = 7, min_periods = 1).sum()
-    summary['average_amount'] = (summary['rolling_7']/7).round(2)
-
-    res = summary.query('rank > 5')[['visited_on','rolling_7','average_amount']].rename(columns = {'rolling_7':'amount'})
-    return res
+    customer['amount'] = customer.amount.rolling(7).sum()
+    customer['average_amount'] = round(customer['amount']/7,2)
+    return customer[customer['amount'].notna()]
