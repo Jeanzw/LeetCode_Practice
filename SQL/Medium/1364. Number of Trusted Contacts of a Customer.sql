@@ -30,8 +30,7 @@ inner join Invoices b on a.customer_id = b.user_id
 order by 1
 -- 然后和Invoice这张表结合
 
-
-
+-----------------------------------------------
 
 select 
     invoice_id , 
@@ -46,6 +45,8 @@ select
 group by 1,2,3
 order by 1
 
+-----------------------------------------------
+
 -- 第二种做法
 select i.invoice_id,
 c.customer_name,
@@ -58,6 +59,7 @@ left join Contacts cont on cont.user_id = c.customer_id
 group by i.invoice_id
 order by i.invoice_id
 
+-----------------------------------------------
 
 -- 之后的做法：
 -- 我们首先判断Contacts这张表到底哪些是trust的哪些不是
@@ -81,6 +83,7 @@ left join trust t on i.user_id = t.user_id
 group by 1,2,3
 order by 1
 
+-----------------------------------------------
 
 -- 另一种做法
 with cnt as
@@ -106,7 +109,7 @@ left join Customers c on i.user_id = c.customer_id
 left join cnt on i.user_id = cnt.user_id
 order by 1
 
-
+-----------------------------------------------
 
 -- Python
 -- 上面写的我觉得有点复杂了
@@ -135,4 +138,4 @@ def count_trusted_contacts(customers: pd.DataFrame, contacts: pd.DataFrame, invo
         contacts_cnt = ('contact_name','nunique'),
         trusted_contacts_cnt = ('email_y','nunique')
     )
-    return summary.rename(columns = {'customer_name_x':'customer_name'})
+    return summary.rename(columns = {'customer_name_x':'customer_name'}).sort_values('invoice_id')

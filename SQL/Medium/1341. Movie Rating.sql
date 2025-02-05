@@ -14,7 +14,7 @@ group by 1
 order by 2 desc, 1
 limit 1) movies
 
-
+---------------------------
 
 -- 上面的可以缩减成：
 (select 
@@ -33,7 +33,7 @@ group by 1
 order by avg(rating) desc,1
 limit 1)
 
-
+---------------------------
 
 -- 如果用cte那么就是：
 -- 我本来是用上面的方法，但是一直报错，后来检查了一下，每次union all前后我没有对这个view取一个 temp name
@@ -55,13 +55,20 @@ select name as results from user_rating
 union all
 select title as results from movie_rating
 
-
+---------------------------
 
 -- Python
 import pandas as pd
 
 def movie_rating(movies: pd.DataFrame, users: pd.DataFrame, movie_rating: pd.DataFrame) -> pd.DataFrame:
-    users = pd.merge(users,movie_rating, on = 'user_id').groupby(['user_id','name'],as_index = False).movie_id.nunique().sort_values(['movie_id','name'],ascending = [0,1]).head(1)
-    moview = pd.merge(movies,movie_rating,on = 'movie_id').query("created_at >= '2020-02-01' and created_at <= '2020-02-29'").groupby(['movie_id','title'],as_index = False).rating.mean().sort_values(['rating','title'],ascending = [0,1]).head(1)
-    res = pd.concat([users[['name']].rename(columns = {'name':'results'}),moview[['title']].rename(columns = {'title':'results'})])
+    users = pd.merge(users,movie_rating,on = 'user_id')
+    users = users.groupby(['user_id','name'],as_index = False).movie_id.nunique()
+    users = users.sort_values(['movie_id','name'], ascending = [0,1]).head(1)[['name']].rename(columns = {'name':'results'})
+
+    movies = pd.merge(movies,movie_rating,on = 'movie_id')
+    movies = movies[(movies['created_at'] >= '2020-02-01') & (movies['created_at'] <= '2020-02-29')]
+    movies = movies.groupby(['movie_id','title'],as_index = False).rating.mean()
+    movies = movies.sort_values(['rating','title'], ascending = [0,1]).head(1)[['title']].rename(columns = {'title':'results'})
+
+    res = pd.concat([users,movies])
     return res

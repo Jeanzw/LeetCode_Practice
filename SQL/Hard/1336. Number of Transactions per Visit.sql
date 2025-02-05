@@ -9,6 +9,7 @@ left join Transactions b on a.user_id = b.user_id and a.visit_date = b.transacti
 group by 1,2)tmp
 group by 1
 
+-----------------------------
 
 -- 我们直接用mysql的recursive来解这道题
 with recursive rawdata as
@@ -34,9 +35,7 @@ from base c
 left join rawdata r on c.transactions = r.transaction
 group by c.transactions
 
-
-
-
+-----------------------------
 
 -- 另一种发发生成transactions_count从0到最大值的过程
 -- 用row_number，然后union all 0
@@ -66,7 +65,7 @@ ORDER BY 1
 -- 这里涉及一个知识点：ROW_NUMBER, RANK, DENSE_RANK的区别：
 -- https://blog.csdn.net/yjgithub/article/details/76136737
 
-
+-----------------------------
 
 
 -- 下面的方法就不需要用recursive来做
@@ -98,7 +97,7 @@ on rc.t_counts = temp.transaction_counts
 where rc.t_counts <= (select max(transaction_counts) from temp)
 -- 最后我们用where语句，把所有过多的数字给筛除
 
-
+-----------------------------
 
 --  Python
 import pandas as pd
@@ -112,4 +111,4 @@ def draw_chart(visits: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame
     frame = pd.DataFrame({'transactions_count':range(max(agg['amount']) + 1)})
 
     res = pd.merge(frame, agg, left_on = 'transactions_count', right_on = 'amount', how = 'left').fillna(0)
-    return res[['transactions_count','user_id']].rename(columns = {'user_id':'visits_count'})
+    return res[['transactions_count','user_id']].rename(columns = {'user_id':'visits_count'}).sort_values('transactions_count')

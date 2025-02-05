@@ -9,6 +9,8 @@ select activity from
 group by activity) tmp
 where rnk_acs != 1 and rnk_desc != 1
 
+----------------------------------
+
 -- mysql
 select activity 
 from friends
@@ -16,6 +18,7 @@ group by activity
 having count(*)> (select count(*) from friends group by activity order by 1 limit 1)
 and count(*)< (select count(*) from friends group by activity order by 1 desc limit 1)
 
+----------------------------------
 
 -- 一个易错的地方就是，可能并不存在中间的数，也就是说可能最大的有很多，最小的有很多
 -- 那么在这种情况，我们如果用sql那么只可以用数量来做条件限制
@@ -31,6 +34,7 @@ group by 1
 having count(*) != (select max_num from max_num)
 and count(*) != (select min_num from min_num)
 
+----------------------------------
 
 -- 也可以用到Activity这张表来进行筛选：
 with max_activity as
@@ -46,7 +50,7 @@ select name as activity from Activities
 where name not in (select * from max_activity)
 and name not in (select * from min_activity)
 
-
+----------------------------------
 
 -- Python
 import pandas as pd
@@ -64,7 +68,9 @@ def activity_participants(friends: pd.DataFrame, activities: pd.DataFrame) -> pd
 import pandas as pd
 
 def activity_participants(friends: pd.DataFrame, activities: pd.DataFrame) -> pd.DataFrame:
-    friends = friends.groupby(['activity'],as_index = False).id.nunique()
-    friends['rnk'] = friends.id.rank(method = 'dense')
-    friends['rnk_desc'] = friends.id.rank(ascending = False, method = 'dense')
-    return friends.query("rnk != 1 and rnk_desc != 1")[['activity']]
+    merge = pd.merge(activities,friends,left_on = 'name', right_on = 'activity', how = 'left')
+    merge = merge.groupby(['name_x'], as_index = False).id_y.nunique()
+    merge['rnk'] = merge.id_y.rank(method = 'dense', ascending = True)
+    merge['rnk_desc'] = merge.id_y.rank(method = 'dense', ascending = False)
+    merge = merge[(merge['rnk'] != 1) & (merge['rnk_desc'] != 1)]
+    return merge[['name_x']].rename(columns = {'name_x':'activity'})
