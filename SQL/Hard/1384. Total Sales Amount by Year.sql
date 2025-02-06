@@ -26,9 +26,7 @@ LEFT JOIN Product b
 ON a.product_id = b.product_id
 ORDER BY a.product_id, a.report_year
 
-
-
-
+--------------------------------
 
 -- 另一种做法
 select cast(P.product_id as varchar) PRODUCT_ID, product_name PRODUCT_NAME, report_year REPORT_YEAR, amount TOTAL_AMOUNT from Product P
@@ -51,6 +49,7 @@ on P.product_id = T.product_id
 where amount >0
 order by cast(P.product_id as varchar), report_year
 
+--------------------------------
 
 -- 之后再一次做，就是用比较基础的知识来做：
 with rawdata as
@@ -104,8 +103,6 @@ group by 1,2)
     -- 2. start在2018或者2019，end在2020
 
 
-
-
 select 
 r.product_id,
 CAST(product_id  AS  CHAR) as product_id, 
@@ -118,43 +115,45 @@ left join Product p on r.product_id = p.product_id
 where total_amount is not null
 order by 1,3
 
-
+--------------------------------
 
 -- Python
 import pandas as pd
 import numpy as np
 
 def total_sales(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(product,sales,on = 'product_id')
-    merge['period_start_year'] = merge['period_start'].dt.year
-    merge['period_end_year'] = merge['period_end'].dt.year
-    # 2018
-    merge['2018_data'] = np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] == 2018), (merge['period_end'] - merge['period_start']).dt.days + 1, 
-                    np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] > 2018),(pd.to_datetime('2018-12-31') - merge['period_start']).dt.days + 1,0))
-    # 2020
-    merge['2020_data'] = np.where((merge['period_start_year'] == 2020) &(merge['period_end_year'] == 2020), (merge['period_end'] - merge['period_start']).dt.days + 1, 
-                    np.where((merge['period_start_year'] < 2020) &(merge['period_end_year'] == 2020),(merge['period_end'] - pd.to_datetime('2020-01-01')).dt.days + 1,0))
-    # 2019
-    merge['2019_data'] = np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] == 2020), 365, 
-                    np.where((merge['period_start_year'] == 2019) &(merge['period_end_year'] == 2020),(pd.to_datetime('2019-12-31') - merge['period_start']).dt.days + 1,
-                    np.where((merge['period_start_year'] == 2019) &(merge['period_end_year'] == 2019),(merge['period_end'] - merge['period_start']).dt.days + 1,
-                    np.where((merge['period_start_year'] == 2018) &(merge['period_end_year'] == 2019),(merge['period_end'] - pd.to_datetime('2019-01-01')).dt.days + 1,0))))
-
-
-    summary_2018 = merge[['product_id','product_name','average_daily_sales','2018_data']]
-    summary_2018['total_amount'] = summary_2018['average_daily_sales'] * summary_2018['2018_data']
+    sales['start_year'] = sales.period_start.dt.year
+    sales['end_year'] = sales.period_end.dt.year
+# 先把每一年的数据处理出来
+    sales['2018_data'] = np.where((sales['start_year'] == 2018) & (sales['end_year'] == 2018), (sales['period_end'] - sales['period_start']).dt.days + 1,
+                         np.where((sales['start_year'] == 2018) & (sales['end_year'] > 2018), (pd.to_datetime('2018-12-31') - sales['period_start']).dt.days + 1, 0))
+    sales['2019_data'] = np.where((sales['start_year'] == 2018) & (sales['end_year'] == 2020), 365,
+                         np.where((sales['start_year'] == 2018) & (sales['end_year'] == 2019), (sales['period_end'] - pd.to_datetime('2019-01-01')).dt.days + 1, 
+                         np.where((sales['start_year'] == 2019) & (sales['end_year'] == 2019), (sales['period_end'] - sales['period_start']).dt.days + 1, 
+                         np.where((sales['start_year'] == 2019) & (sales['end_year'] == 2020), (pd.to_datetime('2019-12-31') - sales['period_start']).dt.days + 1, 0))))
+    sales['2020_data'] = np.where((sales['start_year'] < 2020) & (sales['end_year'] == 2020), (sales['period_end'] - pd.to_datetime('2020-01-01')).dt.days + 1,
+                         np.where((sales['start_year'] == 2020) & (sales['end_year'] == 2020), (sales['period_end'] - sales['period_start']).dt.days + 1, 0))
+    
+    #处理2018数据 
+    summary_2018 = sales[['product_id','2018_data','average_daily_sales']]
     summary_2018['report_year'] = '2018'
-    summary_2018 = summary_2018.query("total_amount > 0")[['product_id','product_name','report_year','total_amount']]
+    summary_2018['total_amount'] = summary_2018['average_daily_sales'] * summary_2018['2018_data']
+    summary_2018 = summary_2018[summary_2018['total_amount'] > 0][['product_id','report_year','total_amount']]
 
-    summary_2019 = merge[['product_id','product_name','average_daily_sales','2019_data']]
-    summary_2019['total_amount'] = summary_2019['average_daily_sales'] * summary_2019['2019_data']
+    #处理2019数据 
+    summary_2019 = sales[['product_id','2019_data','average_daily_sales']]
     summary_2019['report_year'] = '2019'
-    summary_2019 = summary_2019.query("total_amount > 0")[['product_id','product_name','report_year','total_amount']]
+    summary_2019['total_amount'] = summary_2019['average_daily_sales'] * summary_2019['2019_data']
+    summary_2019 = summary_2019[summary_2019['total_amount'] > 0][['product_id','report_year','total_amount']]    
 
-    summary_2020 = merge[['product_id','product_name','average_daily_sales','2020_data']]
-    summary_2020['total_amount'] = summary_2020['average_daily_sales'] * summary_2020['2020_data']
+    #处理2020数据 
+    summary_2020 = sales[['product_id','2020_data','average_daily_sales']]
     summary_2020['report_year'] = '2020'
-    summary_2020 = summary_2020.query("total_amount > 0")[['product_id','product_name','report_year','total_amount']]
+    summary_2020['total_amount'] = summary_2020['average_daily_sales'] * summary_2020['2020_data']
+    summary_2020 = summary_2020[summary_2020['total_amount'] > 0][['product_id','report_year','total_amount']]  
 
-    res = pd.concat([summary_2018,summary_2019,summary_2020])
-    return res.sort_values(['product_id','report_year'])
+    #整合三年数据
+    summary = pd.concat([summary_2018,summary_2019,summary_2020]) 
+    # 和Product表结合，得到product_name
+    res = pd.merge(summary,product, on = 'product_id')  
+    return res[['product_id','product_name','report_year','total_amount']].sort_values(['product_id','report_year'])

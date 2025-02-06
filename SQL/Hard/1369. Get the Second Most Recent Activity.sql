@@ -14,7 +14,7 @@ where username in
 group by username
 having count(*) = 1)
 
-
+-------------------------------------
 
 -- 但其实可以这样做的
 -- 也就是说给每个user两个指标，用window function来计算
@@ -32,6 +32,7 @@ select
 from UserActivity) as t
 where counts = 1 or ranks = 2;
 
+-------------------------------------
 
 -- 并且如果不用MS SQL，也可以考虑这样做
 SELECT * 
@@ -48,7 +49,7 @@ LEFT JOIN UserActivity u2
 GROUP BY u1.username, u1.endDate
 HAVING COUNT(u2.endDate) = 1
 
-
+-------------------------------------
 
 -- Python
 import pandas as pd
@@ -64,4 +65,5 @@ import pandas as pd
 def second_most_recent(user_activity: pd.DataFrame) -> pd.DataFrame:
     user_activity['rnk'] = user_activity.groupby(['username']).startDate.rank(method = 'first',ascending = False)
     user_activity['cnt'] = user_activity.groupby(['username']).startDate.transform('count')
-    return user_activity.query("rnk == 2 or cnt == 1")[['username','activity','startDate','endDate']]
+    user_activity = user_activity[(user_activity['rnk'] == 2) | (user_activity['cnt'] == 1)]
+    return user_activity[['username', 'activity', 'startDate','endDate']]
