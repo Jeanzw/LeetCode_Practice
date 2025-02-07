@@ -15,10 +15,7 @@ where student_id not in
 where rnk = 1 or rnk_desc = 1)
 order by 1
 
-
-
-
-
+------------------------------
 
 with non_quiet as
 (select distinct student_id from
@@ -35,6 +32,7 @@ with non_quiet as
     group by b.student_id,b.student_name
     order by student_id
 
+------------------------------
 
 -- 其实可以不用任何的left join，直接用in和not in处理这一道题
 with not_quiet_student as
@@ -50,7 +48,7 @@ select student_id,student_name from Student
 where student_id not in (select student_id from not_quiet_student)
 and student_id in (select student_id from Exam)
 
-
+------------------------------
 
 -- 我们也可以在not in里面讨论rnk的问题
 with not_quiet as
@@ -66,6 +64,7 @@ from Student
 where student_id not in (select student_id from not_quiet where rnk = 1 or rnk_desc = 1)
 and student_id in (select student_id from Exam)
 
+------------------------------
 
 -- 我不是很喜欢用not in来做题
 # Write your MySQL query statement below
@@ -85,6 +84,8 @@ left join max_min b on a.student_id = b.student_id
 where b.student_id is null
 order by 1
 
+------------------------------
+
 -- 或许我们直接就可以一个cte搞定
 with cte as
 (select
@@ -102,6 +103,8 @@ group by 1,2
 having min(rnk) != 1 and min(rnk_desc) != 1
 order by 1
 
+------------------------------
+
 -- Python
 import pandas as pd
 
@@ -117,6 +120,8 @@ def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFra
     res = exam[~exam['student_id'].isin(not_quiet['student_id'])]
     return res[['student_id','student_name']].drop_duplicates().sort_values('student_id')
 
+------------------------------
+
 -- Python另外的做法
 import pandas as pd
 
@@ -127,3 +132,16 @@ def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFra
     merge['min_rnk'] = merge.groupby(['student_id']).rnk.transform('min')
     merge['min_rnk_desc'] = merge.groupby(['student_id']).rnk_desc.transform('min')
     return merge.query("min_rnk != 1 and min_rnk_desc != 1")[['student_id','student_name']].drop_duplicates().sort_values('student_id')
+
+-- Python另外的做法
+import pandas as pd
+
+def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(exam,student, on = 'student_id')
+    merge['rnk'] = merge.groupby(['exam_id']).score.rank(method = 'dense')
+    merge['rnk_desc'] = merge.groupby(['exam_id']).score.rank(method = 'dense',ascending = False)
+    not_quiet = merge[(merge['rnk'] == 1) | (merge['rnk_desc'] == 1)]
+    
+    res = pd.merge(merge,not_quiet,on = 'student_id', how = 'left')
+    res = res[res['student_name_y'].isna()]
+    return res[['student_id','student_name_x']].rename(columns = {'student_name_x':'student_name'}).drop_duplicates().sort_values('student_id')

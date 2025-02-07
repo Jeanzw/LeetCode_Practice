@@ -18,6 +18,7 @@ select a.bin,count(b.bin) as total from bin_bar a
 left join duration b on a.bin = b.bin
 group by 1
 
+-----------------------------
 
 -- Python
 import pandas as pd

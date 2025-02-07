@@ -17,6 +17,7 @@ ON e.right_operand = v2.name
 -- 我做的时候一直在想，我如何可以利用 v1.value 和 v2.value 的关系来解题
 -- 但是我忽略了在case when 中应用operator这一个条件了
 
+--------------------------------------------------------
 
 -- Python
 import pandas as pd
