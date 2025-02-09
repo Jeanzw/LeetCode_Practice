@@ -11,8 +11,6 @@ from Items i left join Orders o on i.item_id = o.item_id
 group by 1
 order by 1
 
-
-
 -- 我之后做是这样做的，这样子出错的原因在于，我们可能存在这样的data
 /*
 Weekday          quantity      item    category
@@ -35,6 +33,7 @@ Book          1       1               1
 这也就导致我们最后结果出错了
 */
 
+-----------------------------------
 
 select
 item_category as Category,
@@ -56,6 +55,7 @@ left join Orders g on i.item_id = g.item_id and weekday(g.order_date) = 6
 group by 1
 order by 1
 
+-----------------------------------
 
 -- 这样做比较清楚
 with summary as
@@ -80,7 +80,7 @@ from summary
 group by 1
 order by 1
 
-
+-----------------------------------
 
 -- Python
 import pandas as pd

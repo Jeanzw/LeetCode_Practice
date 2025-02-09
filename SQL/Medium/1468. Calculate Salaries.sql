@@ -19,6 +19,7 @@ select
     round(s.salary - s.salary * tax,0) as salary 
 from Salaries s left join tax t on s.company_id = t.company_id
 
+---------------------------------
 
 -- 用mysql写的
 select s.company_id, s.employee_id, s.employee_name,
@@ -31,6 +32,7 @@ from salaries s inner join
 
 on s.company_id = x.company_id;
 
+---------------------------------
 
 -- 后来自己写的：
 with company_max_salary as
@@ -49,6 +51,7 @@ select
     from Salaries s 
     left join company_max_salary c on s.company_id = c.company_id
 
+---------------------------------
 
 -- 其实case when里面是可以进行计数操作的
 with tax as
@@ -69,6 +72,8 @@ round(s.salary * (1 - tax),0) as salary
 from Salaries s
 left join tax t on s.company_id = t.company_id
 
+---------------------------------
+
 -- 再一次写的时候直接window function来写
 with cte as
 (select 
@@ -85,6 +90,28 @@ select
     round(salary * tax,0) as salary
 from cte
 
+---------------------------------
+
+-- 再一次写：
+with cte as
+(select
+company_id,
+employee_id,
+employee_name,
+salary,
+max(salary) over (partition by company_id) as max_salary
+from Salaries)
+
+select
+company_id,
+employee_id,
+employee_name,
+round(case when max_salary < 1000 then salary
+     when max_salary < 10000 then salary * (1-0.24)
+     else salary * (1-0.49) end,0) as salary
+from cte
+
+---------------------------------
 
 -- Python
 import pandas as pd

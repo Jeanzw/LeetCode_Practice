@@ -7,7 +7,7 @@ FROM Activities
 GROUP BY sell_date
 ORDER BY sell_date ASC
 
-
+-----------------------------
 
 -- MS SQL Server的做法
 select sell_date, 
@@ -17,6 +17,7 @@ select sell_date,
     (select distinct sell_date,product FROM Activities) Act
     GROUP BY sell_date
 
+-----------------------------
 
 -- Python
 import pandas as pd
