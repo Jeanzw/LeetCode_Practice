@@ -9,6 +9,8 @@ having amount >= 100)tmp
 group by 1
 having count(*) = 2)
 
+----------------------------------
+
 -- 和上面的思路一样，但是用cte会比较清楚
 with expense as
 (select 
@@ -26,8 +28,7 @@ having expense >= 100)
 select customer_id,name from Customers
 where customer_id in (select * from customers_more_than_100)
 
-
-
+----------------------------------
 
 -- 另外的做法
 -- 我觉得这种方法是最好的诶
@@ -47,15 +48,17 @@ FROM (
     ) tmp
 WHERE t1 >= 100 AND t2 >= 100
 
+----------------------------------
 
 -- Python
 import pandas as pd
 
 def customer_order_frequency(customers: pd.DataFrame, product: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(customers,orders,on = 'customer_id').merge(product,on = 'product_id').query("order_date >= '2020-06-01' and order_date <= '2020-07-31'")
-    merge['month'] = merge['order_date'].dt.strftime('%Y-%m')
-    merge['total_price'] = merge['quantity'] * merge['price']
-
-    groupby = merge.groupby(['customer_id','name','month'],as_index = False).total_price.sum().query("total_price >= 100")
-    res = groupby.groupby(['customer_id','name'], as_index = False).month.nunique()
-    return res.query("month == 2")[['customer_id','name']]
+    merge = pd.merge(customers,orders,on = 'customer_id').merge(product,on = 'product_id')
+    merge['order_month'] = merge['order_date'].dt.strftime('%Y-%m')
+    merge = merge[(merge['order_month'] == '2020-06') | (merge['order_month'] == '2020-07')]
+    merge['money'] = merge['quantity'] * merge['price']
+    merge = merge.groupby(['customer_id','name','order_month'],as_index = False).money.sum()
+    merge = merge[merge['money'] >= 100]
+    merge = merge.groupby(['customer_id','name'],as_index = False).order_month.nunique()
+    return merge[merge['order_month'] == 2][['customer_id','name']]

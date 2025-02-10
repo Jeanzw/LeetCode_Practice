@@ -12,7 +12,7 @@ select callee_id as id, duration from Calls
     having avg(duration) >
     (select avg(duration) from Calls)
 
-
+-------------------------------------------
 
 -- 特别好的解法，也就是说直接用avg就可以解决这个问题了
 SELECT Country.name AS country
@@ -21,7 +21,7 @@ JOIN Country ON Country.country_code = LEFT(Person.phone_number, 3)
 GROUP BY Country.name
 HAVING AVG(duration) > (SELECT AVG(duration) FROM Calls)
 
-
+-------------------------------------------
 
 -- 还可以的解法：这些其实都是在对Calls这张表如何处理来做文章
 SELECT
@@ -39,6 +39,7 @@ GROUP BY
 HAVING
  AVG(duration) > (SELECT AVG(duration) FROM calls)
 
+-------------------------------------------
 
 --  后来重新做的方法：
 with country_duration as
@@ -55,7 +56,7 @@ left join country_person cp on cd.id = cp.id
 group by 1
 having avg(duration) > (select avg(duration) from Calls)
 
-
+-------------------------------------------
 
 -- 另外的方法：
 with rawdata as
@@ -75,6 +76,7 @@ group by 1
 having avg(duration) > (select global_duration from globaldata)
 -- 在最后保证我们这里每个国家的avg duration是大于global duration
 
+-------------------------------------------
 
 -- 另外的方法，直接用window function做
 # Write your MySQL query statement below
@@ -97,7 +99,7 @@ left join Country c on left(phone_number,3) = country_code
 select distinct name as country from summary
 where country_avg > global_avg
 
-
+-------------------------------------------
 
 -- Python
 import pandas as pd
@@ -107,8 +109,9 @@ def find_safe_countries(person: pd.DataFrame, country: pd.DataFrame, calls: pd.D
     call2 = calls[['callee_id','duration']].rename(columns = {'callee_id':'id'})
     call = pd.concat([call1,call2])
     person['country_code'] = person['phone_number'].str[:3]
-    merge = pd.merge(call,person, on = 'id', how = 'left').merge(country, on = 'country_code', how = 'left')
+    merge = pd.merge(country,person,on = 'country_code').merge(call, on = 'id', how = 'left')
 
     merge['country_avg'] =  merge.groupby('name_y').duration.transform(mean)
     merge['global_avg'] =  merge.duration.mean()
-    return merge.query("country_avg>global_avg")[['name_y']].rename(columns = {'name_y':'country'}).drop_duplicates()
+    merge = merge[merge['country_avg'] > merge['global_avg']]
+    return merge[['name_x']].drop_duplicates().rename(columns = {'name_x':'country'})
