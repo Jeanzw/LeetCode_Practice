@@ -15,6 +15,8 @@ top_first
 left join Products p on top_first.product_id = p.product_id
 order by product_name,product_id,order_id
 
+----------------------------
+
 -- 我们可以把rnk = 1放到最后
 # Write your MySQL query statement below
 with rnk as
@@ -32,7 +34,7 @@ from rnk
 where rnk = 1
 order by 1,2,3
 
-
+----------------------------
 
 --  Python
 import pandas as pd
@@ -40,5 +42,5 @@ import pandas as pd
 def most_recent_orders(customers: pd.DataFrame, orders: pd.DataFrame, products: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(products,orders,on = 'product_id')
     merge['rnk'] = merge.groupby(['product_id']).order_date.rank(method = 'dense', ascending = False)
-    merge = merge.query("rnk == 1")
+    merge = merge[merge['rnk'] == 1]
     return merge[['product_name','product_id','order_id','order_date']].sort_values(['product_name','product_id','order_id'])

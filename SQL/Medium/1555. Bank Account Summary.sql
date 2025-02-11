@@ -13,7 +13,7 @@ select
     from Users u
     left join transaction_money t on u.user_id = t.id
 
-
+---------------------------------------------
 
 -- 也可以这样：
 with cte as
@@ -33,7 +33,7 @@ case when (u.credit + c.credit) >= 0 then 'No' else 'Yes' end as credit_limit_br
 from Users u
 left join cte c on u.user_id = c.user_id
 
-
+---------------------------------------------
 
 -- Python
 import pandas as pd
@@ -51,3 +51,21 @@ def bank_account_summary(users: pd.DataFrame, transactions: pd.DataFrame) -> pd.
     merge['credit_limit_breached'] = np.where(merge['credit'] >= 0, 'No','Yes')
 
     return merge[['user_id','user_name','credit','credit_limit_breached']]
+
+
+
+-- 另外的做法
+import pandas as pd
+import numpy as np
+
+def bank_account_summary(users: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(users,transactions,how = 'cross')
+    merge = merge[(merge['user_id'] == merge['paid_by']) | (merge['user_id'] == merge['paid_to'])]
+    merge['amount'] = np.where(merge['user_id'] == merge['paid_by'], -merge['amount'],merge['amount'])
+    merge = merge.groupby(['user_id','user_name','credit'],as_index = False).amount.sum()
+
+    res = pd.merge(users,merge, on = ['user_id', 'user_name','credit'], how = 'left').fillna(0)
+    res['credit'] = res['credit'] + res['amount']
+    res['credit_limit_breached'] = np.where(res['credit'] < 0,'Yes','No')
+
+    return res[['user_id','user_name','credit','credit_limit_breached']]

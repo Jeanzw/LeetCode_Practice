@@ -5,6 +5,7 @@ FROM sales
 GROUP BY 1, 2
 ORDER BY 1, 2
 
+--------------------------------
 
 -- Python
 import pandas as pd
