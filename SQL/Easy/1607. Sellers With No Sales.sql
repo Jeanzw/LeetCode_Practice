@@ -5,6 +5,8 @@ select distinct seller_id from Orders
 where year(sale_date) = 2020)
 order by 1
 
+-------------------------------------------
+
 -- 也可以用left join来做这道题
 select
 distinct s.seller_name
@@ -15,12 +17,13 @@ left join Orders o on s.seller_id = o.seller_id
 where o.seller_id is null
 order by 1
 
+-------------------------------------------
 
 -- Python
 import pandas as pd
 
 def sellers_with_no_sales(customer: pd.DataFrame, orders: pd.DataFrame, seller: pd.DataFrame) -> pd.DataFrame:
-    orders = orders.query("sale_date.dt.year == 2020")
-    merge = pd.merge(seller,orders, on = 'seller_id',how = 'left')
-    merge = merge.query("order_id.isna()")
+    orders = orders[orders['sale_date'].dt.year == 2020]
+    merge = pd.merge(seller,orders,on = 'seller_id', how = 'left')
+    merge = merge[merge['order_id'].isna()]
     return merge[['seller_name']].drop_duplicates().sort_values('seller_name')

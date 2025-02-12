@@ -16,8 +16,7 @@ with recursive seq as
 select * from seq
 where ids not in (select customer_id from Customers)
 
-
-
+----------------------------
 
 -- 也可以用join来做
 with recursive cte as
@@ -33,14 +32,13 @@ left join Customers c on cte.id = c.customer_id
 where c.customer_id is null
 order by 1
 
-
+----------------------------
 
 -- Python
 import pandas as pd
 
 def find_missing_ids(customers: pd.DataFrame) -> pd.DataFrame:
-    max_number = customers.customer_id.max()
-    df = pd.DataFrame({'ids': range(1, max_number + 1)})
-    merge = pd.merge(df,customers, left_on = 'ids', right_on = 'customer_id', how = 'left')
-    merge = merge.query("customer_id.isna()")
+    frame = pd.DataFrame({'ids':range(1,max(customers['customer_id']) + 1)})
+    merge = pd.merge(frame,customers, left_on = 'ids', right_on = 'customer_id', how = 'left')
+    merge = merge[merge['customer_id'].isna()]
     return merge[['ids']].sort_values('ids')
