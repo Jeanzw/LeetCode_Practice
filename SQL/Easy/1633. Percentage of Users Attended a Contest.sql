@@ -5,6 +5,7 @@ select
 group by 1
 order by 2 desc, 1
 
+----------------------------------
 
 -- 我其实是觉得上面这种直接两个表什么连接都没有直接抽取是很不make sense的
 -- 所以相对来说，下面这种我觉得比较靠谱
@@ -14,6 +15,7 @@ FROM Register
 GROUP BY contest_id
     ORDER BY percentage DESC, contest_id
 
+----------------------------------
 
 -- 我觉得更严谨的做法其实是要对register这张表进行一个筛选
 -- 因为我们不能保证register这张表里面只存在users表里面的users
@@ -26,6 +28,7 @@ where user_id in (select user_id from Users)
 group by 1
 order by 2 desc,1
 
+----------------------------------
 
 -- 筛选也可以用join
 select 
@@ -36,6 +39,7 @@ inner join Register b on a.user_id = b.user_id
 group by 1
 order by 2 desc, 1
 
+----------------------------------
 
 -- Python
 import pandas as pd

@@ -95,19 +95,19 @@ import pandas as pd
 import numpy as np
 
 def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_rides: pd.DataFrame) -> pd.DataFrame:
-    month = pd.DataFrame({'month':range(1,13)})
+    frame = pd.DataFrame({'month':range(1,13)})
 # 先处理drivers的数量
-    drivers = drivers.query("join_date.dt.year < 2021")
-    drivers['active_month'] = np.where(drivers['join_date'].dt.year < 2020, 1, drivers['join_date'].dt.month)
-    drivers = drivers.groupby(['active_month'],as_index = False).driver_id.nunique()
+    drivers = drivers[drivers['join_date'] <= '2020-12-31']
+    drivers['month'] = np.where(drivers['join_date'].dt.year < 2020, 1, drivers['join_date'].dt.month)
+    drivers = drivers.groupby(['month'],as_index = False).driver_id.nunique()
 # 再出来被接受的ride
-    acc_drive = pd.merge(rides,accepted_rides,on = 'ride_id').query("requested_at.dt.year == 2020")
-    acc_drive['acc_month'] = acc_drive.requested_at.dt.month
-    acc_drive = acc_drive.groupby(['acc_month'],as_index = False).driver_id.nunique()
-
-# 最后将所有的内容结合起来
-    res = pd.merge(month,drivers, left_on = 'month', right_on = 'active_month',how = 'left').merge(acc_drive,left_on = 'month', right_on = 'acc_month', how = 'left').fillna(0)
+    rides = rides[rides['requested_at'].dt.year == 2020]
+    accept_ride = pd.merge(rides,accepted_rides,on = 'ride_id')
+    accept_ride['month'] = accept_ride.requested_at.dt.month
+    accept_ride = accept_ride.groupby(['month'],as_index = False).driver_id.nunique()
+# 最后将所有的内容结合起来    
+    res = pd.merge(frame,drivers, on = 'month', how = 'left').merge(accept_ride, on = 'month', how = 'left').fillna(0)
 # 对司机的数量累计求和
     res['active_drivers'] = res.driver_id_x.cumsum()
-    res['working_percentage'] = round(100 * res['driver_id_y']/res['active_drivers'],2).fillna(0)
-    return res[['month','working_percentage']]
+    res['working_percentage'] = (100 * res['driver_id_y'] / res['active_drivers']).round(2)
+    return res[['month','working_percentage']].fillna(0).sort_values('month')

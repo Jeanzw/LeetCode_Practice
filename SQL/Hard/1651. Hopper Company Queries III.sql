@@ -28,6 +28,7 @@ select
     left join ride c on b.month + 1 = c.month
     where a.month <= 10
 
+---------------------------------------
 
 -- 或者我们不用join，直接用滚动window function
 # Write your MySQL query statement below
@@ -65,6 +66,7 @@ select * from
     where month <= 10
     order by month
 
+---------------------------------------
 
 -- Python
 import pandas as pd
@@ -74,17 +76,20 @@ def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_
     month = pd.DataFrame({'month':range(1,13)})
     
     # 处理ride
-    rides_accep = pd.merge(rides,accepted_rides,on = 'ride_id').query("requested_at.dt.year == 2020")
-    rides_accep['month'] = rides_accep.requested_at.dt.month
-    rides_accep = rides_accep.groupby(['month'],as_index = False).agg(
+    rides = rides[rides['requested_at'].dt.year == 2020]
+    rides = pd.merge(rides,accepted_rides,on = 'ride_id')
+    rides['month'] = rides.requested_at.dt.month
+    rides = rides.groupby(['month'],as_index = False).agg(
         ride_distance = ('ride_distance','sum'),
         ride_duration = ('ride_duration','sum')
     )
 
     # 将月份和ride整合一起
     # 由于rolling是从这一行往上x行rolling，所以我们需要将month倒序
-    merge = pd.merge(month,rides_accep,on = 'month', how = 'left').fillna(0).sort_values('month',ascending = False)
+    merge = pd.merge(month,rides, on = 'month',how = 'left').fillna(0)
+    merge.sort_values(['month'],ascending = False,inplace = True)
     # 最后进行rolling求数
     merge['average_ride_distance'] = merge.ride_distance.rolling(3).mean().fillna(0).round(2)
     merge['average_ride_duration'] = merge.ride_duration.rolling(3).mean().fillna(0).round(2)
-    return merge[['month','average_ride_distance','average_ride_duration']].sort_values('month').query("month <= 10")
+    merge = merge[merge['month'] <= 10]
+    return merge[['month','average_ride_distance','average_ride_duration']].sort_values('month')
