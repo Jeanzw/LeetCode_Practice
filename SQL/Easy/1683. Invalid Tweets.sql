@@ -18,9 +18,9 @@ CHAR_LENGTH() returns the length of the string measured in characters.
 SELECT LENGTH('€')  # is equal to 3
 SELECT CHAR_LENGTH('€') # is equal to 1
 
-
 */
 
+-----------------------------------------
 
 -- Python
 import pandas as pd

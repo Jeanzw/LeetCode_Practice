@@ -6,6 +6,7 @@ select
     from DailySales
     group by 1,2
 
+---------------------------------
 
 -- Python
 import pandas as pd
