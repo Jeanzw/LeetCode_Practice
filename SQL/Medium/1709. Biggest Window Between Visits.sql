@@ -17,6 +17,7 @@ from rank_date a
 left join rank_date b on a.date_rank + 1 = b.date_rank and a.user_id = b.user_id
 group by 1
 
+------------------------------------------------
 
 -- 用LEAD解法 - Mysql版本
 select
@@ -32,6 +33,7 @@ from UserVisits
 group by user_id
 order by 1
 
+------------------------------------------------
 
 -- 用LEAD解法 - Sql Server版本
 select
@@ -47,17 +49,17 @@ from UserVisits
 group by user_id
 order by 1
 
-
+------------------------------------------------
 
 -- Python
 import pandas as pd
 
 def biggest_window(user_visits: pd.DataFrame) -> pd.DataFrame:
     user_visits = user_visits.sort_values(['user_id','visit_date'])
-    user_visits['next_visit'] = user_visits.groupby(['user_id']).shift(periods = -1).fillna('2021-01-01')
+    user_visits['next_visit'] = user_visits.groupby(['user_id']).shift(-1).fillna('2021-01-01')
 
 # 求出日期差值，注意这里最后一定要加上dt.days，不然return出来的是“x days”，而加上dt.days返回的就是一个数了
     user_visits['days'] = (user_visits['next_visit'] - user_visits['visit_date']).dt.days
 
     res = user_visits.groupby(['user_id'], as_index = False).days.max()
-    return res.rename(columns = {'days':'biggest_window'})    
+    return res.rename(columns = {'days':'biggest_window'}).sort_values('user_id')

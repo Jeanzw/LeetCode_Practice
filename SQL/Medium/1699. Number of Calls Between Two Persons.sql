@@ -8,6 +8,7 @@ where person1 < person2)
 select person1,person2,count(*) as call_count,sum(duration) as total_duration from raw_data
 group by 1,2
 
+------------------------------------------
 
 -- 其实我觉得不必这么麻烦，直接一个case when解决了
 select 
@@ -18,7 +19,7 @@ select
     from Calls
     group by 1,2
 
-
+------------------------------------------
 
 -- Python
 import pandas as pd

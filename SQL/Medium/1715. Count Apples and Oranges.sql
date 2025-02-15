@@ -5,6 +5,7 @@ select
 from Boxes b
 left join Chests c on b.chest_id = c.chest_id
 
+--------------------------------------------
 
 -- 用coalesce
 -- ifnull和coalesce的区别：https://stackoverflow.com/questions/18528468/what-is-the-difference-between-ifnull-and-coalesce-in-mysql
@@ -14,6 +15,7 @@ sum(boxes.orange_count  + COALESCE(Chests.orange_count, 0)) as orange_count
 from boxes left join Chests
 on boxes.chest_id = chests.chest_id
 
+--------------------------------------------
 
 -- Python
 import pandas as pd

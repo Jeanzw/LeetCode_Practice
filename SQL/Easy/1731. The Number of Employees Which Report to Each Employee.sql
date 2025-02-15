@@ -16,6 +16,7 @@ select
     join Employees e on m.reports_to = e.employee_id
     order by 1
 
+---------------------------------------
 
 -- 我用另一种方法做了一遍，就是直接求和，并不需要使用cte
 -- 下面这种方法是必须要先于上面的方法写出来的，因为根据几次面试的经验，这种可以直接join而不是复杂的题目，写出下面的才是考察的关键
@@ -29,7 +30,7 @@ select
     group by 1,2
     order by 1
 
-
+---------------------------------------
 
 -- Python
 import pandas as pd
@@ -40,5 +41,5 @@ def count_employees(employees: pd.DataFrame) -> pd.DataFrame:
         reports_count = ('employee_id_y','nunique'),
         average_age = ('age_y','mean')
     )
-    res['average_age'] = round(res['average_age']+0.1,0)
-    return res.rename(columns = {'employee_id_x':'employee_id','name_x':'name'})
+    res['average_age'] = round(res['average_age']+ 1e-9,0)
+    return res.rename(columns = {'employee_id_x':'employee_id','name_x':'name'}).sort_values('employee_id')
