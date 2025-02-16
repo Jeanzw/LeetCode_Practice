@@ -6,6 +6,8 @@ select
 from Products 
 group by 1
 
+-------------------------
+
 -- 或者
 select 
     product_id,
@@ -15,7 +17,7 @@ select
 from Products 
 group by 1
 
-
+-------------------------
 
 -- 另一种做法就是用pivot
 SELECT *
@@ -30,7 +32,7 @@ PIVOT
                          ) 
 )T2
 
-
+-------------------------
 
 -- Python
 import pandas as pd
