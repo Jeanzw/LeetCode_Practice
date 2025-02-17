@@ -18,6 +18,7 @@ having count(*) >= 3) summary)
 select name,mail from Users 
 where user_id in (select medal from result)
 
+---------------------------------
 
 -- 上面的看起来……有点繁杂，简化如下
 with gold as
@@ -42,6 +43,7 @@ having count(*) >= 3)
 select name,mail from Users
 where user_id in (select * from gold union all select * from three_medal)
 
+---------------------------------
 
 -- 上面这种方法可以在算three medal用join来连接
 with gold as
@@ -65,7 +67,7 @@ select distinct name,mail from gold
 union
 select distinct name, mail from consecutive
 
-
+---------------------------------
 
 -- 我看到另一种解法说是用lag（）
 with cte as (
@@ -95,8 +97,7 @@ having
 or
     sum(contest_id - prevprev = 2) >= 1
 
-
-
+---------------------------------
 
 -- Python
 import pandas as pd
@@ -117,6 +118,8 @@ def find_interview_candidates(contests: pd.DataFrame, users: pd.DataFrame) -> pd
     summary = pd.concat([gold,medal])
     sumamry = pd.merge(summary,users, on = 'user_id')
     return sumamry[['name','mail']].drop_duplicates()
+
+---------------------------------
 
 -- 如果不用shift，那么我们可以按照sql的思路，建一个bridge出来
 import pandas as pd

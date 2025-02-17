@@ -14,6 +14,7 @@ player_id,player_name,cnt as grand_slams_count
 from Players p
 join player_info pp on p.player_id = pp.player 
 
+---------------------------------
 
 -- 还可以用case when来解决这道题
 SELECT * 
@@ -28,6 +29,7 @@ FROM (
   FROM Players CROSS JOIN Championships GROUP BY player_id, player_name ) T
 WHERE grand_slams_count > 0
 
+---------------------------------
 
 -- 另外还有一种做法就比较神奇了……
 SELECT player_id,player_name,
@@ -38,7 +40,7 @@ JOIN Championships
 ON player_id=Wimbledon or player_id=Fr_open or player_id=US_open or player_id=Au_open
 GROUP BY player_id;
 
-
+---------------------------------
 
 -- Python
 import pandas as pd
