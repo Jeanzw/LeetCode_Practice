@@ -17,6 +17,7 @@ select distinct account_id from exceed
 group by 1,month-rnk
 having count(*) > 1
 
+----------------------------
 
 -- 还是沿袭上面对于date的处理，但是不需要用rnk来进行定位了
 # Write your MySQL query statement below
@@ -40,7 +41,7 @@ distinct a.account_id
 from summary a
 inner join summary b on a.account_id =b.account_id and a.month + 1 = b.month
 
-
+----------------------------
 
 -- 也有人是用join来判断连续两个月的
 WITH summary AS
@@ -60,6 +61,7 @@ WHERE (s1.M + 1 = s2.M AND s1.Y = s2.Y)
 OR (s1.M = 12 AND s2.M = 1 AND s1.Y + 1 = s2.Y)
 -- 最后的判断就是跨年还是不跨年，如果不跨年，那么我们让月份相差1，如果跨年那么就让年份+1同时月份有限制
 
+----------------------------
 
 
 -- 第三种方法是用period_diff ->返回二者之间的月份差
@@ -79,18 +81,19 @@ WHERE t1.account_id=t2.account_id AND PERIOD_DIFF(t1.date, t2.date)=1
 GROUP BY t1.account_id
 ORDER BY t1.account_id
 
+----------------------------
+
 -- Python
 import pandas as pd
 
 def suspicious_bank_accounts(accounts: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(accounts,transactions, on = 'account_id')
+    merge = pd.merge(accounts,transactions,on = 'account_id')
     merge['month'] = merge.day.dt.month
-    merge = merge.query("type == 'Creditor'")
+    merge = merge[merge['type'] == 'Creditor']
 
-    merge = merge.groupby(['account_id','max_income','month'],as_index = False).amount.sum()
-    merge = merge.query("max_income < amount")
-    merge = merge.sort_values(['account_id','month'])
+    merge = merge.groupby(['account_id','month','max_income'],as_index = False).amount.sum()
+    merge = merge[merge['amount'] > merge['max_income']]
+    merge.sort_values(['account_id','month'], ascending = [1,1],inplace = True)
     merge['next_line'] = merge.groupby(['account_id']).month.shift(-1)
-    merge['month_diff'] = (merge['next_line'] - merge['month'])
-
-    return merge.query("month_diff == 1")[['account_id']].drop_duplicates()
+    merge = merge[merge['month'] + 1 == merge['next_line']]
+    return merge[['account_id']].drop_duplicates()

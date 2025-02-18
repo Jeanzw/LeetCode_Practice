@@ -20,17 +20,17 @@
 -- %y Year as a numeric, 2-digit value
 select date_format(day,'%W, %M %e, %Y') as day from Days
 
-
+--------------------
 
 -- ms sql
 SELECT format(day,'D') AS day FROM Days
 
-
+--------------------
 
 -- oracle
 SELECT TO_CHAR(Day,'fmDay, fmMonth fmdd, YYYY') AS day FROM Days
 
-
+--------------------
 
 -- Python
 import pandas as pd

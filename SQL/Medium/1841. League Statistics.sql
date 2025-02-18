@@ -32,7 +32,7 @@ inner join match_summary m on t.team_id = m.id
 group by 1
 order by 3 desc,6 desc, 1
 
-
+------------------------
 
 -- 别人的做法
 select team_name,
@@ -49,6 +49,7 @@ join teams t on m.home_team_id = t.team_id or m.away_team_id = t.team_id
 group by team_name
 order by points desc, goal_diff desc, team_name
 
+------------------------------
 
 -- Python
 import pandas as pd
