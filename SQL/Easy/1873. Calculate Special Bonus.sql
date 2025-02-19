@@ -11,10 +11,13 @@ select
     from Employees
     order by 1
 
+---------------------------------
 
 -- 别人做的1:
 select employee_id, if(employee_id%2=1 and name not like'M%', salary,0) as bonus
 from Employees;
+
+---------------------------------
 
 -- 别人做的2:
 SELECT employee_id,
@@ -26,15 +29,17 @@ SELECT employee_id,
 FROM   employees
 ORDER  BY employee_id 
 
+---------------------------------
 
 -- Python
 import pandas as pd
 import numpy as np
 
 def calculate_special_bonus(employees: pd.DataFrame) -> pd.DataFrame:
-    employees['bonus'] = np.where(employees['employee_id'] % 2 & ~employees['name'].str.startswith('M'), employees['salary'], 0)
+    employees['bonus'] = np.where((employees['employee_id'] % 2 == 1) & (~employees['name'].str.startswith('M')), employees['salary'], 0)
     return employees[['employee_id','bonus']].sort_values('employee_id')
 
+---------------------------------
 
 -- 也可以不用startswith而是直接用str[]来操作：
 import pandas as pd

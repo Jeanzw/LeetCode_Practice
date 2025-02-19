@@ -11,6 +11,7 @@ select
  from max_order
  where quantity > (select max(average) from average_order)
 
+-----------------------------------
 
 -- 别人做的
 -- 其实逻辑是一样的，只不过他这里写的相当于默认product id出现的次数就是一次，所以可以直接用avg来求平均值
@@ -27,6 +28,7 @@ FROM tb1
 WHERE max_quantity > (SELECT MAX(avg_quantity) AS max_avg_quantity
 FROM tb1)
 
+-----------------------------------
 
 -- 我们还是可以用window function来做
 with cte as
@@ -37,6 +39,7 @@ distinct order_id
 from cte
 where max_quantity > (select max(avg_quantity) from cte)
 
+-----------------------------------
 
 -- Python
 import pandas as pd
@@ -48,3 +51,13 @@ def orders_above_average(orders_details: pd.DataFrame) -> pd.DataFrame:
     )
     summary['max_avg_quantity'] = summary.avg_quantity.max()
     return summary.query("max_quantity > max_avg_quantity")[['order_id']]
+
+
+-- 另外的做法
+import pandas as pd
+
+def orders_above_average(orders_details: pd.DataFrame) -> pd.DataFrame:
+    orders_details['max_quantity'] = orders_details.groupby(['order_id']).quantity.transform('max')
+    orders_details['avg_quantity'] = orders_details.groupby(['order_id']).quantity.transform('mean')
+    max_avg_quantity = orders_details.avg_quantity.max()
+    return orders_details[orders_details['max_quantity'] > max_avg_quantity][['order_id']].drop_duplicates()
