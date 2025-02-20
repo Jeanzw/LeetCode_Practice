@@ -19,6 +19,7 @@ select f.category, ifnull(accounts_count,0) as accounts_count
 from frame f
 left join cal c on f.category = c.category
 
+-----------------------
 
 -- 或者我们直接用union all来做也行
 -- 也就是说将account这张表分别拆成几个income类别的，然后各类别进行union all
@@ -38,7 +39,7 @@ select "High Salary" category,
 sum(case when income>50000 then 1 else 0 end) as accounts_count
 from Accounts
 
-
+-----------------------
 
 -- Python
 import pandas as pd
@@ -46,7 +47,8 @@ import numpy as np
 
 def count_salary_categories(accounts: pd.DataFrame) -> pd.DataFrame:
     frame = pd.DataFrame({'category':['Low Salary','Average Salary','High Salary']})
-    accounts['category'] = np.where(accounts['income'] > 50000, 'High Salary', np.where(accounts['income'] < 20000, 'Low Salary','Average Salary'))
-    summary = pd.merge(frame,accounts,on = 'category', how = 'left')
-    summary = summary.groupby(['category'], as_index = False).account_id.nunique().rename(columns = {'account_id':'accounts_count'})
-    return summary
+    accounts['category'] = np.where(accounts['income'] < 20000, 'Low Salary',
+                           np.where(accounts['income'] <= 50000, 'Average Salary','High Salary'))
+    merge = pd.merge(frame,accounts,on = 'category', how = 'left')
+    merge = merge.groupby(['category'],as_index = False).account_id.nunique()
+    return merge.rename(columns = {'account_id':'accounts_count'})

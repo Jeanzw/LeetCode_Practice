@@ -12,6 +12,7 @@ where (l1.user_id,l2.user_id) not in (select user1_id,user2_id from Friendship) 
 group by 1,2,l1.day
 having count(distinct l1.song_id) >= 3
 
+-------------------------------
 
 -- 将上面的方法改良一下，不用not in来做
 with cte as
@@ -29,7 +30,7 @@ from cte a
 left join Friendship b on (a.user_id = b.user1_id and a.recommended_id = b.user2_id) or (a.user_id = b.user2_id and a.recommended_id = b.user1_id)
 where b.user1_id is null
 
-
+-------------------------------
 
 -- 但是下面这种做法还是超时
 -- 也就是说我们如果用left join但是是在连接条件上有很多条件其实也是不高效的
@@ -43,6 +44,7 @@ where f.user1_id is null
 group by 1,2,l1.day
 having count(distinct l1.song_id) >= 3
 
+-------------------------------
 
 -- 下面这种做法其实就可以通过了
 -- 相当于我们是把friendship这张表用union all处理了一下，从而在left join的时候系统不需要去判断or的情况只需要直接一行行扫下来即可
@@ -66,7 +68,7 @@ where f.user1_id is null
 group by 1,2,l1.day
 having count(distinct l1.song_id) >= 3
 
-
+-------------------------------
 
 -- Python
 import pandas as pd
@@ -85,3 +87,22 @@ def recommend_friends(listens: pd.DataFrame, friendship: pd.DataFrame) -> pd.Dat
     filter_out1 = filter_out1.query("user1_id.isna()").rename(columns = {'user_id_x':'user_id','user_id_y':'recommended_id'})
     res = pd.concat([filter_out1[['user_id','recommended_id']],filter_out1[['recommended_id','user_id']].rename(columns = {'recommended_id':'user_id','user_id':'recommended_id'})])
     return res
+
+
+-- 另外的做法
+import pandas as pd
+
+def recommend_friends(listens: pd.DataFrame, friendship: pd.DataFrame) -> pd.DataFrame:
+    friend1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user_id','user2_id':'friend'})
+    friend2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user_id','user1_id':'friend'})
+    friend = pd.concat([friend1,friend2]).drop_duplicates()
+
+    song = pd.merge(listens,listens,on = ['song_id','day'])
+    song = song[song['user_id_x'] != song['user_id_y']]
+    song = song.groupby(['user_id_x','user_id_y','day'],as_index = False).song_id.nunique()
+    song = song[song['song_id'] >= 3]
+    potential_friend = song[['user_id_x','user_id_y']].drop_duplicates()
+
+    res = pd.merge(potential_friend,friend, left_on = ['user_id_x','user_id_y'], right_on = ['user_id','friend'], how = 'left')
+    res = res[res['user_id'].isna()]
+    return res[['user_id_x','user_id_y']].rename(columns = {'user_id_x':'user_id','user_id_y':'recommended_id'})
