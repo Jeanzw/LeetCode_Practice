@@ -11,6 +11,7 @@ from
     left join Exam e on s.capacity >= e.student_count)tmp
     where rnk = 1
 
+--------------------------------------------
 
 -- Python
 import pandas as pd
@@ -23,4 +24,18 @@ def find_cutoff_score(schools: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame
     merge = merge.query("rnk == 1")[['school_id','score']]
 
     res = pd.merge(schools,merge,on = 'school_id',how = 'left').fillna(-1)
+    return res[['school_id','score']]
+
+
+
+-- 另外的做法
+import pandas as pd
+
+def find_cutoff_score(schools: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(schools,exam,how = 'cross')
+    merge = merge[merge['capacity'] >= merge['student_count']]
+    merge.sort_values(['school_id','score'], ascending = [1,1],inplace = True)
+    merge = merge.groupby(['school_id']).head(1)
+
+    res = pd.merge(schools, merge, on = 'school_id', how = 'left').fillna(-1)
     return res[['school_id','score']]

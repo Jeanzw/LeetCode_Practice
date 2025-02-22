@@ -20,13 +20,13 @@ where rnk = 1 or rnk_desc = 1
 -- 而后我们只选取第一个或者最后一个打电话的信息
 )
 
-
 select 
 distinct r1.id1 as user_id
 from rnk r1
 join rnk r2 on 
 on r1.rnk = 1 and r2.rnk_desc = 1 and r1.user_id= r2.user_id and r1.call_day = r2.call_day and r1.id = r2.id
 
+---------------------------
 
 -- 下面是别人做的
 -- 和我上面做的没有什么很大不同
@@ -54,7 +54,7 @@ WHERE RN = 1 OR RK = 1
 GROUP BY user_id, DAY
 HAVING COUNT(DISTINCT recipient_id) = 1
 
-
+---------------------------
 
 -- 或者下面这种方法，用min和max找到某一天第一个和最后一个电话
 with framework as
@@ -76,7 +76,7 @@ person1 as user_id
 from first_last_call 
 where frist_call = last_call
 
-
+---------------------------
 
 -- Python
 import pandas as pd
@@ -94,6 +94,7 @@ def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
     res = merge.query("(first_call_x == 1 and last_call_x == 1) or call_time_x != call_time_y")
     return res[['user_id']].drop_duplicates()
 
+---------------------------
 
 -- 或者我们python可以按照sql的最后一种方法来做
 import pandas as pd
@@ -111,3 +112,20 @@ def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
 
     res = call.query("id == 1")
     return res[['user_id']].drop_duplicates()
+
+
+-- 另外的做法
+import pandas as pd
+
+def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
+    call1 = calls[['caller_id','recipient_id','call_time']].rename(columns = {'caller_id':'user_id','recipient_id':'id'})
+    call2 = calls[['recipient_id','caller_id','call_time']].rename(columns = {'recipient_id':'user_id','caller_id':'id'})
+    call = pd.concat([call1,call2]).drop_duplicates()
+    call['call_day'] = call['call_time'].dt.strftime('%Y-%m-%d')
+    call['rnk'] = call.groupby(['user_id','call_day']).call_time.rank(method = 'first')
+    call['rnk_desc'] = call.groupby(['user_id','call_day']).call_time.rank(method = 'first',ascending = False)
+
+    first_call = call[call['rnk'] == 1]
+    last_call = call[call['rnk_desc'] == 1]
+    merge = pd.merge(first_call,last_call,on = ['user_id','id','call_day'])
+    return merge[['user_id']].drop_duplicates()

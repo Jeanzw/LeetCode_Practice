@@ -13,6 +13,8 @@ right join Salaries s on e.employee_id = s.employee_id)tmp
 where name is null or salary is null
 order by 1
 
+---------------------
+
 -- 但是如果我们使用ms sql那么就可以用full outer join了
 SELECT CASE WHEN name IS NULL THEN s.employee_id
             WHEN salary IS NULL THEN e.employee_id
@@ -23,6 +25,7 @@ ON e.employee_id = s.employee_id
 WHERE name IS NULL or salary IS NULL          -- get the ones without proper information
 ORDER BY employee_id
 
+---------------------
 
 -- 或者这样做
 with frame as
@@ -38,10 +41,12 @@ left join Salaries c on a.employee_id = c.employee_id
 where b.employee_id is null or c.employee_id is null
 order by 1
 
+---------------------
 
 -- Python
 import pandas as pd
 
 def find_employees(employees: pd.DataFrame, salaries: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(employees,salaries,on='employee_id', how='outer').query("name.isna() or salary.isna()")
+    merge = pd.merge(employees,salaries,on = 'employee_id', how = 'outer')
+    merge = merge[(merge['name'].isna()) | (merge['salary'].isna())]
     return merge[['employee_id']].sort_values('employee_id')
