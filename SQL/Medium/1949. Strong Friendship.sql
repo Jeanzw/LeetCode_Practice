@@ -20,6 +20,7 @@ where f1.user1_id < f1.user2_id
 group by 1,2
 having common_friend >= 3
 
+--------------------------------
 
 -- 新的做法
 -- 因为我们最后还是要保证原本的user1_id < user2_id，那么我们没必要放弃这个原表
@@ -41,6 +42,26 @@ inner join friend c on a.user2_id = c.user and a.user1_id != c.friend and b.frie
 group by 1,2
 having common_friend >= 3
 
+--------------------------------
+
+-- 新的做法
+with frame as
+(select user1_id as user_id, user2_id as friend from Friendship
+union
+select user2_id as user_id, user1_id as friend from Friendship
+)
+
+select
+distinct a.user_id as user1_id,
+a.friend as user2_id,
+count(b.friend) as common_friend
+from frame a
+join frame b on a.friend = b.user_id
+join frame c on a.user_id = c.user_id and b.friend = c.friend
+group by 1,2
+having common_friend >= 3 and user_id < friend
+
+--------------------------------
 
 -- Python
 import pandas as pd
