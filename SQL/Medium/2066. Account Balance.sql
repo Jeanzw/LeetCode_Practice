@@ -5,7 +5,7 @@ sum(case when type = 'Deposit' then amount else -amount end) over (partition by 
 from Transactions
 order by 1, 2
 
-
+-----------------------------------
 
 -- Python
 import pandas as pd

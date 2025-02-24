@@ -8,12 +8,15 @@ case when (select ny from ny) > (select cali from cali) then 'New York Universit
      when (select ny from ny) < (select cali from cali) then 'California University'
      else 'No Winner' end as winner
 
+----------------------------------
+
 -- 或者不用cte直接一条写下来
 select
 case when (select count(distinct student_id) from NewYork where score >= 90) > (select count(distinct student_id) from California where score >= 90) then 'New York University'
      when (select count(distinct student_id) from NewYork where score >= 90) < (select count(distinct student_id) from California where score >= 90) then 'California University'  
      else 'No Winner' end as winner
 
+----------------------------------
 
 --  Python
 import pandas as pd

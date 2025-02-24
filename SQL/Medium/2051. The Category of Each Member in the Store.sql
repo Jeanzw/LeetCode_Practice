@@ -9,6 +9,7 @@ left join Visits b on a.member_id = b.member_id
 left join Purchases c on b.visit_id = c.visit_id
 group by 1,2
 
+--------------------------------
 
 -- Python
 import pandas as pd
