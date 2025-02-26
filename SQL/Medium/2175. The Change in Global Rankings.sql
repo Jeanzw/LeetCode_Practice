@@ -18,8 +18,7 @@ cast(rnk_before as SIGNED)- cast(rnk_after as SIGNED) as rank_diff
 -- However, ROW_NUMBER() returns an unsigned value.
 from cte
 
-
-
+----------------------------------------
 
 -- Python
 import pandas as pd
