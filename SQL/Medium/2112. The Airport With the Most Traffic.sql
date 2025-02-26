@@ -12,7 +12,7 @@ from framework group by 1
 
 select distinct airport as airport_id from sum_rank where rnk = 1
 
-
+--------------------
 
 -- Python
 import pandas as pd

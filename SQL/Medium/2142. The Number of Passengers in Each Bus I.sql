@@ -17,6 +17,7 @@ left join Passengers b on b.arrival_time between a.start and a.end
 group by 1
 order by 1
 
+----------------
 
 -- 我觉得先排序再处理有点慢，直接lag解决
 # Write your MySQL query statement below
@@ -34,6 +35,7 @@ left join Passengers b on b.arrival_time <= a.arrival_time and b.arrival_time > 
 group by 1
 order by 1
 
+----------------
 
 -- Python
 import pandas as pd
@@ -48,3 +50,18 @@ def count_passengers_in_bus(buses: pd.DataFrame, passengers: pd.DataFrame) -> pd
 
     res = pd.merge(buses,merge, on = 'bus_id', how = 'left').fillna(0)
     return res[['bus_id','passenger_id']].rename(columns = {'passenger_id':'passengers_cnt'}).sort_values('bus_id')
+
+
+-- 也可以这么做
+import pandas as pd
+import numpy as np
+
+def count_passengers_in_bus(buses: pd.DataFrame, passengers: pd.DataFrame) -> pd.DataFrame:
+    buses.sort_values(['arrival_time'],inplace = True)
+    buses['start_time'] = buses.arrival_time.shift(1).fillna(0)
+    
+    merge = pd.merge(buses,passengers, how = 'cross')
+    merge['id'] = np.where((merge['arrival_time_y'] > merge['start_time']) & (merge['arrival_time_y'] <= merge['arrival_time_x']), merge['passenger_id'], None)
+    merge = merge.groupby(['bus_id'],as_index = False).id.nunique()
+    
+    return merge.rename(columns = {'id':'passengers_cnt'})
