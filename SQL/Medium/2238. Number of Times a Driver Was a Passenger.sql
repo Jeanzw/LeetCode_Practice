@@ -5,6 +5,7 @@ from Rides a
 left join Rides b on a.driver_id = b.passenger_id
 group by 1
 
+---------------------------------
 
 -- Python
 import pandas as pd

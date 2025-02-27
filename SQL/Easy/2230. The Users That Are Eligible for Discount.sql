@@ -8,3 +8,13 @@ BEGIN
     and amount >= minAmount
     order by 1;
 END
+
+--------------------------
+
+import pandas as pd
+from datetime import datetime
+
+def find_valid_users(purchases: pd.DataFrame, start_date: datetime, end_date: datetime, min_amount: int) -> pd.DataFrame:
+    purchases = purchases[(purchases['time_stamp'] >= start_date) & (purchases['time_stamp'] <= end_date) & (purchases['amount'] >= min_amount)]
+    purchases = purchases[['user_id']].drop_duplicates()
+    return purchases.sort_values('user_id')
