@@ -11,6 +11,7 @@ select user_id, gender
 from cte
 order by rnk, cate_rnk
 
+---------------------------
 
 -- Python
 import pandas as pd

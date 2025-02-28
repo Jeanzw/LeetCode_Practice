@@ -8,7 +8,7 @@ select sum(case when dayofweek(submit_date) in (1, 7) then 1 else 0 end) as week
        sum(case when dayofweek(submit_date) in (1, 7) then 0 else 1 end) as working_cnt
 from tasks
 
-
+--------------------------
 
 -- Python
 import pandas as pd

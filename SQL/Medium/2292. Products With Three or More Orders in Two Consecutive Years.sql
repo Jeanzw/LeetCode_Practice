@@ -13,6 +13,7 @@ select distinct product_id from rnk
 group by 1, year - rnk
 having count(*) >= 2
 
+---------------------------
 
 -- 其实我觉得这道题不需要按照之前找连续数这样做，这样太复杂了
 with cte as
@@ -28,7 +29,7 @@ distinct a.product_id
 from cte a
 inner join cte b on a.product_id = b.product_id and a.year + 1 = b.year
 
-
+---------------------------
 
 -- Python
 import pandas as pd

@@ -9,7 +9,7 @@ group by 1,2)
 
 select user_id,product_id from cte where rnk = 1
 
-
+--------------------
 
 -- Python
 import pandas as pd
