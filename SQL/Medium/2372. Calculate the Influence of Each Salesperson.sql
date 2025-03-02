@@ -7,6 +7,7 @@ left join Customer b on a.salesperson_id = b.salesperson_id
 left join Sales c on b.customer_id = c.customer_id
 group by 1,2
 
+------------------------
 
 -- Python
 import pandas as pd

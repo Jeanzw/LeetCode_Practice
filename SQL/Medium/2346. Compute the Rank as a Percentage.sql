@@ -10,6 +10,7 @@ department_id,
 ifnull(round(100 * (rnk - 1) /(cnt - 1),2),0) as percentage
 from student_rank
 
+----------------------------------------
 
 -- 不用写cte，直接写
 select
@@ -20,14 +21,14 @@ ifnull(round(100 * (rank() over (partition by department_id order by mark desc) 
 from Students
 
 
+
 -- Python
 import pandas as pd
+import numpy as np
 
 def compute_rating(students: pd.DataFrame) -> pd.DataFrame:
-    students['rank'] = students.groupby('department_id')['mark'].rank(method='min', ascending=False)  
-    students['cnt'] = students.groupby('department_id')['student_id'].transform('count') 
-    students['percentage'] = np.where(students['cnt'] == 1, 0, 100 * (students['rank'] - 1) / (students['cnt'] - 1))
-    students['percentage'] = np.round(students['percentage'].astype('float'), 2)
-
-
-    return students[['student_id', 'department_id', 'percentage']]
+    students['rnk'] = students.groupby(['department_id']).mark.rank(ascending = False, method = 'min')
+    students['cnt'] = students.groupby(['department_id']).student_id.transform('nunique')
+    students['percentage'] = np.where(students['cnt'] == 1, 0, 100*(students['rnk'] - 1)/(students['cnt'] - 1))
+    students['percentage'] = students['percentage'].round(2)
+    return students[['student_id','department_id','percentage']]
