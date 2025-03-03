@@ -21,6 +21,7 @@ and a.price < b.price
 group by 1
 having count(*) - count(b.customer_id)=  1
 
+---------------------
 
 -- 另外的做法
 WITH CTE AS (
@@ -47,6 +48,7 @@ FROM CTE_3
 WHERE num_years=year_shopping
 GROUP BY 1
 
+---------------------
 
 -- 如果实在想不到上面的解题方法那就一步步来
 -- 先把每一年给recursive求出来对应的price
@@ -70,7 +72,39 @@ group by 1,2)
 select distinct customer_id from Orders
 where customer_id not in (select customer_id from summary_last_year where sum_price <= last_year)
 
+---------------------
 
+-- 或者直接用join
+with recursive cte as
+(select customer_id, min(year(order_date)) as min_year, max(year(order_date)) as max_year from Orders group by 1)
+, frame as
+(select customer_id, min_year as year from cte
+union all
+select a.customer_id, a.year + 1 as year from frame a left join cte b on a.customer_id = b.customer_id
+where year < max_year
+)
+, summary as
+(select 
+a.customer_id,
+a.year,
+ifnull(sum(c.price),0) as price
+from frame a
+left join Orders c on a.customer_id = c.customer_id and a.year = year(c.order_date)
+group by 1,2
+order by 1,2)
+, no_increasing as
+(select
+distinct a.customer_id
+from summary a
+join summary b on a.customer_id = b.customer_id and a.year + 1 = b.year and a.price >= b.price)
+
+select
+distinct a.customer_id
+from summary a
+left join no_increasing b on a.customer_id = b.customer_id
+where b.customer_id is null
+
+---------------------
 
 -- Python
 import pandas as pd
@@ -85,7 +119,7 @@ def find_specific_customers(orders: pd.DataFrame) -> pd.DataFrame:
     total_line = orders.groupby(['customer_id'],as_index = False).year.nunique()
     -- 先求原本表中总共有多少行
     meet_require = orders[(orders['year'] + 1 == orders['next_line_year']) & (orders['price'] < orders['next_line_price'])]
-    -- 满足条件后，每个customer对应多少航
+    -- 满足条件后，每个customer对应多少行
     meet_require = meet_require.groupby(['customer_id'],as_index = False).year.nunique()
 
     merge = pd.merge(total_line,meet_require, on = 'customer_id', how ='left')

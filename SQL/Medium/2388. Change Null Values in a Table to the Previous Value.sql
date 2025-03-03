@@ -21,6 +21,7 @@ from frame a join cte b on a.rnk + 1 = b.rnk
 
 select id,drink from frame
 
+---------------------------
 
 -- Python
 import pandas as pd
