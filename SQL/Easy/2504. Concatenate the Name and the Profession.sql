@@ -4,6 +4,7 @@ concat(name,'(',left(profession,1),')') as name
 from Person
 order by 1 desc
 
+----------------------------
 
 -- Python
 import pandas as pd

@@ -5,6 +5,7 @@ from Spotify
 group by 1
 order by 2 desc, 1
 
+----------------------------
 
 -- Python
 import pandas as pd

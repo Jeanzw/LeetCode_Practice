@@ -55,7 +55,7 @@ SELECT hall_id, MIN(start_day) AS start_day, MAX(end_day) AS end_day
 FROM decide
 GROUP BY hall_id, decision
 
-
+----------------------------
 
 -- Python
 import pandas as pd
