@@ -18,7 +18,7 @@ inner join summary b on a.user_id = b.user_id and datediff(b.created_at,a.create
 -- | 4       | Smart Cat Feeder  | 2021-09-02 | 693545 |
 -- | 4       | Smart Cat Feeder  | 2021-09-02 | 693545 |
 
-
+------------------------------
 
 -- Python
 import pandas as pd

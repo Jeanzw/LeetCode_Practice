@@ -19,6 +19,7 @@ select customer_id, min(fir) as consecutive_start, max(thi) as consecutive_end f
 group by customer_id, dateadd(day, rnk,fir)
 order by 1
 
+------------------------------
 
 -- Python
 import pandas as pd
