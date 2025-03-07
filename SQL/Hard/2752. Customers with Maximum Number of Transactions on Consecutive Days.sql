@@ -16,9 +16,9 @@ from Transactions)
 from bridge
 group by customer_id, bridge)
 
-select customer_id from cal where rnk = 1 order by 1
+select distinct customer_id from cal where rnk = 1 order by 1
 
-
+----------------------------------------
 
 -- Python
 import pandas as pd

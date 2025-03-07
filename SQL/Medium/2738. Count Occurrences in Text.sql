@@ -10,6 +10,7 @@ count(distinct case when content like '% bear %' then file_name end) as count
 from Files
 group by 1
 
+-----------------------------
 
 -- Python
 import pandas as pd

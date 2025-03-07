@@ -12,6 +12,8 @@ from summary
 group by 1
 order by 1
 
+-----------------------
+
 -- 也可以用window function来做
 with summary as
 (select user1 as user, user2 as friend from Friends
@@ -24,7 +26,7 @@ from summary
 group by 1
 order by 1
 
-
+-----------------------
 
 -- Python
 import pandas as pd
