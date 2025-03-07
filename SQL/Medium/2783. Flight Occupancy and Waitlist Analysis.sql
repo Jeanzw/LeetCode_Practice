@@ -13,7 +13,7 @@ from Flights a
 left join cnt_passenger b on a.flight_id = b.flight_id
 order by 1
 
-
+---------------------------------
 
 -- 直接一个query写下来就可以了
 select
@@ -25,6 +25,7 @@ left join Passengers b on a.flight_id = b.flight_id
 group by 1
 order by 1
 
+---------------------------------
 
 -- 上面用case when判断大小也可以改成用least()和greatest()
 SELECT 
@@ -45,7 +46,7 @@ GROUP BY
 ORDER BY 
   f.flight_id;
 
-
+---------------------------------
 
 -- Python
 import pandas as pd
