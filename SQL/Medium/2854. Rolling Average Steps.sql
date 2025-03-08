@@ -7,6 +7,7 @@ inner join Steps b on a.user_id = b.user_id and datediff(a.steps_date,b.steps_da
 inner join Steps c on b.user_id = c.user_id and datediff(b.steps_date,c.steps_date) = 1
 order by 1,2
 
+-----------------------------
 
 -- Python
 import pandas as pd

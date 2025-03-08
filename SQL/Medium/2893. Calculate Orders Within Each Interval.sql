@@ -14,6 +14,8 @@ left join Orders b on b.minute between a.start and a.end
 group by 1
 order by 1
 
+-------------------------------------------------------
+
 -- 也可以先把最大interval no给求出来
 with recursive cte as
 (select ceil(max(minute)/6) as max_interval from Orders)
@@ -30,3 +32,5 @@ sum(order_count) as total_orders
 from frame a
 left join Orders b on b.minute between a.start and a.end
 group by 1
+
+-------------------------------------------------------

@@ -12,6 +12,7 @@ from cte
 where rnk = 1
 order by 2 desc, 1 desc
 
+-------------------------
 
 -- Python
 import pandas as pd

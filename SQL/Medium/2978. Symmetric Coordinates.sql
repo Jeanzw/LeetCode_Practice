@@ -11,6 +11,7 @@ from cte a
 inner join cte b on a.x = b.y and a.y = b.x and a.x <= a.y and a.rnk != b.rnk
 order by 1, 2
 
+-------------------------------
 
 -- Python
 
