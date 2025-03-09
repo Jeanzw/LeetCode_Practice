@@ -12,6 +12,8 @@ from city_avg,nation
 where city_avg > nation_avg
 order by 1
 
+------------------------
+
 -- 其实可以直接一步到位
 with cte as
 (select
@@ -22,11 +24,13 @@ from Listings)
 
 select distinct city from cte where avg_city > avg_nation order by 1
 
+------------------------
 
 -- Python
 import pandas as pd
 
 def find_expensive_cities(listings: pd.DataFrame) -> pd.DataFrame:
-    listings['city_avg'] = listings.groupby(['city']).price.transform(mean)
+    listings['city_avg'] = listings.groupby(['city']).price.transform('mean')
     listings['nation_avg'] = listings.price.mean()
-    return listings.query("city_avg>nation_avg")[['city']].drop_duplicates().sort_values('city')
+    listings = listings[listings['city_avg'] > listings['nation_avg']]
+    return listings[['city']].drop_duplicates().sort_values('city')
