@@ -8,6 +8,7 @@ and weekday(purchase_date) = 4
 group by 1,2
 order by 1
 
+-----------------------------
 
 -- Python
 import pandas as pd

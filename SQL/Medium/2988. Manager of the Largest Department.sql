@@ -13,6 +13,7 @@ where position = 'Manager'
 and dep_id in (select dep_id from cnt where rnk = 1)
 order by 2
 
+------------------
 
 -- 或者这样做
 with cte1 as
@@ -25,6 +26,7 @@ from Employees)
 
 select emp_name as manager_name, dep_id from cte2 where rnk = 1 and position = 'Manager' order by 2
 
+------------------
 
 -- Python
 import pandas as pd
@@ -33,3 +35,17 @@ def find_manager(employees: pd.DataFrame) -> pd.DataFrame:
     employees['cnt'] = employees.groupby(['dep_id']).emp_id.transform('count')
     employees['rnk'] = employees.cnt.rank(method = 'dense', ascending = False)
     return employees.query("rnk == 1 and position == 'Manager'")[['emp_name','dep_id']].rename(columns = {'emp_name':'manager_name'}).sort_values('dep_id')
+
+
+-- 另外的做法：
+import pandas as pd
+
+def find_manager(employees: pd.DataFrame) -> pd.DataFrame:
+    manager = employees[employees['position'] == 'Manager']
+    employee = employees[employees['position'] != 'Manager']
+
+    merge = pd.merge(manager,employee,on = 'dep_id')
+    merge = merge.groupby(['emp_name_x','dep_id'],as_index = False).emp_id_y.nunique()
+    merge['rnk'] = merge.emp_id_y.rank(method = 'dense', ascending = False)
+    merge = merge[merge['rnk'] == 1]
+    return merge[['emp_name_x','dep_id']].rename(columns = {'emp_name_x':'manager_name'}).sort_values('dep_id')
