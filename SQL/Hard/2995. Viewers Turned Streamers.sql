@@ -23,8 +23,7 @@ where rnk = 1 and a.session_type = 'Viewer' and cnt > 1 and b.session_type = 'St
 group by 1
 order by 2 desc, 1 desc
 
-
-
+-----------------------------------
 
 -- 直接来算不用join
 # Write your MySQL query statement below
@@ -43,6 +42,7 @@ from cte
 where rnk = 1 and session_type = 'Viewer' and sessions_tt_count > 1
 order by 2 desc, 1 desc
 
+-----------------------------------
 
 -- Python
 import pandas as pd
