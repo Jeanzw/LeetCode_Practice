@@ -5,6 +5,7 @@ case when A + B <= C or A + C <= B or B + C <= A then 'Not A Triangle'
      else 'Scalene' end as triangle_type
 from Triangles
 
+------------------------------
 
 -- Python
 import pandas as pd

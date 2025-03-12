@@ -49,6 +49,7 @@ order by 2 desc
 -- 格式：ceil(数字)
 -- select CEIL(58.436587) from dual -> 59
 
+------------------------------------
 
 -- 下面是第二次做的比较简单的做法：
 with cte as
@@ -83,8 +84,7 @@ select
 from cte)tmp
 order by 2 desc
 
-
-
+--------------------
 
 -- Python
 import pandas as pd

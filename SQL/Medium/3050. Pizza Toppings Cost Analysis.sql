@@ -8,6 +8,7 @@ on a.topping_name < b.topping_name
 and b.topping_name < c.topping_name
 order by 2 desc, 1
 
+------------------------------
 
 -- Python
 import pandas as pd

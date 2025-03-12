@@ -7,6 +7,7 @@ from Tree a
 left join Tree b on a.N = b.P
 order by 1
 
+----------------------------
 
 -- Python
 import pandas as pd

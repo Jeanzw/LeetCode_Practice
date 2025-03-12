@@ -6,6 +6,8 @@ group by 1
 having count(distinct skill) = 3
 order by 1
 
+---------------------
+
 -- Python
 import pandas as pd
 
