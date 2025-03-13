@@ -24,7 +24,7 @@ GROUP BY
 ORDER BY 
   email_domain asc;
 
-
+--------------------------
 
 -- Python
 import pandas as pd

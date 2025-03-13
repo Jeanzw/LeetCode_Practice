@@ -19,6 +19,7 @@ from average_team
 where workload > avg_team
 order by 1,2
 
+---------------------------
 
 -- Python
 import pandas as pd

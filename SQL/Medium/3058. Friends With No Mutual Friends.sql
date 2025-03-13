@@ -38,8 +38,7 @@ order by 1,2
 -- where b.user is null
 -- order by 1,2
 
-
-
+------------------------------------
 
 -- Python
 import pandas as pd
@@ -51,6 +50,5 @@ def friends_with_no_mutual_friends(friends: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(concat,concat, on = 'friend')
 
     summary = pd.merge(friends,merge, left_on = ['user_id1','user_id2'], right_on = ['users_x','users_y'], how = 'left')
-    -- summary = summary.query("users_x.isna()")
     summary = summary[summary['user1_x'].isna()]
     return summary[['user_id1','user_id2']].drop_duplicates().sort_values(['user_id1','user_id2'])

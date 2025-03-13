@@ -6,6 +6,7 @@ from Activities a
 left join Age b on a.user_id = b.user_id
 group by 1
 
+------------------------
 
 -- Python
 import pandas as pd
