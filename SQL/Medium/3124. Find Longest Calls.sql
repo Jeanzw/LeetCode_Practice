@@ -11,6 +11,7 @@ left join Contacts b on a.contact_id = b.id)
 select first_name,type,duration_formatted from cte where rnk <= 3
 order by 2 desc, 3 desc, 1 desc
 
+-----------------------
 
 -- Python
 import pandas as pd

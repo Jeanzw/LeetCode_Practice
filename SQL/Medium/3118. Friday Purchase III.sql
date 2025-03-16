@@ -33,6 +33,7 @@ left join summary b on a.membership = b.membership and a.week_of_month = b.week_
 group by 1,2
 order by 1,2
 
+------------------------
 
 -- 第二次做，更加清楚明了：
 with recursive date_frame as
@@ -56,6 +57,7 @@ left join Purchases c on b.user_id = c.user_id and a.week_day = c.purchase_date
 group by 1,2
 order by 1,2
 
+------------------------
 
 -- Python
 import pandas as pd
@@ -73,7 +75,7 @@ def friday_purchases(purchases: pd.DataFrame, users: pd.DataFrame) -> pd.DataFra
     result = pd.merge(cross,purchases_users, on = ['week_of_month','membership'], how = 'left')
     return result.rename(columns = {'amount_spend':'total_amount'}).sort_values(['week_of_month','membership']).fillna(0)
 
-
+------------------------
 
 -- 再一次做
 import pandas as pd
