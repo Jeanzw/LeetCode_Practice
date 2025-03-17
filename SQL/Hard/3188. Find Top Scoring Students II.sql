@@ -22,8 +22,32 @@ having mandatory_list = mandatory_A_taken and elective_taken = elective_A_B_take
 select distinct student_id from cte
 order by 1
 
+-----------------------------------
 
+-- 或者这样做
+with cte as
+(select
+a.student_id,
+count(distinct case when b.mandatory = 'yes' then b.course_id end) as mandatory_course,
+count(distinct case when b.mandatory = 'yes' then c.course_id end) as mandatory_course_taken,
+count(distinct case when b.mandatory = 'yes' and c.grade = 'A' then c.course_id end) as mandatory_course_taken_A,
 
+count(distinct case when b.mandatory = 'no' then b.course_id end) as elective_course,
+count(distinct case when b.mandatory = 'no' then c.course_id end) as elective_course_taken,
+count(distinct case when b.mandatory = 'no' and c.grade in ('A','B') then c.course_id end) as elective_course_taken_A_B
+from students a
+left join courses b on a.major = b.major
+left join enrollments c on b.course_id = c.course_id and a.student_id = c.student_id
+group by 1)
+, gpa as
+(select student_id, avg(GPA) as gpa from enrollments group by 1)
+
+select a.student_id from cte a
+left join gpa b on a.student_id = b.student_id
+where mandatory_course = mandatory_course_taken_A and elective_course_taken >= 2 and elective_course_taken = elective_course_taken_A_B and gpa >= 2.5
+order by 1
+
+-----------------------------------
 
 -- Python
 import pandas as pd
@@ -57,3 +81,63 @@ def find_top_scoring_students(students: pd.DataFrame, courses: pd.DataFrame, enr
 # 最后将三张表进行merge，找到最后的结果
     res = pd.merge(avg_gpa,mandatory_candidate, on = 'student_id').merge(elective_candidate, on = 'student_id')
     return res[['student_id']].sort_values('student_id')
+
+-----------------------------------
+
+-- 另外的做法
+import pandas as pd
+import numpy as np
+
+def find_top_scoring_students(students: pd.DataFrame, courses: pd.DataFrame, enrollments: pd.DataFrame) -> pd.DataFrame:
+    # 合并三个数据框
+    merge = pd.merge(students, courses, on='major', how='left').merge(enrollments, on=['student_id', 'course_id'], how='left')
+    
+    # 处理缺失值，确保grade列比较时不会出现NaN导致的错误
+    # 必修课程且成绩为A的条件
+    merge['mandatory_course_taken_A'] = np.where(
+        (merge['mandatory'] == 'Yes') & 
+        merge['grade'].notna() &  # 新增对grade非空的检查
+        (merge['grade'] == 'A'), 
+        merge['course_id'], 
+        None
+    )
+    
+    # 其他字段处理，同样处理grade的缺失值
+    merge['mandatory_course'] = np.where(merge['mandatory'] == 'Yes', merge['course_id'], None)
+    merge['elective_course'] = np.where(merge['mandatory'] == 'No', merge['course_id'], None)
+    merge['elective_course_taken'] = np.where(
+        (merge['mandatory'] == 'No') & 
+        merge['grade'].notna(),  # 已存在的非空检查
+        merge['course_id'], 
+        None
+    )
+    merge['elective_course_taken_A_B'] = np.where(
+        (merge['mandatory'] == 'No') & 
+        merge['grade'].notna() &  # 新增非空检查
+        merge['grade'].isin(['A', 'B']), 
+        merge['course_id'], 
+        None
+    )
+    
+    # 按学生聚合统计
+    grouped = merge.groupby('student_id').agg(
+        mandatory_course=('mandatory_course', 'nunique'),
+        mandatory_course_taken_A=('mandatory_course_taken_A', 'nunique'),
+        elective_course_taken=('elective_course_taken', 'nunique'),
+        elective_course_taken_A_B=('elective_course_taken_A_B', 'nunique')
+    ).reset_index()
+    
+    # 筛选符合条件的记录
+    filtered = grouped[
+        (grouped['mandatory_course'] == grouped['mandatory_course_taken_A']) &
+        (grouped['elective_course_taken'] >= 2) &
+        (grouped['elective_course_taken'] == grouped['elective_course_taken_A_B'])
+    ]
+    
+    # 计算平均GPA并筛选
+    avg_gpa = enrollments.groupby('student_id')['GPA'].mean().reset_index()
+    avg_gpa = avg_gpa[avg_gpa['GPA'] >= 2.5]
+    
+    # 合并结果
+    result = pd.merge(filtered, avg_gpa, on='student_id')
+    return result[['student_id']]

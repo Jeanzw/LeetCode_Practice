@@ -12,6 +12,19 @@ select student_id from cte
 where total_courses = taken_A_courses
 order by 1
 
+--------------------------------
+
+-- 另外的做法
+select
+a.student_id
+from students a
+left join courses b on a.major = b.major
+left join enrollments c on b.course_id = c.course_id and a.student_id = c.student_id and c.grade = 'A'
+group by 1
+having count(distinct b.course_id) = count(distinct c.course_id)
+order by 1
+
+--------------------------------
 
 -- Python
 import pandas as pd
