@@ -1,4 +1,27 @@
-with max_concurrent_tasks as
+-- 这道题最关键的地方在于一个edge case：
+-- | task_id | employee_id | start_time          | end_time            |
+-- | ------- | ----------- | ------------------- | ------------------- |
+-- | 1       | 1001        | 2023-05-01 00:00:00 | 2023-05-01 02:00:00 |
+-- | 2       | 1001        | 2023-05-01 01:00:00 | 2023-05-01 03:00:00 |
+-- | 3       | 1001        | 2023-05-01 01:12:00 | 2023-05-01 01:42:00 |
+-- 上面的例子中我们可以看到task_id = 3，因为它是1和2的子集，所以我们在计算时间的时候其实这一行可以直接省略掉了
+-- 为了解决掉这个edge case，我们用了edge_case找到它
+-- 然后我们另外对Tasks进行处理，保留没有这个子集的内容
+-- 我们在做concurrent_tasks的时候需要考虑这个子集，所以我们直接用Tasks这张表
+-- 但是我们在计算时间的时候不需要考虑这个子集，所以我们用上面生成的summary这张表
+
+with edge_case as
+(select
+distinct b.task_id
+from Tasks a
+join Tasks b on a.employee_id = b.employee_id and a.task_id != b.task_id and b.start_time >= a.start_time and b.end_time <= a.end_time)
+, summary as
+(select
+a.*
+from Tasks a
+left join edge_case b on a.task_id = b.task_id
+where b.task_id is null)
+, max_concurrent_tasks as
 (select
     a.employee_id, 
     a.task_id, 
@@ -12,8 +35,8 @@ group by 1,2
 (select 
 a.employee_id,
 floor(sum(timestampdiff(minute, a.start_time,a.end_time) - (case when b.start_time is not null then timestampdiff(minute, b.start_time,a.end_time) else 0 end))/60) as total_task_hours
-from Tasks a
-left join Tasks b on a.employee_id = b.employee_id and b.start_time > a.start_time and b.start_time < a.end_time
+from summary a
+left join summary b on a.employee_id = b.employee_id and b.start_time > a.start_time and b.start_time < a.end_time
 group by 1)
 
 
@@ -25,29 +48,42 @@ from total_task_hours a
 inner join max_concurrent_tasks b on a.employee_id = b.employee_id and b.rnk = 1
 order by 1
 
-
+--------------------------------
 
 -- Python
 import pandas as pd
 import numpy as np
 
+
 def find_total_duration(tasks: pd.DataFrame) -> pd.DataFrame:
-    # 1. 首先排个序
-    tasks = tasks.sort_values(by = ['employee_id', 'start_time'], ascending = [1, 1])
-    tasks['next_start_time'] = tasks.groupby('employee_id')['start_time'].shift(-1)
-    # 2. 我们直接用shift将下一行给弄出来
-    tasks['duration'] = (tasks['end_time'] - tasks['start_time']).dt.total_seconds()
-    # 3. 判断是否存在overlap
-    tasks['overlap_flg'] = np.where(tasks['next_start_time'] < tasks['end_time'], 1, 0)
-    # 4. 如果有overlap就减去对应时间，没有overlap就直接做计算
-    -- 这一步的目的就是为了求出真正的duration
-    tasks['duration'] = np.where(tasks['overlap_flg'] == 1, tasks['duration'] - (tasks['end_time'] - tasks['next_start_time']).dt.total_seconds(),tasks['duration'])
-    # 5. 计算结果
-    tasks = tasks.groupby(['employee_id'], as_index = False).agg(
-        total_duration_in_seconds = ('duration', 'sum'),
-        concurrent_tasks_exclude_self = ('is_overlap', 'max')
-    )
-    # 6. 最后处理
-    tasks['total_task_hours'] = tasks['total_duration_in_seconds'] // 3600
-    tasks['max_concurrent_tasks'] = tasks['concurrent_tasks_exclude_self'] + 1
-    return tasks[['employee_id', 'total_task_hours', 'max_concurrent_tasks']].sort_values('employee_id')
+    # 找到edge case
+    edge_case = pd.merge(tasks,tasks, on = 'employee_id')
+    edge_case = edge_case[(edge_case['start_time_y'] >= edge_case['start_time_x']) & (edge_case['end_time_y'] <= edge_case['end_time_x']) & (edge_case['task_id_x'] != edge_case['task_id_y'])][['task_id_y']].drop_duplicates()
+    # 形成一个新的表summary，里面装的是没有任何子集的数据，为的就是计算total_task_hours
+    summary = tasks[~tasks['task_id'].isin(edge_case['task_id_y'])]
+    # 计算按例来说的所有时间
+    summary['total_hours_without_filter'] = (summary['end_time'] - summary['start_time']).dt.total_seconds()
+    total_hours_without_filter = summary.groupby(['employee_id'],as_index = False).total_hours_without_filter.sum()
+
+    # 计算overlap的时间
+    overlap_df = pd.merge(summary,summary, on = 'employee_id')
+    overlap_df['match_num'] = overlap_df.groupby(['employee_id','task_id_x']).task_id_x.transform('count')
+    overlap_df = overlap_df[(overlap_df['task_id_x'] != overlap_df['task_id_y']) & (overlap_df['start_time_y'] >=  overlap_df['start_time_x']) & (overlap_df['start_time_y'] <=  overlap_df['end_time_x'])]
+    overlap_df['overlap_hours'] = (overlap_df['end_time_x'] - overlap_df['start_time_y']).dt.total_seconds()
+    overlap_hours = overlap_df.groupby(['employee_id'],as_index = False).overlap_hours.sum()
+
+    # 计算total_task_hours
+    total_task_hours = pd.merge(total_hours_without_filter,overlap_hours, on = 'employee_id', how = 'left').fillna(0)
+    total_task_hours['total_task_hours'] = (total_task_hours['total_hours_without_filter'] - total_task_hours['overlap_hours'])//3600
+    total_task_hours = total_task_hours[['employee_id','total_task_hours']]
+    
+    # 计算concurrent_tasks
+    concurrent_tasks = pd.merge(tasks,tasks, on = 'employee_id')
+    concurrent_tasks = concurrent_tasks[(concurrent_tasks['start_time_y'] >= concurrent_tasks['start_time_x']) & (concurrent_tasks['start_time_y'] < concurrent_tasks['end_time_x'])]
+    concurrent_tasks = concurrent_tasks.groupby(['employee_id','task_id_x'],as_index = False).task_id_y.nunique()
+    concurrent_tasks.sort_values(['employee_id','task_id_y'], ascending = [1,0], inplace = True)
+    concurrent_tasks = concurrent_tasks.groupby(['employee_id']).head(1)
+    concurrent_tasks = concurrent_tasks[['employee_id','task_id_y']].rename(columns = {'task_id_y':'max_concurrent_tasks'})
+    # 最后做一个merge结束
+    res = pd.merge(total_task_hours,concurrent_tasks,on = 'employee_id')
+    return res.sort_values('employee_id')
