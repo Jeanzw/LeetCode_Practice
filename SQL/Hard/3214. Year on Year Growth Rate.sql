@@ -17,6 +17,7 @@ from cal_summary a
 left join cal_summary b on a.year - 1 = b.year and a.product_id = b.product_id
 order by 2,1
 
+----------------------------
 
 -- Python
 import pandas as pd
@@ -31,3 +32,17 @@ def calculate_yoy_growth(user_transactions: pd.DataFrame) -> pd.DataFrame:
     summary['spend_y'] = np.where(summary['rnk'] == 1, None, summary['spend_y'])
     summary['yoy_rate'] = round(((summary['spend_x'] - summary['spend_y'])/summary['spend_y']) * 100,2)
     return summary[['year_x','product_id','spend_x','spend_y','yoy_rate']].rename(columns = {'year_x':'year','spend_x':'curr_year_spend','spend_y':'prev_year_spend'}).sort_values(['product_id','year'])
+
+
+-- 也可以这么做
+-- 但是这么做的前提在于我们知道每一年都有数
+import pandas as pd
+import numpy as np
+
+def calculate_yoy_growth(user_transactions: pd.DataFrame) -> pd.DataFrame:
+    user_transactions['year'] = user_transactions.transaction_date.dt.year
+    user_transactions = user_transactions.groupby(['year','product_id'],as_index = False).spend.sum()
+    user_transactions.sort_values(['product_id','year'], ascending = [1,1],inplace = True)
+    user_transactions['prev_year_spend'] = user_transactions.groupby(['product_id']).spend.shift(1)
+    user_transactions['yoy_rate'] = np.where(user_transactions['prev_year_spend'].isna(), None, round(100 * (user_transactions['spend'] - user_transactions['prev_year_spend'])/user_transactions['prev_year_spend'],2))
+    return user_transactions.rename(columns = {'spend':'curr_year_spend'})
