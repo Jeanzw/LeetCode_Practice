@@ -20,7 +20,7 @@ select
 from cte
 order by 2 desc, 1
 
-
+---------------------------------------
 
 -- Python
 import pandas as pd

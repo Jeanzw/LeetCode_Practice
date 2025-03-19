@@ -7,6 +7,7 @@ from TeamStats
 group by 1,2
 order by 3 desc, 2
 
+--------------------------
 
 -- Python
 import pandas as pd

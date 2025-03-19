@@ -22,7 +22,42 @@ from cte
 group by 1
 order by 7 desc, 1
 
+-----------------------------------
 
+-- 另外的做法，top_category另外算
+with summary as
+(select
+a.customer_id,
+round(sum(amount),2) as total_amount,
+count(distinct transaction_id) as transaction_count,
+count(distinct category) as unique_categories,
+round(avg(amount),2) as avg_transaction_amount,
+round(count(distinct transaction_id) * 10 + sum(amount)/100,2) as loyalty_score
+from Transactions a
+left join Products b on a.product_id = b.product_id
+group by 1)
+, top_category as
+(select 
+a.customer_id,
+b.category,
+row_number() over (partition by a.customer_id order by count(distinct transaction_id) desc, max(transaction_date) desc) as rnk
+from Transactions a
+left join Products b on a.product_id = b.product_id
+group by 1,2)
+
+select
+a.customer_id,
+a.total_amount,
+a.transaction_count,
+a.unique_categories,
+a.avg_transaction_amount,
+b.category as top_category,
+a.loyalty_score
+from summary a
+left join top_category b on a.customer_id = b.customer_id and b.rnk = 1
+order by 7 desc, 1
+
+-----------------------------------
 
 -- python
 import pandas as pd
