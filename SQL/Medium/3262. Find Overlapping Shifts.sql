@@ -7,6 +7,7 @@ on a.employee_id = b.employee_id
 and a.end_time > b.start_time and a.start_time < b.start_time 
 group by 1
 
+---------------------------
 
 -- Python
 import pandas as pd
