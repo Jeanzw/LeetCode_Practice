@@ -6,6 +6,7 @@ from Products a
 left join Discounts b on a.category = b.category
 order by 1
 
+-------------------------
 
 -- Python
 import pandas as pd
