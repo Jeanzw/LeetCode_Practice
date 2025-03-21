@@ -26,7 +26,7 @@ from cte
 where rnk = 1 and skills_required <= candidate_has
 order by 1
 
-
+---------------------
 
 -- Python
 import pandas as pd

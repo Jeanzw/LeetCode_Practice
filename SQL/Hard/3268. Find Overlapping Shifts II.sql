@@ -15,27 +15,36 @@ select
 from cte
 group by 1
 
+-------------------------------------
 
 -- Python
 import pandas as pd
 
 def calculate_shift_overlaps(employee_shifts: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(employee_shifts,employee_shifts, on = 'employee_id', how = 'left')
-    merge = merge[(merge['start_time_y'] > merge['start_time_x']) & (merge['start_time_y'] < merge['end_time_x'])]
-    merge['duration'] = (merge['end_time_x'] - merge['start_time_y']).dt.total_seconds()/60
+    # 先把对应的日期给求出来，因为题目中要求是发生在同一天的
+    employee_shifts['start_time_dt'] = employee_shifts.start_time.dt.strftime('%Y-%m-%d')
+    employee_shifts['start_time_dt'] = pd.to_datetime(employee_shifts['start_time_dt'])
+
+    employee_shifts['end_time_dt'] = employee_shifts.end_time.dt.strftime('%Y-%m-%d')
+    employee_shifts['end_time_dt'] = pd.to_datetime(employee_shifts['end_time_dt'])   
     
+    # 然后去求存在重复的内容
+    merge = pd.merge(employee_shifts,employee_shifts,on = 'employee_id')
+    merge = merge[((merge['start_time_dt_x'] == merge['start_time_dt_y']) | (merge['start_time_dt_x'] == merge['end_time_dt_y'])) & (merge['start_time_y'] > merge['start_time_x']) & (merge['start_time_y'] <= merge['end_time_x'])]
+    merge = merge[['employee_id','start_time_x','end_time_x','start_time_y','end_time_y']]
+    merge['diff'] = (merge['end_time_x'] - merge['start_time_y']).dt.total_seconds()/60
     merge = merge.groupby(['employee_id','start_time_x'],as_index = False).agg(
-        max_overlapping_shifts = ('start_time_y','nunique'),
-        total_overlap_duration = ('duration','sum')
+        total_overlap_duration = ('diff','sum'),
+        overlapping_shifts = ('start_time_y','nunique')
     )
     merge = merge.groupby(['employee_id'],as_index = False).agg(
-        max_overlapping_shifts = ('max_overlapping_shifts','max'),
+        max_overlapping_shifts = ('overlapping_shifts','max'),
         total_overlap_duration = ('total_overlap_duration','sum')
     )
 
-    
-    employee_list = employee_shifts[['employee_id']].drop_duplicates()
-    
-    res = pd.merge(employee_list, merge, on = 'employee_id', how = 'left').fillna(0)
-    res['max_overlapping_shifts'] = res['max_overlapping_shifts'] + 1    
+    # 最后我们要把不存在重复值的内容找出来，并且给它赋值0
+    user_list = employee_shifts[['employee_id']].drop_duplicates()
+
+    res = pd.merge(user_list,merge, on = 'employee_id', how = 'left').fillna(0)
+    res['max_overlapping_shifts'] = res['max_overlapping_shifts'] + 1
     return res.sort_values('employee_id')
