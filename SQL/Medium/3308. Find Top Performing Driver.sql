@@ -26,8 +26,7 @@ from summary
 where rnk = 1
 order by 1
 
-
-
+----------------------------
 
 -- Python
 import pandas as pd

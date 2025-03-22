@@ -9,7 +9,7 @@ row_number() over (partition by season_id order by (wins * 3  + draws) desc, (go
 from SeasonStats
 order by 1,6,3
 
-
+-----------------------------------
 
 -- Python
 import pandas as pd

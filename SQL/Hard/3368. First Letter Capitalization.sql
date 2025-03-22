@@ -5,7 +5,7 @@ content_text as original_text,
 INITCAP(content_text) AS converted_text
 from user_content
 
-
+-----------------
 
 -- Python
 import pandas as pd

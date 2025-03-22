@@ -9,6 +9,7 @@ select emp_id, dept from cte
 where rnk = 2
 order by 1
 
+---------------------------
 
 -- Python
 import pandas as pd

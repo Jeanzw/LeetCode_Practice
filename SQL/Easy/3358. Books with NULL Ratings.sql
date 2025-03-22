@@ -8,7 +8,7 @@ from books
 where rating is null
 order by 1
 
-
+-----------------
 
 -- Python
 import pandas as pd
