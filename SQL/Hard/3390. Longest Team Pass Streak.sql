@@ -1,5 +1,4 @@
 # Write your MySQL query statement below
-# Write your MySQL query statement below
 with cte as
 (select
 a.pass_from,
@@ -8,7 +7,7 @@ a.pass_to,
 b.team_name,
 b.team_name as from_team,
 c.team_name as to_team,
-case when b.team_name = c.team_name then 0 else 1 end as break_flg,
+case when b.team_name = c.team_name then 0 else 1 end as break_flg, -- 其实这一行要不要不影响结果，我们的bridge是下面的group_id
 SUM(case when b.team_name = c.team_name then 0 else 1 end) OVER (PARTITION BY b.team_name ORDER BY time_stamp) AS group_id
 from Passes a
 left join Teams b on a.pass_from = b.player_id
@@ -28,7 +27,7 @@ group by 1
 having longest_streak > 0
 order by 1
 
-
+-----------------------
 
 -- Python
 import pandas as pd
@@ -44,3 +43,20 @@ def calculate_longest_streaks(teams: pd.DataFrame, passes: pd.DataFrame) -> pd.D
     merge['streak'] = np.where(merge['cum_sum'] == 0, merge['size'], merge['size'] - 1)
     merge = merge.groupby(['team_name_x'],as_index = False).streak.max()
     return merge[merge['streak'] > 0].rename(columns = {'team_name_x':'team_name','streak':'longest_streak'}).sort_values(['team_name'])
+
+
+-------------------
+-- 另外的做法
+import pandas as pd
+import numpy as np
+
+def calculate_longest_streaks(teams: pd.DataFrame, passes: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(passes,teams,left_on = 'pass_from',right_on = 'player_id').merge(teams,left_on = 'pass_to',right_on = 'player_id')
+    merge['break_flg'] = np.where(merge['team_name_x'] == merge['team_name_y'], 0, 1)
+    merge['bridge'] = merge.groupby(['team_name_x']).break_flg.cumsum()
+    
+    merge = merge.groupby(['bridge','team_name_x'], as_index = False).size()
+    merge['size'] = np.where(merge['bridge'] == 0, merge['size'], merge['size'] - 1)
+    merge.sort_values(['team_name_x','size'], ascending = [1,0], inplace = True)
+    merge = merge.groupby(['team_name_x']).head(1)
+    return merge[merge['size'] > 0][['team_name_x','size']].rename(columns = {'team_name_x':'team_name','size':'longest_streak'})
