@@ -21,9 +21,7 @@ where a.Id + 1 = b.Id
 and b.Id + 1 = c.Id
 and a.Num = b.Num and b.Num = c.Num
 
-
-
-
+---------------------------------------
 
 -- 为了响应连续数的第一种方法，我真是煞费苦心……
 -- 这道题烦的一点就在于，可能存在的情况是Id从0开始的……
@@ -41,6 +39,8 @@ from
     -- 之所以是要Id + 1是因为有一个case的Id是从0开始的
     having count(*) >= 3
 
+---------------------------------------
+
 -- 或者这个处理直接在cte里面解决
 with cte as
 (select *, 1 + id - row_number() over (partition by num order by id) as bridge from Logs)
@@ -52,7 +52,7 @@ from cte
 group by num, bridge
 having count(*) >= 3
 
-
+---------------------------------------
 
 -- Python
 import pandas as pd

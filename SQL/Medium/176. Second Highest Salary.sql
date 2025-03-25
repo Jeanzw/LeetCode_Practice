@@ -8,6 +8,7 @@ limit 1
 --因为这样如果我们只有一个数，其实返回的是一个[],但是我们想要的是如果只有一个数，那么返回的是null
 -- 为了达到上面的目的，我们需要对最后得出的数进行一个处理，比如说max或者min
 
+----------------------------
 
 /* Write your T-SQL query statement below */
 select Salary as SecondHighestSalary from
@@ -21,6 +22,7 @@ from Employee
 ) e
 where myrank = 2;
 
+----------------------------
 
 -- 另外官方是给了这么一个方法
 -- 在这里涉及offset的用法：https://www.jianshu.com/p/efecd0b66c55
@@ -33,12 +35,10 @@ SELECT
         LIMIT 1 OFFSET 1) AS SecondHighestSalary
 
 
-
-
 #reference:
 #https://www.cnblogs.com/0201zcr/p/4820706.html
 
-
+----------------------------
 
 -- python
 
@@ -51,6 +51,7 @@ def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
     # return pd.DataFrame({'SecondHighestSalary':[res]})
     return res
 
+----------------------------
 
 -- 那为了解决这个问题，我们可以用一个if来解决掉特殊值
 import pandas as pd
@@ -69,3 +70,14 @@ def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
 -- | 1  | 100    |
 -- | 2  | 100    |
     return employee[employee['rnk'] == 2][['salary']].rename(columns = {'salary':'SecondHighestSalary'}).drop_duplicates()
+
+----------------------------
+
+-- 或者我们直接按照sql的逻辑
+import pandas as pd
+
+def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
+    employee['max_salary'] = employee.salary.max()
+    employee = employee[employee['salary'] != employee['max_salary']]
+    SecondHighestSalary = employee.salary.max()
+    return pd.DataFrame({'SecondHighestSalary':[SecondHighestSalary]})

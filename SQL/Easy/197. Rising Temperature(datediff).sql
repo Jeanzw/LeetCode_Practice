@@ -4,7 +4,7 @@ and a.Temperature>b.Temperature
 -- mysql的datediff的应用：
 -- https://www.w3school.com.cn/sql/func_datediff_mysql.asp
 
-
+--------------------
 
 -- 下面那种解法的解释错了，不是因为不能用left join，而是因为date function用错了
 -- 我们不应该用Id来做定位，因为可能存在下面那个例子就是虽然12-16是12-15的第二天，但是12-16的Id比12-15要小的情况
@@ -15,7 +15,7 @@ left join Weather b
 on datediff(a.recordDate,b.recordDate) = 1 
 where a.Temperature > b. Temperature
 
-
+--------------------
 
 -- 这里是不能用left join的，因为这样其实当第一天的温度是最大的时候：
 -- {"headers": {"Weather": ["Id", "RecordDate", "Temperature"]}, 
@@ -26,6 +26,7 @@ left join Weather b
   on a.Id -1 = b.Id 
 where a.Temperature > b.Temperature
 
+--------------------
 
 -- 其实这种题，当我们只需要考虑存在的而不需要考虑不存在的，那么使用join其实会好很多
 select 
@@ -33,6 +34,7 @@ distinct a.id
 from Weather a
 join Weather b on datediff(a.recordDate,b.recordDate) = 1 and a.Temperature > b.Temperature
 
+--------------------
 
 -- 用python写
 import pandas as pd
@@ -43,12 +45,13 @@ def rising_temperature(weather: pd.DataFrame) -> pd.DataFrame:
     merge = merge.query("recordDate_y == index_date and temperature_x > temperature_y")
     return merge[['id_x']].rename(columns = {'id_x':'Id'})
 
-
+--------------------
 
 -- 也可以
 import pandas as pd
 
 def rising_temperature(weather: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(weather,weather,how = 'cross')
+    merge = pd.merge(weather,weather, how = 'cross')
     merge['datediff'] = (merge['recordDate_x'] - merge['recordDate_y']).dt.days
-    return merge[(merge['datediff'] == 1) & (merge['temperature_x'] > merge['temperature_y'])][['id_x']].rename(columns = {'id_x':'id'})
+    merge = merge[(merge['datediff'] == 1) & (merge['temperature_x'] > merge['temperature_y'])]
+    return merge[['id_x']].rename(columns = {'id_x':'id'})
