@@ -9,6 +9,7 @@ where (player_id,event_date) in
 (select player_id,min(event_date) as event_date from Activity
 group by player_id)
 
+-----------------------
 
 -- 也可以直接用rank去做
 with rnk as
@@ -22,7 +23,7 @@ with rnk as
 
 select player_id, device_id from rnk where rnk = 1
 
-
+-----------------------
 
 -- Python
 import pandas as pd
@@ -32,7 +33,7 @@ def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
     activity = activity.query("rnk == 1")
     return activity[['player_id','device_id']]
 
-
+-----------------------
 
 -- 也可以
 import pandas as pd

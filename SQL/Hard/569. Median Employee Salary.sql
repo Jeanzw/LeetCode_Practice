@@ -6,6 +6,7 @@ from employee) tmp
 where row1 between row2-1 and row2+1
 group by Company, Salary
 
+---------------------
 
 /*另外的做法*/
 -- mssql
@@ -19,7 +20,7 @@ row_number() over (partition by Company order by Salary,id) as row1
 --  如果是mssql里面可以把where的部分直接写成abd(row1 - row2) <= 1
 --  我觉得之所以在mysql里面不能在where里面用abs(row1 - row2) = 1是因为，mysql的where或者group by需要全部都是大于0的状态
 
-
+---------------------
 
 -- 这种题还有另外一种套路
 with t1 as(
@@ -31,7 +32,7 @@ select Id, Company, Salary
 from t1
 where row between cnt/2.0 and cnt/2.0+1;
 
-
+---------------------
 
 -- Python
 import pandas as pd

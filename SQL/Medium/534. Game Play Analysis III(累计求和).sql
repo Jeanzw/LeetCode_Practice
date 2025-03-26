@@ -4,6 +4,7 @@ select player_id, event_date,
 sum(games_played) over (partition by player_id order by event_date) as games_played_so_far 
 from Activity   
 
+-----------------------------
 
 -- 如果不用sum() over那么就是常规解法：
 SELECT a1.player_id, a1.event_date,
@@ -79,8 +80,7 @@ GROUP BY a1.player_id, a1.event_date
 
 */
 
-
-
+-----------------------------
 
 -- Python
 import pandas as pd

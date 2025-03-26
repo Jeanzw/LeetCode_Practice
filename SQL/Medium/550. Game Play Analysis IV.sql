@@ -12,9 +12,7 @@ from Activity a
  left join first_login b 
  on a.player_id = b.player_id 
 
-
-
-
+---------------------
 
 -- 下面这一个代码是我自己写的，相当于我们先把各个player_id的最小日期求出来，然后找和最小日期相差天数只有一天的日期和player_id，计算出来当做分子top，然后再计算有多少个player_id当做分母，然后在最开头用分子除以分母
 with firstlogin as
@@ -28,6 +26,7 @@ inner join firstlogin f on a.player_id = f.player_id and datediff(a.event_date,f
 
 select round(top/bottom,2) as fraction from top,bottom
 
+---------------------
 
 -- 我们现在把上面的这一个解法做一个拆解如此便于我们更好理解该题：
 -- 第一步：
@@ -52,8 +51,7 @@ on a.player_id = b.player_id and a.event_date - 1 = b.min_date
 
 (select count(distinct player_id) as bottom from Activity)d
 
-
-
+---------------------
 
 -- 我觉得上面的答案真的太复杂了……
 -- 这道题其实就是先找最小日期，然后将最小日期和原表相连，保证playerid一致同时日期相差1天即可
@@ -66,6 +64,7 @@ round(count(distinct b.player_id)/count(distinct a.player_id),2) as fraction
 from min_day a
 left join Activity b on datediff(b.event_date,a.min_day) = 1 and a.player_id = b.player_id
 
+---------------------
 
 -- Python
 import pandas as pd
