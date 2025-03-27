@@ -22,6 +22,8 @@ where (a.Id,a.Month) not in (select Id,max(Month) from Employee group by 1)
 group by 1,2
 order by 1,2 desc
 
+-----------------------
+
 -- 或者上面判断是否是最近一个月的方法可以直接用rank来用
 with cte as
 (select
@@ -33,8 +35,7 @@ left join Employee c on c.id = b.id and b.month - 1 = c.month)
 
 select id, month, Salary from cte where rnk != 1 order by 1, 2 desc
 
-
-
+-----------------------
 
 /*但是如果真的要用MS SQL Server那么可以如下*/
 -- 这道题不能用滚动求和，因为比如说Id = 1 并且Month = 7的时候，其实求出来的应该是90，因为5和6月份都没有对应的工作，所以是0，而我们7月份求的综合应该是5和6和7月份的综合
@@ -46,7 +47,7 @@ from Employee E
 where Month != ( select max(Month) from Employee EE where E.Id = EE.Id group by EE.Id  )
 order by Id asc, Month desc
 
-
+-----------------------
 
 -- 其实如果用recursive也是可以做的
 with recursive cte as
@@ -72,7 +73,7 @@ select Id,month,sum_salary as Salary from
     and (Id,month) not in (select Id, max(Month) from Employee group by 1)
     order by 1,2 desc
 
-
+-----------------------
 
 -- Python
 import pandas as pd
@@ -83,7 +84,8 @@ def cumulative_salary(employee: pd.DataFrame) -> pd.DataFrame:
     employee['prev_month'] = employee['month'] - 1
     employee['prev_2month'] = employee['month'] - 2
     # return employee
-
+-- 我们先把之前的两个月对应的月份给求出来再进行merge
+-- 不然的话，如果我们先进行merge，然后再query那么就会遗失掉一部分数据，这不是我们想要的，我们想要的是保留全部数据，但是对前两个月的数据进行处理
     merge = pd.merge(employee,employee,left_on = ['id','prev_month'], right_on = ['id','month'], how = 'left').merge(employee,left_on = ['id','prev_2month_x'], right_on = ['id','month'], how = 'left').fillna(0)
     merge['Salary'] = merge['salary_x'] + merge['salary_y'] + merge['salary']
     return merge[['id','month_x','Salary']].rename(columns = {'month_x':'month'}).sort_values(['id','month'], ascending = [1,0])

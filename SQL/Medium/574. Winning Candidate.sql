@@ -7,6 +7,8 @@ select CandidateId from
  group by 1 
  order by n desc limit 1)tmp)
 
+--------------------------
+
 -- 下面举一个错误例子
 -- 这样子其实会报错，因为：This version of MySQL doesn't yet support 'LIMIT & IN/ALL/ANY/SOME subquery'
 select Name from Candidate 
@@ -16,6 +18,7 @@ where id in
  group by 1 
  order by count(*) desc limit 1)
 
+--------------------------
 
 -- 但是如果我们用cte来做其实是可行的
  with most_vote as
@@ -26,6 +29,7 @@ order by count(*) desc limit 1)
 select Name from Candidate 
 where id in (select * from most_vote)
 
+--------------------------
 
 -- 或者直接用join来做这道题
 select 
@@ -36,6 +40,8 @@ group by 1
 order by count(*) desc
 limit 1
 
+--------------------------
+
 -- 但我觉得上面解法也有问题，因为还是可能存在同名的情况
 select
 a.name
@@ -45,6 +51,7 @@ group by a.id, a.name
 order by count(distinct b.id) desc
 limit 1
 
+--------------------------
 
 -- Python
 import pandas as pd

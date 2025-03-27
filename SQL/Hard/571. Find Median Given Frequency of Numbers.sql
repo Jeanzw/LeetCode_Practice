@@ -25,7 +25,7 @@ abs((select sum(Frequency) from Numbers where Number<=n.Number) -
 -- the equation above is (n+l) - (n+r) = l - r, x is median if l==r, of course.
 -- When l != r, as long as n can cover the difference, x is the median. 
 
-
+-------------------------
 
 -- 其实我上面的方法我还是没有办法理解，所以这一次做我写了个自己的方法。也就是说我们用recursive把Frequency给展开，然后就是正常的求中位数的方法了
 with recursive cte as
@@ -55,7 +55,6 @@ from cte
 order by Number)tmp
 where rnk between cnt/2 and cnt/2 + 1
 
-
 -- 这道题和569不同的地方在于：
 -- 1. 569是有一个Id作为一个定位的，而这道题如果我们用recursive那么最后也只有数字的排位
 -- 数字的排位的问题在于，如果是569的情况：
@@ -69,7 +68,7 @@ where rnk between cnt/2 and cnt/2 + 1
 -- 但是我们要注意了，对于sql来说cnt / 2是自动往下取小的整数，也就是说在sql中cnt / 2已经是cnt / 2 - 1的结果了
 -- 所以我们在最后的where里面其实需要区分一下
 
-
+-------------------------
 
 -- leetcode上面的最新做法
 with cte AS
@@ -85,7 +84,7 @@ round(avg(num),1) as median
 from cte
 where median_num between (freq - frequency) and freq
 
-
+-------------------------
 
 -- Python
 import pandas as pd
