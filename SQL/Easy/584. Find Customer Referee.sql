@@ -2,6 +2,7 @@
 -- 另一种做法就是抽出为2的，然后再抽出name，使得referee_id不在这之列就好了
 select name from customer where referee_id != 2 or referee_id is null
 
+------------------------
 
 -- 也可以
 select name from customer
@@ -21,6 +22,7 @@ where id not in (select id from customer where referee_id = 2)
 -- 这样子的数据如果只用select name from customer where referee_id != 2 or referee_id is null
 -- 那么我们依旧会抽出id = 1的情况
 
+------------------------
 
 -- Python
 import pandas as pd

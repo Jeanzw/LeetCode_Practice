@@ -3,7 +3,7 @@ ifnull(round((count(distinct requester_id,accepter_id)
               /
               count(distinct sender_id,send_to_id)),2),0) as accept_rate from request_accepted,friend_request
 
-
+------------------------
 
 -- 比较简洁的做法：
 with accept as
@@ -15,7 +15,7 @@ with accept as
 
 select ifnull(round(accept/request,2),0.00)as accept_rate from accept,request
 
-
+------------------------
 
 -- 其实更加准确的做法是这样的：
 -- 就直接在分子分母的时候带入原表
@@ -28,6 +28,7 @@ round(
     0)
 , 2) as accept_rate;
 
+------------------------
 
 -- 也可以直接改成
 select
@@ -41,7 +42,7 @@ round(
 
 -- ifnull和round谁在前谁在后没有影响
 
-
+------------------------
 
 -- Python
 import pandas as pd

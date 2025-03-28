@@ -3,6 +3,8 @@ where TIV_2015 IN (select TIV_2015 from insurance group by TIV_2015 having count
 and
 concat(LAT,LON) IN (select concat(LAT,LON) from insurance group by LAT,LON having count(*)=1)
 
+----------------------------------
+
 /*or*/
 
 select round(sum(TIV_2016),2) as TIV_2016 from Insurance
@@ -10,8 +12,7 @@ where TIV_2015 in (select TIV_2015 from insurance group by TIV_2015 having count
 and concat(LAT,LON) not in   /*我们这里就是要将两个维度放在一起考虑的，所以这里一定要用concat将他们两个给组合到一起*/
 (select concat(LAT,LON) from insurance group by LAT,LON having count(concat(LAT,LON)) > 1)
 
-
-
+----------------------------------
 
 -- 其实我们也可以不用concat，而直接用
 with unique_tiv_2015 as
@@ -29,6 +30,8 @@ select round(sum(TIV_2016),2) as TIV_2016 from insurance
 where TIV_2015 not in (select * from unique_tiv_2015)
 and (LAT,LON) in (select * from unique_location)
 
+----------------------------------
+
 -- 最好不要用In来做
 with same_2015 as
 (select distinct a.pid from Insurance a inner join Insurance b on a.tiv_2015 = b.tiv_2015 and a.pid != b.pid)
@@ -42,6 +45,7 @@ left join same_2015 b on a.pid = b.pid
 left join same_location c on a.pid = c.pid
 where b.pid is not null and c.pid is null
 
+----------------------------------
 
 -- 其实这道题也可以用join来做
 select sum(TIV_2016) as TIV_2016 from
@@ -55,7 +59,7 @@ left join insurance c on a.LAT = c.LAT and a.LON = c.LON and a.PID != c.PID
 where c.PID is null
 group by 1,2)tmp
 
-
+----------------------------------
 
 -- 我再一次做的时候就会发现，这道题其实要满足两个条件
 -- 1. tiv_2015 要有多行一样
@@ -74,9 +78,7 @@ select round(sum(tiv_2016),2) as tiv_2016
 from cte
 where cnt_sum > 1 and location_sum = 1
 
-
-
-
+----------------------------------
 
 -- Python
 import pandas as pd
@@ -89,7 +91,7 @@ def find_investments(insurance: pd.DataFrame) -> pd.DataFrame:
     summary = summary.query("pid == 1").tiv_2016_x.sum()
     return pd.DataFrame({'tiv_2016':[summary]})
 
-
+----------------------
 
 -- 也可以这么做
 import pandas as pd
