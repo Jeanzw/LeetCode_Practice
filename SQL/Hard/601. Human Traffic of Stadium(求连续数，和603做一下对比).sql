@@ -9,6 +9,7 @@ or (c.id + 1 = a.id and c.id + 2 = b.id)
 where a.people >= 100 and b.people >= 100 and c.people >= 100
 order by id
 
+----------------------
 
 -- 第二次的做法我是先在最开始对原数据做了一个处理，剔除掉了小于100的内容，但其实原理是一样的
 -- 但是我仍旧犯的一个问题是，对于join之后的处理
@@ -26,8 +27,7 @@ or (r2.id + 1 = r3.id and r2.id + 2 = r1.id)
 or (r3.id + 1 = r1.id and r3.id + 2 = r2.id)
 order by visit_date
 
-
-
+----------------------
 
 -- 这道题也可以按照常规套路，就是用group by来做，只是相对比较麻烦
 with diff as
@@ -51,6 +51,7 @@ where bridge in (select bridge from diff group by 1 having count(*) >= 3)
 -- 但是#601不是说把对应的某个数字列出来，而是要求把连续出现的行数全部打出来
 -- 那么我们需要的就是先把id - rnk这个可以作为链接的数给求出来，然后用in来筛选出来满足条件的行
 
+----------------------
 
 -- Python
 import pandas as pd
@@ -63,10 +64,22 @@ def human_traffic(stadium: pd.DataFrame) -> pd.DataFrame:
     bridge = stadium.groupby(['bridge'],as_index = False).id.nunique()
     bridge = bridge.query("id >= 3")[['bridge']]
 
-    res = pd.merge(stadium,bridge,on = 'bridge')
+    res = pd.merge(stadium,bridge,on = 'bridge')  -- 我们这里也可以不用merge，而是用isin()去找到对应的行数
     return res[['id','visit_date','people']].sort_values('visit_date')
 
+----------------------
 
+import pandas as pd
+
+def human_traffic(stadium: pd.DataFrame) -> pd.DataFrame:
+    stadium = stadium[stadium['people'] >= 100]
+    stadium['bridge'] = stadium['id'] + 1 - stadium.id.rank()
+    bridge = stadium.groupby(['bridge'], as_index = False).id.nunique()
+    bridge = bridge[bridge['id'] >= 3]
+    stadium = stadium[stadium['bridge'].isin(bridge['bridge'])]
+    return stadium[['id','visit_date','people']].sort_values('visit_date')
+    
+----------------------
 
 -- 另外的做法，我不用groupby，直接用transform找到对应的bridge数量，然后直接处理
 import pandas as pd
