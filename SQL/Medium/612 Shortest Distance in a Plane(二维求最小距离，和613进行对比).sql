@@ -1,6 +1,8 @@
 select round(sqrt(min(pow(a.x - b.x,2) + pow(a.y - b.y,2))),2) as shortest from point_2d a,point_2d b
 where a.x != b.x or a.y != b.y
 
+----------------------------
+
 /*另一种做法*/
 SELECT
     ROUND(SQRT(MIN((POW(p1.x - p2.x, 2) + POW(p1.y - p2.y, 2)))), 2) AS shortest
@@ -9,6 +11,21 @@ FROM
         JOIN
     point_2d p2 ON p1.x != p2.x OR p1.y != p2.y
 
+----------------------------
+
+-- 另外的做法，建立一个index，然后让每个人的index不一样即可
+with cte as
+(select
+*,
+row_number() over () as flg
+from Point2D)
+
+select
+round(min(sqrt(pow(a.x - b.x,2) + pow(a.y - b.y,2))),2) as shortest
+from cte a, cte b 
+where a.flg != b.flg
+
+----------------------------
 
 -- Python
 import pandas as pd

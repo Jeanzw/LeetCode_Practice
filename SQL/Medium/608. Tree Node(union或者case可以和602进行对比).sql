@@ -17,12 +17,10 @@ where id in (select distinct p_id from tree where p_id is not null) and p_id is 
 
 order by id
 
-
-
+--------------------------------
 
 /*用case来解题*/
 -- 我们这里用第一个表的id和第二个表的p_id是因为，我们其实要考虑这个id是否是在p_id里面的
-
 
 select distinct a.id,
 (case when a.p_id is not null and b.id is not null then 'Inner'
@@ -42,7 +40,7 @@ a.id	a.p_id	b.p_id	b.id
 5	    2	    Null
 */	
 
-
+--------------------------------
 
 -- 对于第三次做的时候，我还是选择了用case when而不是union all的方式
 -- 我们的目的其实就是，如果p_id是null，那么肯定就是Root
@@ -60,6 +58,7 @@ case when p_id is null then 'Root'
     else 'Inner' end as Type 
     from tree
 
+--------------------------------
 
 -- 其实下面这种方法应该是最简单的了：
 select 
@@ -69,6 +68,7 @@ select
     else 'Leaf' end as Type
 from tree
 
+--------------------------------
 
 -- Python
 import pandas as pd

@@ -6,6 +6,7 @@ order by a.seat_id
 a.seat_id = b.seat_id + 1 or a.seat_id = b.seat_id - 1这样的形式了
 和601做一下对比*/
 
+------------------------------
 
 with raw_data as
 (select * from cinema where free = 1)
@@ -15,6 +16,7 @@ join raw_data r2
 on r1.seat_id + 1 = r2.seat_id or r2.seat_id + 1 = r1.seat_id
 order by 1
 
+------------------------------
 
 -- 也可以用group by来做
 with diff as
@@ -26,6 +28,7 @@ select seat_id from diff
 where rnk in
 (select rnk from diff group by 1 having count(*) >= 2)
 
+------------------------------
 
 -- Python
 import pandas as pd
@@ -40,7 +43,7 @@ def consecutive_available_seats(cinema: pd.DataFrame) -> pd.DataFrame:
     res = pd.merge(cinema,bridge,on = 'bridge')[['seat_id']].sort_values('seat_id')
     return res
 
-
+------------------------------
 
 -- 也可以这么做
 import pandas as pd
