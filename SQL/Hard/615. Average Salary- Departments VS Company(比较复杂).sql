@@ -53,6 +53,7 @@ group by pay_month) as b
 on a.pay_month = b.pay_month
 order by pay_month desc, department_id
 
+----------------------
 
 -- 其实这种题我觉得用subquery实在是可读性有点差，不如用cte来的清晰明了
 -- 找到每个月公司的平均值
@@ -83,6 +84,7 @@ case
 from dep d
 left join company c on d.pay_month = c.pay_month
 
+----------------------
 
 -- 也可以用window function
 with cte as
@@ -109,6 +111,7 @@ case when dep_amount > com_amount then 'higher'
 from cal
 group by 1,2,3
 
+----------------------
 
 -- Python
 import pandas as pd
@@ -126,7 +129,7 @@ def average_salary(salary: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame
                             )
     return compare[['pay_month','department_id','comparison']]
 
-
+----------------------
 
 -- 也可以这么做
 import pandas as pd

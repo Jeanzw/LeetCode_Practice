@@ -22,6 +22,7 @@ FROM student
 GROUP BY continentorder
 )temp
 
+-------------------------------------
 
 -- 另外一种解法：
 select min(America) as America, min(Asia) as Asia, min(Europe) as Europe from  
@@ -37,6 +38,7 @@ select min(America) as America, min(Asia) as Asia, min(Europe) as Europe from
         from student) t1) t2
 group by row;
 
+-------------------------------------
 
 -- 如果直接用pivot来做就是：
 select America, 
@@ -50,6 +52,7 @@ from
      pivot
      (max(name) for continent in ([America], [Asia], [Europe])) as b
 
+-------------------------------------
 
 
 -- Python
@@ -68,6 +71,8 @@ def geography_report(student: pd.DataFrame) -> pd.DataFrame:
 -- | America | Asia | Europe |
 -- | ------- | ---- | ------ |
 -- | Tzvetan | null | null   |
+
+-------------------------------------
 
 -- 所以我们只好把各个部分分别拎出来，然后再合并
 import pandas as pd
