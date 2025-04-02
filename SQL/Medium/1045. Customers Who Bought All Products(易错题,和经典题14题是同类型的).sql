@@ -58,6 +58,7 @@ where customer_id not in
  left join Customer cc on a.product_key = cc.product_key and a.customer_id = cc.customer_id
  where cc.customer_id is null)
 
+-----------------------
 
 -- 其实这道题目想明白了就很简单
 -- 首先，我们一定要保证Customer这张表的product_key是在Product里面的，那么就完成了where product_key in (select product_key from Product)
@@ -68,13 +69,15 @@ where product_key in (select product_key from Product)
 group by 1 
 having n = (select count(distinct product_key) from Product))tmp
 
+-----------------------
+
 -- 上面的解法可以进一步简单
 select customer_id from Customer
 where product_key in (select * from Product)
 group by 1
 having count(distinct product_key) = (select count(distinct product_key) from Product)
 
-
+-----------------------
 
 -- Not IN 其实不是很高效，用JOIN会更好一点
 -- 我们之所以用JOIN就是要保证在Customer的表的产品都是在Product里面的，不然只是用数量来判断很容易出现错误：
@@ -91,6 +94,8 @@ inner join Product b on a.product_key = b.product_key
 group by 1
 having count(distinct a.product_key) = (select product_num from all_product_num)
 
+-----------------------
+
 -- 上面还是太复杂了……
 select
 customer_id
@@ -99,6 +104,7 @@ inner join Product b on a.product_key = b.product_key
 group by 1
 having count(distinct a.product_key) = (select count(distinct product_key) from Product)
 
+-----------------------
 
 -- Python
 import pandas as pd

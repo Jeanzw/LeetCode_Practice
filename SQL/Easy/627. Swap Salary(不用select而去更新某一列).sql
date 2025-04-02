@@ -5,13 +5,14 @@ SET
         ELSE 'm'
     END;
 
-
+------------------------------
 
 UPDATE salary
 SET 
 sex = 
 CASE WHEN sex = 'm' then 'f' else 'm' end
 
+------------------------------
 
 -- Python
 import pandas as pd
