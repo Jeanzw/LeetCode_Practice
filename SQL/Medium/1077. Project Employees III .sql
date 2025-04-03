@@ -4,6 +4,7 @@ left join Employee e
 on p.employee_id = e.employee_id)tmp
 where rnk = 1
 
+---------------------------------
 
 -- 或者还是可以用求最小值最大值的经典做法，虽然很慢
 select p.* from Project p
@@ -16,7 +17,7 @@ from Project p
 left join Employee e on p.employee_id = e.employee_id
 group by 1)
 
-
+---------------------------------
 
 -- Python
 import pandas as pd
@@ -24,9 +25,10 @@ import pandas as pd
 def project_employees(project: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(project,employee,on = 'employee_id')
     merge['rnk'] = merge.groupby(['project_id']).experience_years.rank(method = 'dense', ascending = False)
-    merge = merge.query("rnk == 1")
+    merge = merge[merge['rnk'] == 1]
     return merge[['project_id','employee_id']]
 
+---------------------------------
 
 -- 也可以这么做
 import pandas as pd

@@ -6,13 +6,15 @@ having sum(price) =
 group by seller_id
 order by sum(price) desc limit 1)
 
+------------------------------
+
 -- MS sql
 select seller_id from
 (select seller_id, rank() over(order by sum(price) desc) as rank
 from sales group by seller_id) b
 where rank = 1
 
-
+------------------------------
 
 -- Python
 import pandas as pd
