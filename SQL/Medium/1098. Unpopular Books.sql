@@ -8,6 +8,8 @@ group by book_id
 having sum(quantity) >= 10
 )
 
+----------------------------------
+
 -- 上面的query如果变成cte的形式会更加简洁
 with available_date as
 (select book_id,name from Books
@@ -22,7 +24,7 @@ group by 1 having num >= 10)
 select * from available_date
 where book_id not in (select book_id from book_sold)
 
-
+----------------------------------
 
 -- 或者直接不用cte来进行求解
 select
@@ -40,6 +42,7 @@ having sum(quantity) <10 or sum(quantity) is null
 -- having ifnull(sum(quantity),0) < 10
 -- 但无论改成什么，这里的意思就是要保证没有卖出去一本书的书也是可以被提取出来的
 
+----------------------------------
 
 -- Python
 import pandas as pd

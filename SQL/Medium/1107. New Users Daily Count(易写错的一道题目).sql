@@ -6,6 +6,8 @@ group by user_id
 having datediff('2019-06-30',MIN(activity_date))<=90)
 group by activity_date
 
+---------------------
+
 -- 上面这种我们可以写成这样的
 select
 activity_date as login_date,
@@ -17,7 +19,7 @@ and (user_id, activity_date) in (select user_id, min(activity_date) from Traffic
 -- 有一个in来进行筛选，筛选掉最小值在这个过程中的
 group by 1
 
-
+---------------------
 
 /*
 由于我们要求的是最小的时间，所以一定要用where来作为指引
@@ -34,6 +36,8 @@ group by 1
 )
 group by 1
 
+---------------------
+
 -- 下面是新做的答案：
 -- 我们不用In来解题，直接划定范围，然后开始计数
 select first_login as login_date, count(distinct user_id) as user_count from
@@ -43,6 +47,7 @@ group by 1
 having datediff('2019-06-30',min(activity_date)) <= 90)tmp
 group by 1
 
+---------------------
 
 -- 我们也可以把时间范围放到最后一步
 with cte as
@@ -57,7 +62,7 @@ from cte
 where datediff('2019-06-30',first_log) between 0 and 90
 group by 1
 
-
+---------------------
 
 -- Python
 import pandas as pd
@@ -69,6 +74,7 @@ def new_users_daily_count(traffic: pd.DataFrame) -> pd.DataFrame:
     
     return traffic.rename(columns = {'activity_date':'login_date','user_id':'user_count'})
 
+---------------------
 
 -- 也可以这么做
 import pandas as pd

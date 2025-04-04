@@ -27,6 +27,8 @@ on a.player_id = b.player_id
 and a.install_date + 1 = b.event_date
 group by install_date
 
+--------------------------
+
 -- 上面这种做法可以改成：
 select
 a.event_date as install_dt,
@@ -37,9 +39,7 @@ left join Activity b on a.player_id = b.player_id and datediff(b.event_date,a.ev
 where (a.player_id,a.event_date) in (select player_id,min(event_date) from Activity group by 1)
 group by 1
 
-
-
-
+-------------------------
 
 -- 之后做的：
 -- 直接用cte来把first_login给抽出来
@@ -57,7 +57,7 @@ left join Activity a on f.player_id = a.player_id
 and datediff(a.event_date,f.first_login) =  1
 group by 1
 
-
+--------------------------
 
 -- 我这一次做的时候，觉得上面用count(event_date)来计算Day1_retention其实不太好。
 -- 因为现实可能是，player用不同的device在某一天上线了两次，那么如果用date来作为计量其实会有重复
@@ -77,7 +77,7 @@ select
     left join Activity a on f.player_id = a.player_id and datediff(a.event_date,f.install_dt) = 1
     group by 1
 
-
+--------------------------
 
 -- Python
 import pandas as pd
