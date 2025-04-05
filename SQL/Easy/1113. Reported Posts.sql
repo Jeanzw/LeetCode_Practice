@@ -4,6 +4,8 @@ and action_date = '2019-07-05' - interval '1' day
 -- and datediff('2019-07-05',action_date) <= 1
 group by 1
 
+----------------------------
+
 -- Python
 import pandas as pd
 

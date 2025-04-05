@@ -39,7 +39,6 @@ having count(distinct event_type) > 1
 
 ----------------------------------
 
-
 -- Python
 import pandas as pd
 

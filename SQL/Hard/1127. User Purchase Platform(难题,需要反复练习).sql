@@ -122,10 +122,8 @@ ifnull(count(distinct user_id),0) as total_users
 from framework f
 left join user_info u on f.platform = u.platform and f.spend_date = u.spend_date
 group by 1,2
+
 ----------------------------------------------------------------------------------------
-
-
-
 
 SELECT 
     p.spend_date,
@@ -161,13 +159,9 @@ LEFT JOIN (
 ON p.platform=t.platform AND p.spend_date=t.spend_date
 GROUP BY spend_date, platform
 
-
-
-
 ---------------------------------------------------------------------------------------
+
 -- 再一次做的时候可以自己写出来，不过需要有些观念有改变的地方
-
-
 with spend_date as
 (select distinct spend_date from Spending)
 ,platform as
@@ -180,7 +174,6 @@ union all
 , date_platform as
 (select * from spend_date,platform)
 -- 我在上面两个cte相当于是建立了一个框架，可以让我保证拥有原表中所有的时间，同时有三列platform与之对应
-
 
 , both_purchase as
 (select user_id, spend_date,'both' as platform,sum(amount) as amount, count(distinct platform) as n from Spending
