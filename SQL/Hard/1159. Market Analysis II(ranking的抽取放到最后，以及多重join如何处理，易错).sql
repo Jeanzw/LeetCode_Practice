@@ -80,6 +80,7 @@ user_id as seller_id, 'no' as 2nd_item_fav_brand
 from Users
 where user_id not in (select seller_id from rank_sell where rnk = 2)
 -- 上面是讨论没有rank = 2的情况
+
 union all
 
 select 
