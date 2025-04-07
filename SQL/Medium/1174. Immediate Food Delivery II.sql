@@ -40,16 +40,15 @@ def immediate_food_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
     d = delivery.customer_id.nunique()
     return pd.DataFrame({'immediate_percentage':[round(100 * n/d,2)]})
 
+------------------------------------
 
 -- 另外的做法
 import pandas as pd
-import numpy as np
 
 def immediate_food_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
-    delivery.sort_values(['customer_id','order_date'], inplace = True)
+    delivery.sort_values(['customer_id','order_date'], ascending = [1,1], inplace = True)
     delivery = delivery.groupby(['customer_id']).head(1)
-    delivery['delivery'] = np.where(delivery['order_date'] == delivery['customer_pref_delivery_date'], delivery['delivery_id'], None)
-    n = delivery['delivery'].nunique()
-    d = delivery['delivery_id'].nunique()
+    n = delivery[delivery['order_date'] == delivery['customer_pref_delivery_date']].delivery_id.nunique()
+    d = delivery.delivery_id.nunique()
     immediate_percentage = round(100 * n/d,2)
     return pd.DataFrame({'immediate_percentage':[immediate_percentage]})

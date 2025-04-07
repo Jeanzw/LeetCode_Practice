@@ -106,8 +106,10 @@ def price_at_given_date(products: pd.DataFrame) -> pd.DataFrame:
 import pandas as pd
 
 def price_at_given_date(products: pd.DataFrame) -> pd.DataFrame:
-    new_price = products[products['change_date'] <= pd.to_datetime('2019-08-16')].sort_values(['product_id','change_date'],ascending = [1,0])
-    new_price = new_price.groupby(['product_id']).head(1)
+    new_price = products[products['change_date'] <= '2019-08-16']
+    new_price.sort_values(['product_id','change_date'], ascending = [1,0], inplace = True)
+    new_price = new_price.groupby(['product_id']).head(1)[['product_id','new_price']]
 
-    merge = pd.merge(products,new_price, on = 'product_id', how = 'left').fillna(10)
-    return merge[['product_id','new_price_y']].rename(columns = {'new_price_y':'price'}).drop_duplicates()
+    product = products[['product_id']].drop_duplicates()
+    merge = pd.merge(product,new_price, on = 'product_id', how = 'left').fillna(10)
+    return merge.rename(columns = {'new_price':'price'})
