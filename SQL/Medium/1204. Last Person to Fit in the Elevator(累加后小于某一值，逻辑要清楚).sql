@@ -70,8 +70,7 @@ order by a.turn desc limit 1)
 --             [3, "John Adams", 350, 2, 5, "George Washington", 250, 1], 
 --             [6, "Thomas Jefferson", 400, 3, 5, "George Washington", 250, 1]]}
 
-
-
+------------------------------------
 
 -- MS SQL
 -- 这里需要我们懂得用Top 1也就是排序的第一个
@@ -82,6 +81,7 @@ from Queue)tmp
 where total_w <= 1000
 order by total_w desc
 
+------------------------------------
 
 -- 下面这种方法应该更容易理解：
 -- 我们用一个sum() over来统计重量

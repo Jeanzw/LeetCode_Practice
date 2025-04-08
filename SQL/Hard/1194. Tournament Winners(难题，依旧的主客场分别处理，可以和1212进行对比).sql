@@ -128,3 +128,9 @@ def tournament_winners(players: pd.DataFrame, matches: pd.DataFrame) -> pd.DataF
     merge = merge.sort_values(['group_id','score','player_id'], ascending = [1,0,1])
     merge = merge.groupby(['group_id']).head(1)
     return merge[['group_id','player_id']]
+
+
+-- 我们不能用下面的code：
+-- merge = pd.merge(players,matches, left_on = 'player_id', right_on = 'first_player', how = 'left').merge(matches, left_on = 'player_id', right_on = 'second_player', how = 'left').fillna(0)
+-- 问题在于，先按player_id=first_player做了一次merge，然后再按player_id=second_player又做了一次merge，会导致**数据被笛卡儿积(cross join)**并重复累加。
+-- 举个简单例子，如果某位球员作为first_player参加了 2 场比赛，同时又作为second_player参加了 3 场比赛，那么两次 merge 之后，这位球员对应的行数会变成 2×3=6 行，分行累加就把分数给“乘”起来了。

@@ -33,13 +33,14 @@ group by 1
 
 -- python
 import pandas as pd
+import numpy as np
 
 def queries_stats(queries: pd.DataFrame) -> pd.DataFrame:
     queries['quality_avg'] = queries['rating']/queries['position']
     # 下面求poor_query_percentage的逻辑有点意思，也可以用在sql里面
     # 就是我们直接赋值，当符合条件就给1，不符合条件的就给0，然后求均值
     # 这里的1是直接判断queries['rating'] < 3这个条件是否成立，因为是二位，符合就是1，不符合就是0
-    queries['poor_query_percentage'] = (queries['rating'] < 3)*100
+    queries['poor_query_percentage'] = np.where(queries['rating'] < 3, 100,0)
     queries = queries.groupby(['query_name'],as_index = False).agg(
         quality = ('quality_avg', 'mean'),
         poor_query_percentage = ('poor_query_percentage','mean')
