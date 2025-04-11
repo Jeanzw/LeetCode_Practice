@@ -107,3 +107,17 @@ def page_recommendations(friendship: pd.DataFrame, likes: pd.DataFrame) -> pd.Da
     res = pd.merge(friend_like,user_like, on = 'page_id', how = 'left')
     res = res[res['user_id'].isna()]
     return res[['page_id']].rename(columns = {'page_id':'recommended_page'}).drop_duplicates()
+
+--------------------------------
+-- 或者可以采用isin
+import pandas as pd
+
+def page_recommendations(friendship: pd.DataFrame, likes: pd.DataFrame) -> pd.DataFrame:
+    friend1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user_id', 'user2_id':'friend_id'})
+    friend2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user_id', 'user1_id':'friend_id'})
+    friend = pd.concat([friend1,friend2]).drop_duplicates()
+    user1_friend = friend[friend['user_id'] == 1]
+    user1_friend_like = pd.merge(user1_friend,likes,left_on = 'friend_id',right_on = 'user_id')[['page_id']].drop_duplicates()
+    user1_like = likes[likes['user_id'] == 1][['page_id']].drop_duplicates()
+    recommend = user1_friend_like[~user1_friend_like['page_id'].isin(user1_like['page_id'])]
+    return recommend.rename(columns = {'page_id':'recommended_page'})

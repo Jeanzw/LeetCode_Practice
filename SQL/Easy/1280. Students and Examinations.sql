@@ -65,7 +65,19 @@ def students_and_examinations(students: pd.DataFrame, subjects: pd.DataFrame, ex
     merge['attended_exams'] = merge['attended_exams'].fillna(0)
     return merge.sort_values(['student_id','subject_name'])
 
-
-
 -- 我是完全不理解为什么leetcode里面的test总有这些乱七八糟的东西存在
 -- 这道题中test里面存在student_name是null的情况……简直无语了
+
+----------------------------------------------------
+
+-- 另外的做法
+import pandas as pd
+import numpy as np
+
+def students_and_examinations(students: pd.DataFrame, subjects: pd.DataFrame, examinations: pd.DataFrame) -> pd.DataFrame:
+    frame = pd.merge(students,subjects, how = 'cross')
+    examinations['flg'] = 1
+    merge = pd.merge(frame,examinations, on = ['student_id','subject_name'], how = 'left').fillna(0)
+    merge = merge.groupby(['student_id','student_name','subject_name'], as_index = False).flg.sum()
+    merge['student_name'] = np.where(merge['student_name'] == 0, None, merge['student_name'])
+    return merge.rename(columns = {'flg':'attended_exams'}).sort_values(['student_id','subject_name'])

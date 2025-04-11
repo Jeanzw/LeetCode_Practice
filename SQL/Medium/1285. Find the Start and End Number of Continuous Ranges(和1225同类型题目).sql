@@ -11,6 +11,22 @@ group by (log_id - rnk)
 
 -------------------------------------------------
 
+-- 还是用cte比较清楚一点
+with cte as
+(select
+*,
+log_id + 1 - row_number() over (order by log_id) as bridge
+from Logs)
+
+select
+min(log_id) as start_id,
+max(log_id) as end_id
+from cte
+group by bridge
+order by 1
+
+------------------------------------------------
+
 -- Python
 import pandas as pd
 
