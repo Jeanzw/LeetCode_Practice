@@ -63,6 +63,7 @@ def activity_participants(friends: pd.DataFrame, activities: pd.DataFrame) -> pd
     res = summary[~summary['id'].isin(max_min['id'])][['activity']]
     return max_min
 
+----------------------------------
 
 -- Python
 import pandas as pd

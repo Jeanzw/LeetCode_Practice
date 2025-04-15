@@ -128,6 +128,7 @@ def count_trusted_contacts(customers: pd.DataFrame, contacts: pd.DataFrame, invo
     )
     return res.rename(columns = {'customer_name_x':'customer_name'}).sort_values('invoice_id')
 
+-----------------------------------------------
 
 -- 第二次写的
 import pandas as pd
