@@ -33,6 +33,7 @@ def ads_performance(ads: pd.DataFrame) -> pd.DataFrame:
     summary['ctr'] = ((100 * summary['clicked']/summary['viewed']).fillna(0)).round(2)
     return summary[['ad_id','ctr']].sort_values(['ctr','ad_id'], ascending = [False, True])
 
+--------------------------------------
 
 -- 第二次做
 import pandas as pd
