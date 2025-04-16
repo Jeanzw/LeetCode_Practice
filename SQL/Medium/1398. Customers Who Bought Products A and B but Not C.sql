@@ -66,6 +66,17 @@ having count(distinct product_name) = 2
 
 -----------------------------------
 
+-- 另一种做法
+select 
+distinct a.customer_id, a.customer_name
+from Customers a
+join Orders b on a.customer_id = b.customer_id and b.product_name = 'A'
+join Orders c on a.customer_id = c.customer_id and c.product_name = 'B'
+left join Orders d on a.customer_id = d.customer_id and d.product_name = 'C'
+where d.customer_id is null
+
+-----------------------------------
+
 -- Python
 import pandas as pd
 
@@ -77,3 +88,19 @@ def find_customers(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFram
 
     merge = pd.merge(customers,a_b, on = 'customer_id').merge(c, on = 'customer_id', how = 'left')
     return merge[merge['product_name_y'].isna()][['customer_id','customer_name']].sort_values('customer_id')
+
+-----------------------------------
+
+-- 也可以这么做
+import pandas as pd
+
+def find_customers(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    A_B = orders[orders['product_name'].isin(['A','B'])]
+    A_B = A_B.groupby(['customer_id'], as_index = False).product_name.nunique()
+    A_B = A_B[A_B['product_name'] == 2][['customer_id']]
+
+    C = orders[orders['product_name'] == 'C'][['customer_id']]
+    A_B_not_C = A_B[~A_B['customer_id'].isin(C['customer_id'])]
+
+    res = pd.merge(customers,A_B_not_C,on = 'customer_id')
+    return res.sort_values('customer_id')

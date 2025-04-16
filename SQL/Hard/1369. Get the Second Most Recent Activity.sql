@@ -59,6 +59,8 @@ def second_most_recent(user_activity: pd.DataFrame) -> pd.DataFrame:
     rnk = summary.groupby(['username']).head(2).groupby(['username']).tail(1)
     return rnk
 
+-------------------------------------
+
 -- 另外的做法
 import pandas as pd
 
