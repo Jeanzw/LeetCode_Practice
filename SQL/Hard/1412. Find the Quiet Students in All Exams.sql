@@ -133,6 +133,8 @@ def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFra
     merge['min_rnk_desc'] = merge.groupby(['student_id']).rnk_desc.transform('min')
     return merge.query("min_rnk != 1 and min_rnk_desc != 1")[['student_id','student_name']].drop_duplicates().sort_values('student_id')
 
+------------------------------
+
 -- Python另外的做法
 import pandas as pd
 
@@ -145,3 +147,14 @@ def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFra
     res = pd.merge(merge,not_quiet,on = 'student_id', how = 'left')
     res = res[res['student_name_y'].isna()]
     return res[['student_id','student_name_x']].rename(columns = {'student_name_x':'student_name'}).drop_duplicates().sort_values('student_id')
+------------------------------
+
+-- Python另外的做法
+import pandas as pd
+
+def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame:
+    exam['rnk'] = exam.groupby(['exam_id']).score.rank(method = 'dense')
+    exam['rnk_desc'] = exam.groupby(['exam_id']).score.rank(method = 'dense', ascending = False)
+    no_quiet_student = exam[(exam['rnk'] == 1) | (exam['rnk_desc'] == 1)][['student_id']]
+    res = student[(student['student_id'].isin(exam['student_id'])) & (~student['student_id'].isin(no_quiet_student['student_id']))]
+    return res.sort_values('student_id')

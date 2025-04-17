@@ -145,6 +145,8 @@ def active_users(accounts: pd.DataFrame, logins: pd.DataFrame) -> pd.DataFrame:
     res = pd.merge(logins,accounts,on = 'id')
     return res[['id','name']].drop_duplicates()
 
+----------------------------
+
 --  或者就按照sql的思路来写：
 import pandas as pd
 
