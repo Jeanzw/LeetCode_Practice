@@ -42,3 +42,12 @@ def find_missing_ids(customers: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(frame,customers, left_on = 'ids', right_on = 'customer_id', how = 'left')
     merge = merge[merge['customer_id'].isna()]
     return merge[['ids']].sort_values('ids')
+
+----------------------------
+
+import pandas as pd
+
+def find_missing_ids(customers: pd.DataFrame) -> pd.DataFrame:
+    frame = pd.DataFrame({'ids':range(1, max(customers['customer_id']) + 1)})
+    frame = frame[~frame['ids'].isin(customers['customer_id'])]
+    return frame
