@@ -26,6 +26,7 @@ left join driver d on m.month >= d.join_date
 left join accept_rides a on m.month = a.month
 group by 1
 
+------------------------------------------------------------
 
 -- 和I一样，简化最后两个cte
 with recursive month as
@@ -59,7 +60,7 @@ select
     left join acceptrides a on m.month = a.month
     group by 1
 
-
+------------------------------------------------------------
 
 -- 和上面一个题目一样，再次简化：
 with recursive cte as
@@ -87,8 +88,44 @@ left join AcceptedRides c on b.ride_id = c.ride_id
 left join driver d on a.month >= d.month 
 group by 1
 
+------------------------------------------------------------
 
+-- 或者我们直接用window Function来求，而不是用a.month >= d.month
+With recursive cte as
+(select 1 as month
+union all
+select month + 1 as month from cte where month < 12
+)
+, driver as
+(select
+case when year(join_date) < 2020 then 1 else month(join_date) end as month,
+count(distinct driver_id) as active_drivers
+from Drivers
+where year(join_date) <= 2020
+group by 1)
+, accept_ride as
+(select 
+month(requested_at) as month,
+count(distinct driver_id) as accepted_drivers
+from Rides a
+join AcceptedRides b on a.ride_id = b.ride_id
+where year(a.requested_at) = 2020
+group by 1)
+, summary as
+(select
+a.month,
+ifnull(b.accepted_drivers,0) as accepted_drivers,
+sum(active_drivers) over (order by a.month) as active_drivers
+from cte a
+left join accept_ride b on a.month = b.month
+left join driver c on a.month = c.month)
 
+select 
+month,
+ifnull(round(100 * accepted_drivers/active_drivers,2),0) as working_percentage
+from summary
+
+------------------------------------------------------------
 
 -- Python
 import pandas as pd

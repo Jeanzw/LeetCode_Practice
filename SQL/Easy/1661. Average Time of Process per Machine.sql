@@ -37,6 +37,7 @@ def get_average_time(activity: pd.DataFrame) -> pd.DataFrame:
     activity = activity.groupby(['machine_id'],as_index = False).timestamp.mean().round(3)
     return activity.rename(columns = {'timestamp':'processing_time'})
 
+---------------------------------------
 
 -- 也可以这么做
 import pandas as pd
