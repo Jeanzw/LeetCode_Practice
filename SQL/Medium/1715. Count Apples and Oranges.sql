@@ -29,3 +29,13 @@ def count_apples_and_oranges(boxes: pd.DataFrame, chests: pd.DataFrame) -> pd.Da
     orange_count = merge['orange_count'].sum()
 
     return pd.DataFrame({'apple_count':[apple_count],'orange_count':[orange_count]})
+
+--------------------------------------------
+
+import pandas as pd
+
+def count_apples_and_oranges(boxes: pd.DataFrame, chests: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(boxes,chests,on = 'chest_id', how = 'left').fillna(0)
+    apple_count = merge.apple_count_x.sum() + merge.apple_count_y.sum()
+    orange_count = merge.orange_count_x.sum() + merge.orange_count_y.sum()
+    return pd.DataFrame({'apple_count':[apple_count],'orange_count':[orange_count]})
