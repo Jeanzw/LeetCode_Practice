@@ -99,6 +99,40 @@ or
 
 ---------------------------------
 
+-- 或者直接用最简单的方法
+with gold_medal as
+(select 
+gold_medal as user_id
+from Contests
+group by 1
+having count(distinct contest_id) >= 3)
+, frame as
+(select contest_id, gold_medal as user_id from Contests
+union
+select contest_id, silver_medal as user_id from Contests
+union
+select contest_id, bronze_medal as user_id from Contests
+)
+, consecutive_medal as
+(select
+distinct a.user_id
+from frame a
+join frame b on a.user_id = b.user_id and a.contest_id + 1 = b.contest_id
+join frame c on a.user_id = c.user_id and a.contest_id + 2 = c.contest_id)
+, summary as
+(select user_id from gold_medal
+union
+select user_id from consecutive_medal
+)
+
+select
+a.name,
+a.mail
+from Users a
+join summary b on a.user_id = b.user_id
+
+---------------------------------
+
 -- Python
 import pandas as pd
 

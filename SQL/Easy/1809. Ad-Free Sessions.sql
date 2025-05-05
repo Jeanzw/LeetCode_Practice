@@ -17,7 +17,7 @@ def ad_free_sessions(playback: pd.DataFrame, ads: pd.DataFrame) -> pd.DataFrame:
     res = res.query('ad == 0')
     return res[['session_id']].drop_duplicates()
 
-
+------------------------------
 
 -- 另外的做法：
 import pandas as pd

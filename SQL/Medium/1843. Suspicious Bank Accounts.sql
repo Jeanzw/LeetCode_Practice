@@ -87,13 +87,14 @@ ORDER BY t1.account_id
 import pandas as pd
 
 def suspicious_bank_accounts(accounts: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(accounts,transactions,on = 'account_id')
-    merge['month'] = merge.day.dt.month
-    merge = merge[merge['type'] == 'Creditor']
+    transactions = transactions[transactions['type'] == 'Creditor']
+    transactions['month'] = transactions.day.dt.month
+    transactions['day'] = transactions.day.dt.strftime('%Y-%m')
 
-    merge = merge.groupby(['account_id','month','max_income'],as_index = False).amount.sum()
-    merge = merge[merge['amount'] > merge['max_income']]
-    merge.sort_values(['account_id','month'], ascending = [1,1],inplace = True)
-    merge['next_line'] = merge.groupby(['account_id']).month.shift(-1)
-    merge = merge[merge['month'] + 1 == merge['next_line']]
+    merge = pd.merge(accounts,transactions, on = 'account_id')
+    merge = merge.groupby(['day','month','max_income','account_id'], as_index = False).amount.sum()
+    merge = merge[merge['max_income'] < merge['amount']]
+    merge.sort_values(['account_id','day'], inplace = True)
+    merge['next_month'] = merge.groupby(['account_id']).month.shift(-1)
+    merge = merge[(merge['month'] + 1 == merge['next_month']) | ((merge['month'] == 12) & (merge['month'] == 1))]
     return merge[['account_id']].drop_duplicates()

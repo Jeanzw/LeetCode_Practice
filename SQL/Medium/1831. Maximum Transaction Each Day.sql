@@ -14,7 +14,7 @@ def find_maximum_transaction(transactions: pd.DataFrame) -> pd.DataFrame:
     transactions['daily_max'] = transactions.groupby(['day']).amount.transform(max)
     return transactions.query("amount == daily_max")[['transaction_id']].sort_values('transaction_id')
 
-
+------------------------------
 
 -- 也可以这样
 import pandas as pd
