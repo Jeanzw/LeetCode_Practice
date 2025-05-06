@@ -69,10 +69,11 @@ import pandas as pd
 
 def employees_of_same_salary(employees: pd.DataFrame) -> pd.DataFrame:
     employees['cnt'] = employees.groupby(['salary']).employee_id.transform('nunique')
-    employees = employees.query("cnt > 1")
+    employees = employees[employees['cnt'] > 1]
     employees['team_id'] = employees.salary.rank(method = 'dense')
     return employees[['employee_id','name','salary','team_id']].sort_values(['team_id','employee_id'])
 
+---------------------------
 
 -- 另外的做法
 import pandas as pd

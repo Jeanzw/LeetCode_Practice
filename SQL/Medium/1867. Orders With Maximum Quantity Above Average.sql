@@ -52,6 +52,7 @@ def orders_above_average(orders_details: pd.DataFrame) -> pd.DataFrame:
     summary['max_avg_quantity'] = summary.avg_quantity.max()
     return summary.query("max_quantity > max_avg_quantity")[['order_id']]
 
+-----------------------------------
 
 -- 另外的做法
 import pandas as pd
