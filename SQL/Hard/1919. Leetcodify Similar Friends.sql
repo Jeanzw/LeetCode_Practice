@@ -28,6 +28,7 @@ def leetcodify_similar_friends(listens: pd.DataFrame, friendship: pd.DataFrame) 
     summary = summary.groupby(['user1_id','user2_id','day'],as_index = False).song_id.nunique().query("song_id >= 3")
     return summary[['user1_id','user2_id']].drop_duplicates()
 
+---------------------
 
 -- 另外的做法
 import pandas as pd

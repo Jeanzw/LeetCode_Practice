@@ -23,6 +23,8 @@ def confirmation_rate(signups: pd.DataFrame, confirmations: pd.DataFrame) -> pd.
     summary['confirmation_rate'] = (summary['num']/summary['den']).round(2)
     return summary[['user_id','confirmation_rate']]
 
+---------------------------
+
 -- 另外的做法
 import pandas as pd
 import numpy as np

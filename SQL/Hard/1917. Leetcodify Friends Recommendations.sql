@@ -88,6 +88,7 @@ def recommend_friends(listens: pd.DataFrame, friendship: pd.DataFrame) -> pd.Dat
     res = pd.concat([filter_out1[['user_id','recommended_id']],filter_out1[['recommended_id','user_id']].rename(columns = {'recommended_id':'user_id','user_id':'recommended_id'})])
     return res
 
+-------------------------------
 
 -- 另外的做法
 import pandas as pd
