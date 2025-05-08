@@ -113,6 +113,7 @@ def same_day_calls(calls: pd.DataFrame) -> pd.DataFrame:
     res = call.query("id == 1")
     return res[['user_id']].drop_duplicates()
 
+---------------------------
 
 -- 另外的做法
 import pandas as pd
