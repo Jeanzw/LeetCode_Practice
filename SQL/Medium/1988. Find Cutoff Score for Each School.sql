@@ -13,6 +13,16 @@ from
 
 --------------------------------------------
 
+-- 另外的做法
+select
+a.school_id,
+min(case when b.score is null then -1 else score end) as score
+from Schools a
+left join Exam b on a.capacity >= b.student_count
+group by 1
+
+--------------------------------------------
+
 -- Python
 import pandas as pd
 
@@ -26,7 +36,7 @@ def find_cutoff_score(schools: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame
     res = pd.merge(schools,merge,on = 'school_id',how = 'left').fillna(-1)
     return res[['school_id','score']]
 
-
+--------------------------------------------
 
 -- 另外的做法
 import pandas as pd
@@ -39,3 +49,19 @@ def find_cutoff_score(schools: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame
 
     res = pd.merge(schools, merge, on = 'school_id', how = 'left').fillna(-1)
     return res[['school_id','score']]
+
+--------------------------------------------
+
+-- 另外的做法
+import pandas as pd
+
+def find_cutoff_score(schools: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(exam,schools, how = 'cross')
+    merge = merge[merge['capacity'] >= merge['student_count']]
+    merge = merge.groupby(['school_id'], as_index = False).score.min()
+    
+    not_list = schools[~schools['school_id'].isin(merge['school_id'])][['school_id']]
+    not_list['score'] = -1
+
+    res = pd.concat([merge,not_list])
+    return res
