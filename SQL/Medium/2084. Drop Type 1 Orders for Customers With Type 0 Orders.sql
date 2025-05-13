@@ -76,6 +76,20 @@ where cnt = 0
 
 ----------------------------
 
+-- 或者对上面的query再一次进行修改
+with cte as
+(select
+*,
+count(case when order_type = 0 then order_id end) over (partition by customer_id) as cnt
+from Orders)
+
+select
+order_id, customer_id, order_type
+from cte
+where cnt = 0 or order_type = 0
+
+----------------------------
+
 -- Python
 import pandas as pd
 
