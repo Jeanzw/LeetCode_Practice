@@ -51,6 +51,7 @@ def count_passengers_in_bus(buses: pd.DataFrame, passengers: pd.DataFrame) -> pd
     res = pd.merge(buses,merge, on = 'bus_id', how = 'left').fillna(0)
     return res[['bus_id','passenger_id']].rename(columns = {'passenger_id':'passengers_cnt'}).sort_values('bus_id')
 
+----------------
 
 -- 也可以这么做
 import pandas as pd
