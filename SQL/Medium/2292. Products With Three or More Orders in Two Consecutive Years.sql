@@ -43,3 +43,16 @@ def find_valid_products(orders: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(summary,summary,on = 'product_id')
     merge = merge[merge['year_x'] + 1 == merge['year_y']]
     return merge[['product_id']].drop_duplicates()
+
+---------------------------
+
+-- 也可以用shift
+import pandas as pd
+
+def find_valid_products(orders: pd.DataFrame) -> pd.DataFrame:
+    orders['year'] = orders.purchase_date.dt.year
+    orders = orders.groupby(['product_id','year'], as_index = False).order_id.nunique()
+    orders = orders[orders['order_id'] >= 3].sort_values(['product_id','year'], ascending = [1,1])
+    orders['next_line'] = orders.groupby(['product_id']).year.shift(-1)
+    orders = orders[orders['next_line'] - 1 == orders['year']]
+    return orders[['product_id']].drop_duplicates()
