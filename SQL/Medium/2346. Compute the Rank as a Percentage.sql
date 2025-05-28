@@ -20,7 +20,7 @@ ifnull(round(100 * (rank() over (partition by department_id order by mark desc) 
 (count(student_id) over (partition by department_id) - 1),2),0) as percentage
 from Students
 
-
+----------------------------------------
 
 -- Python
 import pandas as pd
@@ -32,3 +32,15 @@ def compute_rating(students: pd.DataFrame) -> pd.DataFrame:
     students['percentage'] = np.where(students['cnt'] == 1, 0, 100*(students['rnk'] - 1)/(students['cnt'] - 1))
     students['percentage'] = students['percentage'].round(2)
     return students[['student_id','department_id','percentage']]
+
+
+----------------------------------------   
+-- 这道题本来我想的是这样做：
+-- import pandas as pd
+
+-- def compute_rating(students: pd.DataFrame) -> pd.DataFrame:
+--     students['percentage'] = 100 * students.groupby(['department_id']).mark.rank(pct = True, ascending = False, method = 'min').round(2)
+--     return students[['student_id','department_id','percentage']]
+
+-- 但是这样做是不对的，不对的原因就是我们使用rank返回的是百分位数，但是题目要求的是：percentage = (student_rank - 1) * 100 / (number_of_students_in_department - 1)
+-- 这个不是简单的 rank percentile，而是精确的按公式计算
