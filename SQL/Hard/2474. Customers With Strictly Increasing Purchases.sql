@@ -105,6 +105,35 @@ left join no_increasing b on a.customer_id = b.customer_id
 where b.customer_id is null
 
 ---------------------
+-- 或者直接用lead来找下一行
+with cte as
+(select
+customer_id,
+year(order_date) as order_year,
+sum(price) as price
+from Orders
+group by 1,2
+order by 1,2)
+, summary as
+(select
+*, 
+lead(order_year) over (partition by customer_id order by order_year) as next_year, --直接找到下一行对应的year
+lead(price) over (partition by customer_id order by order_year) as next_price, --直接找到下一行对应的price
+rank() over (partition by customer_id order by order_year desc) as rnk
+from cte)
+, res as --这里是为了找到不符合条件的customer，我们要保证这个数据不是最后一行，并且保证（year不连续或者price不上升）
+(select
+distinct customer_id
+from summary
+where ((next_year - 1 != order_year) or (next_price <= price)) and rnk != 1)
+
+select
+distinct a.customer_id
+from Orders a
+left join res b on a.customer_id = b.customer_id
+where b.customer_id is null
+
+---------------------
 
 -- Python
 import pandas as pd
@@ -125,3 +154,20 @@ def find_specific_customers(orders: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(total_line,meet_require, on = 'customer_id', how ='left')
     return merge[(merge['year_x'] - 1 == merge['year_y'])|(merge['year_x'] == 1)][['customer_id']]
     -- 如果某个customer只有一年有购买记录，那么我们是当做这个客人满足条件，需要将其抽出来
+
+---------------------
+
+-- 另外的做法
+import pandas as pd
+
+def find_specific_customers(orders: pd.DataFrame) -> pd.DataFrame:
+    orders['year'] = orders.order_date.dt.year
+    orders = orders.groupby(['customer_id','year'],as_index = False).price.sum()
+    orders.sort_values(['customer_id','year'], ascending = [1,1], inplace = True)
+    orders['next_year'] = orders.groupby(['customer_id']).year.shift(-1)
+    orders['next_price'] = orders.groupby(['customer_id']).price.shift(-1)
+    orders['rnk'] = orders.groupby(['customer_id']).year.rank(ascending = False)
+    
+    not_meet = orders[((orders['next_year'] - 1 != orders['year']) | (orders['next_price'] <= orders['price'])) & (orders['rnk'] != 1)][['customer_id']]
+    res = orders[~orders['customer_id'].isin(not_meet['customer_id'])][['customer_id']].drop_duplicates()
+    return res
