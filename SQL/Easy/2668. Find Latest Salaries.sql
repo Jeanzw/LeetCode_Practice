@@ -9,6 +9,18 @@ from cte where rnk = 1
 order by 1
 
 ------------------
+-- 也可以
+select
+emp_id, 
+firstname,
+lastname,
+max(salary) as salary,
+department_id
+from Salary
+group by 1,2,3,5
+order by 1
+
+------------------
 
 -- Python
 import pandas as pd

@@ -24,7 +24,7 @@ def immediate_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
 
     return delivery[['order_date','immediate_percentage']].sort_values('order_date')
 
-
+-------------------------
 
 -- 也可以这么做
 import pandas as pd

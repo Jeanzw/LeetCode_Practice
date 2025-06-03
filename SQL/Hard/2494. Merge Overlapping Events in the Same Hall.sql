@@ -10,6 +10,7 @@
 
 WITH maxx AS (
   SELECT hall_id, start_day, end_day, MAX(end_day) OVER(PARTITION BY hall_id ORDER BY start_day) AS maxx
+  -- 如果有overlap，那么end_day != maxx
   FROM HallEvents
 )
 
@@ -37,7 +38,10 @@ WITH maxx AS (
 -- | 3       | 2022-12-01 | 2023-01-30 | null       | 0   |
 
 ,decide AS (
-  SELECT hall_id, start_day, end_day, SUM(idk + CASE WHEN start_day <= lmaxx THEN 0 ELSE 1 END) OVER(PARTITION BY hall_id ORDER BY start_day) AS decision
+  SELECT hall_id, start_day, end_day, 
+  SUM(idk + CASE WHEN start_day <= lmaxx THEN 0 ELSE 1 END) OVER(PARTITION BY hall_id ORDER BY start_day) AS decision
+  -- 也就是说，如果我们发现start_day <= lmaxx也就是说有overlap，然后我们就不增加数，如果没有overlap我们就增加一个数
+  -- 通过这个decision的数字当做一个bridge，然后我们判断是否在一个时间范围内的
   FROM lagged
 )
 
@@ -62,18 +66,15 @@ import pandas as pd
 import numpy as np
 
 def merge_events(hall_events: pd.DataFrame) -> pd.DataFrame:
-    hall_events.sort_values(['hall_id','start_day'], inplace = True)
+    hall_events.sort_values(['hall_id','start_day'], ascending = [1,1], inplace = True)
     hall_events['maxx'] = hall_events.groupby(['hall_id']).end_day.cummax()
     hall_events['lmaxx'] = hall_events.groupby(['hall_id']).maxx.shift(1)
-    hall_events['idk'] = 0
-
     hall_events['flg'] = np.where(hall_events['start_day'] <= hall_events['lmaxx'], 0, 1)
-    hall_events['flg'] = hall_events['flg'] + hall_events['idk']
+    hall_events['decision'] = hall_events.groupby(['hall_id']).flg.cumsum()
 
-    hall_events['bridge'] = hall_events.groupby(['hall_id']).flg.cumsum()
-
-    res = hall_events.groupby(['hall_id','bridge'],as_index = False).agg(
+    hall_events = hall_events.groupby(['hall_id','decision'], as_index = False).agg(
         start_day = ('start_day','min'),
         end_day = ('end_day','max')
     )
-    return res[['hall_id','start_day','end_day']]
+
+    return hall_events[['hall_id','start_day','end_day']]
