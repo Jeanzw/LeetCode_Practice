@@ -33,4 +33,3 @@ from frame a
 left join Orders b on b.minute between a.start and a.end
 group by 1
 
--------------------------------------------------------

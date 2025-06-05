@@ -16,6 +16,6 @@ def rolling_average(steps: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(steps,steps,on = 'user_id').merge(steps,on = 'user_id')
     merge['diff1'] = (merge['steps_date_x'] - merge['steps_date_y']).dt.days
     merge['diff2'] = (merge['steps_date_y'] - merge['steps_date']).dt.days
-    merge = merge.query("diff1 == 1 and diff2 == 1")
+    merge = merge[(merge['diff1'] == 1) & (merge['diff2'] == 1)]
     merge['rolling_average'] = round((merge['steps_count_x'] + merge['steps_count_y'] + merge['steps_count'])/3,2)
     return merge[['user_id','steps_date_x','rolling_average']].rename(columns = {'steps_date_x':'steps_date'}).sort_values(['user_id','steps_date'])
