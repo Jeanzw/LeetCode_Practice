@@ -26,6 +26,7 @@ def ticket_status(flights: pd.DataFrame, passengers: pd.DataFrame) -> pd.DataFra
     merge['Status'] = np.where(merge['capacity'] >= merge['rnk'], 'Confirmed','Waitlist')
     return merge[['passenger_id','Status']].sort_values('passenger_id')
 
+-------------------------------
 
 -- 另一种做法用cumcount()
 import pandas as pd
