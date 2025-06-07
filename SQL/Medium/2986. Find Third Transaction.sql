@@ -38,6 +38,7 @@ def find_third_transaction(transactions: pd.DataFrame) -> pd.DataFrame:
     transactions['pp_spend'] = transactions.groupby(['user_id']).spend.shift(2)
     return transactions.query("rnk == 3 and spend > p_spend and spend > pp_spend")[['user_id','spend','transaction_date']].rename(columns = {'spend':'third_transaction_spend','transaction_date':'third_transaction_date'})
 
+---------------------------
 
 -- 也可以这么做
 import pandas as pd
@@ -47,3 +48,15 @@ def find_third_transaction(transactions: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(transactions,transactions,on = 'user_id').merge(transactions,on = 'user_id')
     merge = merge[(merge['rnk_x'] == 3) & (merge['rnk_y'] == 2) & (merge['rnk'] == 1) & (merge['spend_x'] > merge['spend_y']) & (merge['spend_x'] > merge['spend'])]
     return merge[['user_id','spend_x','transaction_date_x']].rename(columns = {'spend_x':'third_transaction_spend','transaction_date_x':'third_transaction_date'}).sort_values(['user_id'])
+
+---------------------------
+
+-- 也可以这么做：
+import pandas as pd
+
+def find_third_transaction(transactions: pd.DataFrame) -> pd.DataFrame:
+    transactions['rnk'] = transactions.groupby(['user_id']).transaction_date.rank()
+    transactions = transactions[transactions['rnk'] <= 3]
+    transactions['rnk_spend'] = transactions.groupby(['user_id']).spend.rank(ascending = False)
+    transactions = transactions[(transactions['rnk'] == 3) & (transactions['rnk_spend'] == 1)]
+    return transactions[['user_id','spend','transaction_date']].rename(columns = {'spend':'third_transaction_spend','transaction_date':'third_transaction_date'}).sort_values('user_id')

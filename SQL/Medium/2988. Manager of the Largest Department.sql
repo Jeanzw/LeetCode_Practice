@@ -28,6 +28,21 @@ select emp_name as manager_name, dep_id from cte2 where rnk = 1 and position = '
 
 ------------------
 
+-- 或者这样做
+with cte as
+(select
+a.emp_name as manager_name,
+a.dep_id,
+count(distinct b.emp_id) as total_team,
+rank() over (order by count(distinct b.emp_id) desc) as rnk
+from Employees a
+join Employees b on a.position = 'Manager' and a.dep_id = b.dep_id and a.emp_id != b.emp_id
+group by 1,2)
+
+select manager_name, dep_id from cte where rnk = 1 order by 2
+
+------------------
+
 -- Python
 import pandas as pd
 
@@ -36,6 +51,7 @@ def find_manager(employees: pd.DataFrame) -> pd.DataFrame:
     employees['rnk'] = employees.cnt.rank(method = 'dense', ascending = False)
     return employees.query("rnk == 1 and position == 'Manager'")[['emp_name','dep_id']].rename(columns = {'emp_name':'manager_name'}).sort_values('dep_id')
 
+------------------
 
 -- 另外的做法：
 import pandas as pd
