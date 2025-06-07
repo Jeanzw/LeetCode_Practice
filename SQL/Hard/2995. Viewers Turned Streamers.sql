@@ -10,6 +10,8 @@ where a.session_type = 'Streamer'
 group by 1
 order by 2 desc,1 desc
 
+-------------------------
+
 -- 将上面的给处理一下
 with users_candidate as
 (select *, row_number() over (partition by user_id order by session_start) as rnk, count(*) over (partition by user_id) as cnt from Sessions)
@@ -58,7 +60,7 @@ def count_turned_streamers(sessions: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(first_session_viewer,streamer, on = 'user_id')
     return merge[['user_id','session_id_y']].rename(columns = {'session_id_y':'sessions_count'}).sort_values(['sessions_count','user_id'], ascending = [0,0])
 
-
+-----------------------------------
 
 -- 也可以
 import pandas as pd
