@@ -45,6 +45,8 @@ def user_activities(sessions: pd.DataFrame) -> pd.DataFrame:
 
     return merge[['user_id']].drop_duplicates().sort_values('user_id')
 
+---------------------------
+
 -- 或者就按照第二种sql的解法
 import pandas as pd
 

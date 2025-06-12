@@ -17,7 +17,7 @@ def find_trending_hashtags(tweets: pd.DataFrame) -> pd.DataFrame:
     tweets['hashtag'] = tweets['after_hashtag'].str.split(' ').str[0]
     tweets['hashtag'] = '#' + tweets['hashtag']
 
-    tweets = tweets[(tweets['tweet_date'].dt.year == 2024) & (tweets['tweet_date'].dt.month == 2)]
+    tweets = tweets[(tweets['tweet_date'] >= '2024-02-01') & (tweets['tweet_date'] <= '2024-02-29')]
 
     tweets = tweets.groupby(['hashtag'],as_index = False).tweet_id.nunique()
     return tweets.rename(columns = {'tweet_id':'hashtag_count'}).sort_values(['hashtag_count','hashtag'],ascending = [0,0]).head(3)

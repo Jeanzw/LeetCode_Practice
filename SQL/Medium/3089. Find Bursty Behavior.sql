@@ -51,7 +51,7 @@ def find_bursty_behavior(posts: pd.DataFrame) -> pd.DataFrame:
     summary = summary[summary['post_id_y'] >= 2 * summary['avg_weekly_posts']]
     return summary[['user_id','post_id_y','avg_weekly_posts']].rename(columns = {'post_id_y':'max_7day_posts'}).sort_values('user_id')
 
-
+----------------------------
 
 -- 或者这样做
 import pandas as pd
