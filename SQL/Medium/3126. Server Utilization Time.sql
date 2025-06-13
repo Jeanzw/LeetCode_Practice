@@ -24,6 +24,7 @@ floor(sum(timestampdiff(second,a.status_time, b.status_time))/(60 * 60 * 24)) as
 from cte a
 join cte b on a.server_id = b.server_id and a.rnk = b.rnk and a.session_status = 'start' and b.session_status = 'stop'
 
+--------------------------
 
 -- Python
 import pandas as pd
@@ -39,6 +40,7 @@ def server_utilization_time(servers: pd.DataFrame) -> pd.DataFrame:
 
     return pd.DataFrame({'total_uptime_days':[days]})
 
+--------------------------
 
 -- 另外的做法：
 import pandas as pd
