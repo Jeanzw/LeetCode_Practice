@@ -29,10 +29,10 @@ with cte as
 (select
 a.student_id,
 count(distinct case when b.mandatory = 'yes' then b.course_id end) as mandatory_course,
-count(distinct case when b.mandatory = 'yes' then c.course_id end) as mandatory_course_taken,
+count(distinct case when b.mandatory = 'yes' then c.course_id end) as mandatory_course_taken, --其实这个可以不写，我们只需要保证mandatory_course = mandatory_course_taken_A即可
 count(distinct case when b.mandatory = 'yes' and c.grade = 'A' then c.course_id end) as mandatory_course_taken_A,
 
-count(distinct case when b.mandatory = 'no' then b.course_id end) as elective_course,
+count(distinct case when b.mandatory = 'no' then b.course_id end) as elective_course, --其实这个可以不写，因为我们不在乎到底有多少选修课，我们在乎的是上了多少选修课
 count(distinct case when b.mandatory = 'no' then c.course_id end) as elective_course_taken,
 count(distinct case when b.mandatory = 'no' and c.grade in ('A','B') then c.course_id end) as elective_course_taken_A_B
 from students a
