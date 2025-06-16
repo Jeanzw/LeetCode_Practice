@@ -6,6 +6,13 @@ order by 1
 
 ----------------------------
 
+-- 或者直接用like
+SELECT tweet_id
+FROM Tweets
+WHERE content LIKE '%#%#%#%#%' OR LENGTH(content) > 140 OR content LIKE '%@%@%@%@%'
+
+----------------------------
+
 -- Python
 import pandas as pd
 

@@ -39,3 +39,26 @@ def calculate_fees_and_duration(parking_transactions: pd.DataFrame) -> pd.DataFr
     res = pd.merge(summary,most_used_lot, on = 'car_id')[['car_id','total_fee_paid','avg_hourly_fee','lot_id']]
     
     return res.rename(columns = {'lot_id':'most_time_lot'}).sort_values('car_id')
+
+-----------------------------------------------
+
+-- 找到最常用的lot不一定要用rnk，也可以用head
+import pandas as pd
+
+def calculate_fees_and_duration(parking_transactions: pd.DataFrame) -> pd.DataFrame:
+    parking_transactions['total_hour'] = (parking_transactions['exit_time'] - parking_transactions['entry_time']).dt.total_seconds()/3600
+    parking_transactions = parking_transactions.groupby(['car_id','lot_id'], as_index = False).agg(
+        total_hour = ('total_hour','sum'),
+        fee_paid = ('fee_paid','sum')
+    )
+
+    most_time_lot = parking_transactions.sort_values(['car_id','total_hour'], ascending = [1,0]).groupby(['car_id']).head(1)
+    
+    summary = parking_transactions.groupby(['car_id'], as_index = False).agg(
+        total_hour = ('total_hour','sum'),
+        total_fee_paid = ('fee_paid','sum')        
+    )
+    summary['avg_hourly_fee'] = round(summary['total_fee_paid']/summary['total_hour'],2)
+
+    res = pd.merge(summary,most_time_lot, on = 'car_id', how = 'left')
+    return res[['car_id','total_fee_paid','avg_hourly_fee','lot_id']].rename(columns = {'lot_id':'most_time_lot'}).sort_values('car_id')
