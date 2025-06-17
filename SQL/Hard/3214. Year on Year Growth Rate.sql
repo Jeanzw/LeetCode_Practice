@@ -18,6 +18,23 @@ left join cal_summary b on a.year - 1 = b.year and a.product_id = b.product_id
 order by 2,1
 
 ----------------------------
+-- 也可以用lag
+with cte as
+(select
+year(transaction_date) as year,
+product_id,
+sum(spend) as curr_year_spend
+from user_transactions
+group by 1,2
+order by 2,1)
+
+select
+*,
+lag(curr_year_spend) over (partition by product_id order by year) as prev_year_spend,
+round(100 * (curr_year_spend - lag(curr_year_spend) over (partition by product_id order by year))/(lag(curr_year_spend) over (partition by product_id order by year)),2) as yoy_rate
+from cte
+
+----------------------------
 
 -- Python
 import pandas as pd
@@ -33,6 +50,7 @@ def calculate_yoy_growth(user_transactions: pd.DataFrame) -> pd.DataFrame:
     summary['yoy_rate'] = round(((summary['spend_x'] - summary['spend_y'])/summary['spend_y']) * 100,2)
     return summary[['year_x','product_id','spend_x','spend_y','yoy_rate']].rename(columns = {'year_x':'year','spend_x':'curr_year_spend','spend_y':'prev_year_spend'}).sort_values(['product_id','year'])
 
+----------------------------
 
 -- 也可以这么做
 -- 但是这么做的前提在于我们知道每一年都有数
