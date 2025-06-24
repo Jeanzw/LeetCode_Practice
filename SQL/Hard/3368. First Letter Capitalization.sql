@@ -1,4 +1,4 @@
-# Write your MySQL query statement below
+
 select
 content_id,
 content_text as original_text,

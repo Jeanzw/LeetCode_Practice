@@ -33,6 +33,24 @@ order by 3 desc, 1
 
 -----------------------------
 
+-- 另外的做法
+with cte as
+(select
+*, count(city) over (partition by state) as cnt, 
+count(case when left(state,1) = left(city,1) then city end) over (partition by state) as matching_letter_count
+from cities)
+
+select 
+state,
+group_concat(distinct city order by city separator ', ') as cities,
+matching_letter_count
+from cte
+where cnt >= 3 and matching_letter_count >= 1
+group by 1,3
+order by 3 desc, 1
+
+-----------------------------
+
 -- Python
 import pandas as pd
 import numpy as np
@@ -48,6 +66,7 @@ def state_city_analysis(cities: pd.DataFrame) -> pd.DataFrame:
     )
     return res[['state','cities','matching_letter_count']].sort_values(['matching_letter_count','state'], ascending = [0,1])
 
+-----------------------------
 
 -- 另外的做法
 import pandas as pd
