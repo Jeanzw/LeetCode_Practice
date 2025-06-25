@@ -13,7 +13,7 @@ from Passes a
 left join Teams b on a.pass_from = b.player_id
 left join Teams c on a.pass_to = c.player_id
 order by time_stamp)
-, summary as
+, summary as --这一步其实已经处理完了
 (select
 team_name,
 group_id,
@@ -21,7 +21,13 @@ count(*) as cnt
 from cte
 group by 1,2)
 
-select team_name, max(case when group_id = 0 then cnt else cnt - 1 end) as longest_streak
+select team_name, 
+max(case when group_id = 0 then cnt else cnt - 1 end) as longest_streak 
+-- 当bridge发生变动的时候，那一行其实是不能要的，比如说：
+-- | 4         | 00:10      | 5       | Arsenal   | Chelsea   | 1   | 1      |
+-- | 1         | 00:25      | 2       | Arsenal   | Arsenal   | 0   | 1      |
+-- | 2         | 00:27      | 3       | Arsenal   | Arsenal   | 0   | 1      |
+-- 我们其实只认为Arsenal有两行而不是三行
 from summary
 group by 1
 having longest_streak > 0

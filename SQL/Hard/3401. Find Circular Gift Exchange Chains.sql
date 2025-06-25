@@ -48,3 +48,15 @@ SELECT
     total_value as total_gift_value
 FROM smallest_chain
 ORDER BY chain_length DESC, total_value DESC;
+
+------------------------
+
+import pandas as pd
+
+def find_gift_chains(secret_santa: pd.DataFrame) -> pd.DataFrame:
+    secret_santa['l_receiver_id'] = secret_santa['receiver_id'].shift(1)
+    secret_santa['chain_id'] = (secret_santa.giver_id != secret_santa.l_receiver_id).astype(int).cumsum()
+    df = secret_santa.groupby('chain_id', as_index=False).agg(chain_length = ('chain_id', 'count'), total_gift_value=('gift_value', 'sum'))
+    df = df.loc[df['chain_length']>1].sort_values(['chain_length', 'total_gift_value'], ascending=[False, False]).drop('chain_id', axis=1)
+    df['chain_id'] = df['chain_length'].rank(method='first', ascending=False).astype(int)
+    return df[['chain_id', 'chain_length', 'total_gift_value']].drop_duplicates(subset=['chain_length', 'total_gift_value'])
