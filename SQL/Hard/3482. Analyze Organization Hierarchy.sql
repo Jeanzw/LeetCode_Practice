@@ -1,4 +1,7 @@
-WITH RECURSIVE level_cte AS (
+WITH RECURSIVE level_cte AS 
+-- 这个cte就会让所有的员工不停地进行链接，level不停升高，直到找到最后的大老板停止
+-- 而这个时候，最大的level就是这个员工最后应该在的level
+(
   SELECT employee_id, manager_id, 1 AS level, salary -- 这里其实相当于是给每一个employee_id一个初时的level
   FROM Employees
   
@@ -10,6 +13,7 @@ WITH RECURSIVE level_cte AS (
 )
 ,employee_with_level AS 
 -- 这是每个employee最真实的等级
+-- 当我们选定了manager_id IS NULL也就是说，当这个员工连接到了最大的老板那么对应的level就是其所在的level
 (
   SELECT a.employee_id, a.employee_name, a.salary, b.level
   FROM Employees a
@@ -21,6 +25,8 @@ WITH RECURSIVE level_cte AS (
 )
 , team_size_budget as
 -- 计算每个manager下面的team size以及budget（不包含自己）
+-- 虽然找到这个员工最真实的level我们需要manager_id IS NULL
+-- 但是如果找到某个人底下有多少人，那么我们就不能让manager_id IS NULL而应该使用manager_id IS NOT NULL
 (SELECT 
     manager_id AS employee_id,
     COUNT(*) AS team_size,
