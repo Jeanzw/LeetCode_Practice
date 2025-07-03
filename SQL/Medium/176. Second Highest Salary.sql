@@ -81,3 +81,11 @@ def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
     employee = employee[employee['salary'] != employee['max_salary']]
     SecondHighestSalary = employee.salary.max()
     return pd.DataFrame({'SecondHighestSalary':[SecondHighestSalary]})
+
+-- 上面的前两行code我们可以合并成一行
+import pandas as pd
+
+def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
+    employee = employee[employee['salary'] != employee['salary'].max()]
+    SecondHighestSalary = employee['salary'].max()
+    return pd.DataFrame({'SecondHighestSalary':[SecondHighestSalary]})

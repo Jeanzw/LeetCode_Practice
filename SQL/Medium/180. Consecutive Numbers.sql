@@ -58,7 +58,7 @@ having count(*) >= 3
 import pandas as pd
 
 def consecutive_numbers(logs: pd.DataFrame) -> pd.DataFrame:
-    logs['bridge'] = logs['id'] + 1 - logs.groupby(['num']).id.rank(method = 'first')
-    logs = logs.groupby(['num','bridge'], as_index = False).id.nunique()
-    logs = logs[logs['id'] >= 3]
-    return logs[['num']].rename(columns = {'num':'ConsecutiveNums'}).drop_duplicates()
+    logs['bridge'] = logs['id'] - logs.groupby(['num']).id.rank(method = 'first')
+    logs = logs.groupby(['num','bridge'], as_index = False).size()
+    logs = logs[logs['size'] >= 3]
+    return logs[['num']].rename(columns ={'num':'ConsecutiveNums'}).drop_duplicates()
