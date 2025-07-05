@@ -8,6 +8,9 @@ select
 from Trips t
 join Users u1 on t.Client_Id = u1.Users_Id and u1.Banned = 'No' 
 join Users u2 on t.Driver_Id = u2.Users_Id and u2.Banned = 'No' 
+-- 注意：我们这里一定要携程两个join来分别定位driver和client的情况
+-- 如果我们写成join Users b on (a.client_id = b.users_id or a.driver_id = b.users_id ) and b.banned = 'No'
+-- 那么就会出错，因为or里面我们只需要满足一个是unbanned即可
 where Request_at between "2013-10-01" and "2013-10-03"
 group by 1
 
@@ -105,3 +108,21 @@ def trips_and_users(trips: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
     )
     merge['Cancellation Rate'] = round(merge['n']/merge['d'],2)
     return merge[['request_at','Cancellation Rate']].rename(columns = {'request_at':'Day'})
+
+--------------------
+
+-- 也可以不用merge，直接用isin来处理
+import pandas as pd
+import numpy as np
+
+def trips_and_users(trips: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
+    banned_user = users[users['banned'] == 'Yes']
+    trips = trips[(~trips['client_id'].isin(banned_user['users_id'])) & (~trips['driver_id'].isin(banned_user['users_id']))] 
+    trips = trips[(trips['request_at'] >= '2013-10-01') & (trips['request_at'] <= '2013-10-03')]
+    trips['cancel'] = np.where(trips['status'] != 'completed', trips['id'], None)
+    trips = trips.groupby(['request_at'], as_index = False).agg(
+        n = ('cancel','nunique'),
+        d = ('id','nunique')
+    )
+    trips['Cancellation Rate'] = round(trips['n']/trips['d'],2)
+    return trips[['request_at','Cancellation Rate']].rename(columns = {'request_at':'Day'})
