@@ -48,6 +48,8 @@ where b.pid is not null and c.pid is null
 ----------------------------------
 
 -- 其实这道题也可以用join来做
+-- 我们这里一定要先找到distinct tiv_2016和对应的pid，不然我们在做left join的时候，如果有很多行满足条件就会让tiv_2016变成多行
+-- 然后我们如果不找到distinct tiv_2016和对应的pid，就会在计算的时候反复计算
 select sum(TIV_2016) as TIV_2016 from
 (select
 a.PID,
@@ -87,8 +89,9 @@ def find_investments(insurance: pd.DataFrame) -> pd.DataFrame:
     merge1 = pd.merge(insurance,insurance,on = 'tiv_2015').query("pid_x != pid_y")
     merge2 = pd.merge(merge1,insurance,left_on = ['lat_x','lon_x'], right_on = ['lat','lon'],how = 'left')
 
-    summary = merge2.groupby(['pid_x','tiv_2016_x'],as_index = False).pid.nunique()
+    summary = merge2.groupby(['pid_x','tiv_2016_x'],as_index = False).pid.nunique() --判断链接了多少个相同location的id
     summary = summary.query("pid == 1").tiv_2016_x.sum()
+    -- 如果只有一个连接的id，就是自己，就说明可行
     return pd.DataFrame({'tiv_2016':[summary]})
 
 ----------------------
