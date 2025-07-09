@@ -23,7 +23,7 @@ where c.name = 'RED')
 With red as
 (select 
 distinct a.sales_id
-from SalesPerson a
+from SalesPerson a --其实这一个表在cte里面可以不用的，直接用Orders表里面的sales_id即可
 inner join Orders b on a.sales_id = b.sales_id
 inner join Company c on b.com_id = c.com_id and c.name = 'Red'
 )
