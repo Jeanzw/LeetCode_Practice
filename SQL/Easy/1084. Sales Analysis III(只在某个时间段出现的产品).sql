@@ -86,3 +86,17 @@ def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
     merge['min_sale'] = merge.groupby(['product_id']).sale_date.transform('min')
     merge = merge[(merge['min_sale'] >= '2019-01-01') & (merge['max_sale'] <= '2019-03-31')]
     return merge[['product_id','product_name']].drop_duplicates()
+
+------------------------------------
+-- 我不是太理解为什么要用到组内求数……
+import pandas as pd
+
+def sales_analysis(product: pd.DataFrame, sales: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(product, sales, on = 'product_id')
+    merge = merge.groupby(['product_id', 'product_name'],as_index = False).agg(
+        min_sale_date = ('sale_date','min'),
+        max_sale_date = ('sale_date','max')
+    )
+
+    merge = merge[(merge['min_sale_date'] >= '2019-01-01') & (merge['max_sale_date'] <= '2019-03-31')]
+    return merge[['product_id','product_name']]

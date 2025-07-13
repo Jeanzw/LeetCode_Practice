@@ -93,3 +93,21 @@ def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
     )
     merge['Day1_retention'] = round(merge['n']/merge['installs'] + 1e-9,2)
     return merge[['event_date_x','installs','Day1_retention']].rename(columns = {'event_date_x':'install_dt'})
+
+--------------------------
+-- 也可以直接先对activity进行处理，使每个player_id在每一条就只有一条数据，这样子后续就不用进行np.where了
+-- 另外size是无论null值与否，都统一算，所以如果我们要non-null值，不能用size
+import pandas as pd
+
+def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
+    install = activity.groupby(['player_id'], as_index = False).event_date.min()
+    install['next_day'] = install['event_date'] + pd.to_timedelta(1,unit = 'D')
+    
+    activity = activity[['player_id','event_date']].drop_duplicates()
+    merge = pd.merge(install,activity, left_on = ['player_id','next_day'], right_on = ['player_id','event_date'], how = 'left')
+    merge = merge.groupby(['event_date_x'], as_index = False).agg(
+        installs = ('player_id','nunique'),
+        retention = ('event_date_y','count')
+    )
+    merge['Day1_retention'] = round(merge['retention']/merge['installs'] + 1e-9,2)
+    return merge[['event_date_x','installs','Day1_retention']].rename(columns = {'event_date_x':'install_dt'})
