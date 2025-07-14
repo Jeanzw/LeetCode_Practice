@@ -56,3 +56,22 @@ def reported_posts(actions: pd.DataFrame, removals: pd.DataFrame) -> pd.DataFram
 
     average_daily_percent = (100 * merge['n']/merge['d']).mean().round(2)
     return pd.DataFrame({'average_daily_percent':[average_daily_percent]})
+
+------------------------
+
+-- 我不觉得用sum或者用count来计数是一件好事情……
+import pandas as pd
+import numpy as np
+
+def reported_posts(actions: pd.DataFrame, removals: pd.DataFrame) -> pd.DataFrame:
+    actions = actions[actions['extra'] == 'spam']
+    merge = pd.merge(actions, removals, on = 'post_id', how = 'left')
+    merge['remove_id'] = np.where(~merge['remove_date'].isna(), merge['post_id'], None)
+    merge = merge.groupby(['action_date'],as_index = False).agg(
+        n = ('remove_id','nunique'),
+        d = ('post_id','nunique')
+    )
+    merge['pct'] = merge['n'] / merge['d']
+    average_daily_percent = round(100 * merge['pct'].mean(),2)
+    
+    return pd.DataFrame({'average_daily_percent':[average_daily_percent]})
