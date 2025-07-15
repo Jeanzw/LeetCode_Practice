@@ -47,6 +47,7 @@ def user_activity(activity: pd.DataFrame) -> pd.DataFrame:
     else:
         return pd.DataFrame({'average_sessions_per_user':[round(n/d,2)]})
 
+----------------------
 
 -- 另外的做法
 import pandas as pd
