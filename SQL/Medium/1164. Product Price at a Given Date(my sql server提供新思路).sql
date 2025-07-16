@@ -102,6 +102,8 @@ def price_at_given_date(products: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(products,products_filter, on = 'product_id', how = 'left').fillna(10)
     return merge[['product_id','new_price_y']].rename(columns = {'new_price_y':'price'}).drop_duplicates()
 
+----------------------------------
+
 -- 也可以这么做
 import pandas as pd
 

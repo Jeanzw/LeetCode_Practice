@@ -25,6 +25,8 @@ def food_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
     n = delivery[delivery['order_date'] == delivery['customer_pref_delivery_date']].delivery_id.nunique()
     return pd.DataFrame({'immediate_percentage':[round(100 * n/d,2)]})
 
+-----------------------------------------------
+
 -- 另外的做法
 import pandas as pd
 import numpy as np

@@ -46,6 +46,7 @@ def monthly_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     transactions['country'] = np.where(transactions['country'] == 'null',nan,transactions['country'])
     return transactions
 
+------------------------
 
 -- 另外的做法，total和approve分别来算
 import pandas as pd
