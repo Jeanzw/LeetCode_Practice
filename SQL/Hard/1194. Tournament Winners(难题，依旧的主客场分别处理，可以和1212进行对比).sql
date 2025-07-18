@@ -15,6 +15,26 @@
 -- from cte
 -- where rnk = 1
 
+但是我们可以改变一下query，使其可以实现
+with cte as
+(select
+a.group_id,
+a.player_id,
+sum(case when a.player_id = b.first_player then first_score else second_score end) as score,
+-- 然后用case when来判断
+row_number() over (partition by a.group_id order by sum(case when a.player_id = b.first_player then first_score else second_score end) desc, a.player_id) as rnk
+from Players a
+left join Matches b on a.player_id = b.first_player or a.player_id = b.second_player 
+-- 我们用一个left join来判断是属于哪个阵营
+-- 
+group by 1,2
+)
+
+select
+group_id, player_id from cte
+where rnk = 1
+
+
 ---------------------------------------
 
 /*

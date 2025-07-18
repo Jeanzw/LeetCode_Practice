@@ -1,11 +1,17 @@
 -- Mysql
-select person_name from Queue
-where turn =
-(select a.turn from Queue a, Queue b
-where a.turn >= b.turn
-group by a.turn
-having sum(b.weight)<=1000
-order by a.turn desc limit 1)
+with cte as
+(select
+a.person_name, a.turn, sum(b.weight) as cumsum
+from Queue a
+join Queue b on a.turn >= b.turn
+group by 1,2)
+
+select
+person_name
+from cte
+where cumsum <= 1000
+order by turn desc
+limit 1
 /*这里相当于就是说，把小于a.turn的b.turn的重量加起来
 因为a.turn >= b.turn，所以当a.turn = 1的时候，b.turn = 1，那么sum(b.weight)就是turn = 1的重量
 当a.turn = 2的时候，b.turn <= 2，那么sum(b.weight)就是turn = 1+2的重量
