@@ -28,6 +28,7 @@ group by team) tmp
 on t.team_id = tmp.team
 order by num_points desc,team_id
 
+-------------------------------------------
 
 -- 和上面的原理是一样的，但是用cte会看起来容易理解一点
 with team_score as
