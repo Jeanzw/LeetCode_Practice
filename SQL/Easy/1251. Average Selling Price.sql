@@ -36,3 +36,23 @@ def average_selling_price(prices: pd.DataFrame, units_sold: pd.DataFrame) -> pd.
     # 最后用一个where来对null值进行处理
     res['average_price'] = np.where(res['sum_price']/res['sum_unit'].notna(),res['sum_price']/res['sum_unit'],0)
     return res[['product_id','average_price']].round(2)
+
+--------------------------------------------
+
+-- Python 另外的做法
+-- 把连接直接放到最后，前面都只做处理
+import pandas as pd
+
+def average_selling_price(prices: pd.DataFrame, units_sold: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(prices, units_sold, on = 'product_id')
+    merge = merge[(merge['purchase_date'] >= merge['start_date']) & (merge['purchase_date'] <= merge['end_date'])]
+    merge['total_money'] = merge['price'] * merge['units']
+    merge = merge.groupby(['product_id'],as_index = False).agg(
+        n = ('total_money','sum'),
+        d = ('units','sum')
+    )
+    merge['average_price'] = round(merge['n']/merge['d'],2)
+
+    res = pd.merge(prices[['product_id']].drop_duplicates(), merge, on = 'product_id', how = 'left').fillna(0)
+    return res[['product_id','average_price']]
+    
