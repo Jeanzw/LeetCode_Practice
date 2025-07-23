@@ -96,6 +96,22 @@ offset 6
 
 -------------------------------------------------
 
+-- 不用rolling来做也是没问题的
+with cte as
+(select visited_on, sum(amount) as amount, dense_rank() over (order by visited_on) as rnk from Customer group by 1)
+
+select
+a.visited_on,
+sum(b.amount) as amount,
+round(sum(b.amount)/7,2) as average_amount
+from cte a
+join cte b on datediff(a.visited_on,b.visited_on) between 0 and 6
+where a.rnk >= 7
+group by 1
+order by 1
+
+-------------------------------------------------
+
 -- Python
 
 import pandas as pd
