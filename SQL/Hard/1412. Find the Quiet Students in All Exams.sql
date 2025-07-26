@@ -147,6 +147,7 @@ def find_quiet_students(student: pd.DataFrame, exam: pd.DataFrame) -> pd.DataFra
     res = pd.merge(merge,not_quiet,on = 'student_id', how = 'left')
     res = res[res['student_name_y'].isna()]
     return res[['student_id','student_name_x']].rename(columns = {'student_name_x':'student_name'}).drop_duplicates().sort_values('student_id')
+
 ------------------------------
 
 -- Python另外的做法

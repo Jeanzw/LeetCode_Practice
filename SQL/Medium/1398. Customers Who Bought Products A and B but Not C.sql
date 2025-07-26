@@ -104,3 +104,19 @@ def find_customers(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFram
 
     res = pd.merge(customers,A_B_not_C,on = 'customer_id')
     return res.sort_values('customer_id')
+
+-----------------------------------
+
+-- 也可以这么做
+import pandas as pd
+
+def find_customers(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    AB = pd.merge(orders,orders, on = 'customer_id')
+    AB = AB[(AB['product_name_x'] == 'A') & (AB['product_name_y'] == 'B')][['customer_id']].drop_duplicates()
+
+    C = orders[orders['product_name'] == 'C'][['customer_id']].drop_duplicates()
+    C['flg'] = 1
+
+    res = pd.merge(AB,customers, on = 'customer_id')[['customer_id','customer_name']].merge(C, on = 'customer_id', how = 'left')
+    res = res[res['flg'].isna()]
+    return res[['customer_id','customer_name']].sort_values('customer_id')
