@@ -79,7 +79,6 @@ having avg(duration) > (select global_duration from globaldata)
 -------------------------------------------
 
 -- 另外的方法，直接用window function做
-# Write your MySQL query statement below
 with calls_duration as
 (select caller_id as id, duration from Calls
 union all

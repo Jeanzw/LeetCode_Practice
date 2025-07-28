@@ -54,11 +54,14 @@ WHERE t1 >= 100 AND t2 >= 100
 import pandas as pd
 
 def customer_order_frequency(customers: pd.DataFrame, product: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(customers,orders,on = 'customer_id').merge(product,on = 'product_id')
-    merge['order_month'] = merge['order_date'].dt.strftime('%Y-%m')
-    merge = merge[(merge['order_month'] == '2020-06') | (merge['order_month'] == '2020-07')]
-    merge['money'] = merge['quantity'] * merge['price']
-    merge = merge.groupby(['customer_id','name','order_month'],as_index = False).money.sum()
-    merge = merge[merge['money'] >= 100]
-    merge = merge.groupby(['customer_id','name'],as_index = False).order_month.nunique()
-    return merge[merge['order_month'] == 2][['customer_id','name']]
+    orders = orders[(orders['order_date'] >= '2020-06-01') & (orders['order_date'] <= '2020-07-31')]
+    orders['month'] = orders.order_date.dt.month
+    order_product = pd.merge(orders,product, on = 'product_id')
+    order_product['money'] = order_product['quantity'] * order_product['price']
+    order_product = order_product.groupby(['customer_id','month'],as_index = False).money.sum()
+    order_product = order_product[order_product['money'] >= 100]
+    order_product = order_product.groupby(['customer_id'],as_index = False).month.nunique()
+    order_product = order_product[order_product['month'] == 2]
+
+    res = pd.merge(order_product,customers, on = 'customer_id')[['customer_id','name']]
+    return res
