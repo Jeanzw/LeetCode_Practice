@@ -19,6 +19,10 @@ AND LEFT(mail, LEN(mail) - 13) NOT LIKE '%[^0-9a-zA-Z_.-]%'
 import pandas as pd
 
 def valid_emails(users: pd.DataFrame) -> pd.DataFrame:
-    # Note how we use a raw string (putting an `r` in front) to avoid having to escape the backslash
-    # Also note that we escaped the `@` character, as it has a special meaning in some regex flavors
-    return users[users["mail"].str.match(r"^[a-zA-Z][a-zA-Z0-9_.-]*\@leetcode\.com$")]
+    pattern = r'^[A-Za-z][0-9A-Za-z_.-]*@leetcode\.com$'
+    -- ^ / $ 表示整串必须完全匹配
+    -- 第一位 [A-Za-z] 是字母
+    -- [0-9A-Za-z_.-]* 允许的其余字符（星号表示 0 次或多次）
+    -- @leetcode\.com 结尾（点要转义）
+    df_valid = df[df['mail'].str.match(pattern, na=False)]
+    return df_valid
