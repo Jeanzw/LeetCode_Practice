@@ -18,3 +18,14 @@ def recent_three_orders(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.Dat
     merge = merge.sort_values(['name','customer_id','order_date'], ascending = [1,1,0])
     merge = merge.groupby(['name','customer_id']).head(3)
     return merge[['name','customer_id','order_id','order_date']].rename(columns = {'name':'customer_name'})
+
+------------------------------------------
+
+-- 另外的做法
+import pandas as pd
+
+def recent_three_orders(customers: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(customers,orders, on = 'customer_id')
+    merge['rnk'] = merge.groupby(['customer_id']).order_date.rank(ascending = False)
+    merge = merge[merge['rnk'] <= 3]
+    return merge[['name','customer_id','order_id','order_date']].rename(columns = {'name':'customer_name'}).sort_values(['customer_name','customer_id','order_date'],ascending = [1,1,0])
