@@ -8,6 +8,7 @@ order by 1
 -------------------------------------------
 
 -- 也可以用left join来做这道题
+-- 其实我是觉得用distinct s.seller_name是不对的，因为就是可能出现同名的情况
 select
 distinct s.seller_name
 from Seller s
