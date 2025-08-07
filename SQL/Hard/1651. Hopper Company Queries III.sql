@@ -93,3 +93,25 @@ def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_
     merge['average_ride_duration'] = merge.ride_duration.rolling(3).mean().fillna(0).round(2)
     merge = merge[merge['month'] <= 10]
     return merge[['month','average_ride_distance','average_ride_duration']].sort_values('month')
+
+---------------------------------------
+
+-- 另外的做法
+import pandas as pd
+
+def hopper_company_queries(drivers: pd.DataFrame, rides: pd.DataFrame, accepted_rides: pd.DataFrame) -> pd.DataFrame:
+    month = pd.DataFrame({'month':range(1,13)})
+    rides = rides[rides['requested_at'].dt.year == 2020]
+    rides['month'] = rides['requested_at'].dt.month
+    accept_ride = pd.merge(rides, accepted_rides, on = 'ride_id')
+    accept_ride = accept_ride.groupby(['month'],as_index = False).agg(
+        ride_distance = ('ride_distance','sum'),
+        ride_duration = ('ride_duration','sum')
+    )
+
+    res = pd.merge(month,accept_ride, on = 'month', how = 'left').fillna(0)
+    res = pd.merge(res,res, how = 'cross').merge(res, how = 'cross')
+    res = res[(res['month_x'] + 1 == res['month_y']) & (res['month_x'] + 2 == res['month'])]
+    res['average_ride_distance'] = round((res['ride_distance_x'] + res['ride_distance_y'] + res['ride_distance'])/3,2)
+    res['average_ride_duration'] = round((res['ride_duration_x'] + res['ride_duration_y'] + res['ride_duration'])/3,2)
+    return res[['month_x','average_ride_distance','average_ride_duration']].rename(columns = {'month_x':'month'})
