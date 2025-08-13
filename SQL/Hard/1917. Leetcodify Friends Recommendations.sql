@@ -69,6 +69,29 @@ group by 1,2,l1.day
 having count(distinct l1.song_id) >= 3
 
 -------------------------------
+-- 我还是倾向于多个步骤用多个cte
+with friend as
+(select user1_id as user_id, user2_id as recommended_id from Friendship
+union
+select user2_id as user_id, user1_id as recommended_id from Friendship
+)
+, candidate as
+(select
+distinct a.user_id,
+b.user_id as recommended_id
+from Listens a
+join Listens b on a.user_id != b.user_id and a.day = b.day and a.song_id = b.song_id
+group by 1,2, a.day
+having count(distinct a.song_id) >= 3)
+
+select 
+distinct a.user_id,
+a.recommended_id
+from candidate a
+left join friend b on a.user_id = b.user_id and a.recommended_id = b.recommended_id
+where b.recommended_id is null
+
+-------------------------------
 
 -- Python
 import pandas as pd
