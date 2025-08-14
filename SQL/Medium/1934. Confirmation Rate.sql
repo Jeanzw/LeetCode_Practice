@@ -12,16 +12,15 @@ select
 -- Python
 import pandas as pd
 import numpy as np
-
 def confirmation_rate(signups: pd.DataFrame, confirmations: pd.DataFrame) -> pd.DataFrame:
-    merge = pd.merge(signups,confirmations, on = 'user_id', how = 'left')
-    merge['com_action'] = np.where(merge['action'] == 'confirmed', 1, 0)
-    summary = merge.groupby(['user_id'], as_index = False).agg(
-        den = ('com_action','count'),
-        num = ('com_action','sum')
+    merge = pd.merge(signups, confirmations, on = 'user_id', how = 'left')
+    merge['confirmed'] = np.where(merge['action'] == 'confirmed', merge['user_id'], None)
+    merge = merge.groupby(['user_id'],as_index = False).agg(
+        d = ('user_id','count'),
+        n = ('confirmed','count')
     )
-    summary['confirmation_rate'] = (summary['num']/summary['den']).round(2)
-    return summary[['user_id','confirmation_rate']]
+    merge['confirmation_rate'] = np.where(merge['d'] == 0, 0, round(merge['n']/merge['d'],2))
+    return merge[['user_id','confirmation_rate']]
 
 ---------------------------
 

@@ -67,13 +67,12 @@ having common_friend >= 3 and user_id < friend
 import pandas as pd
 
 def strong_friendship(friendship: pd.DataFrame) -> pd.DataFrame:
-    user1 = friendship[['user1_id','user2_id']].rename(columns = {'user1_id':'user_id','user2_id':'friend'})
-    user2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user_id','user1_id':'friend'})
-    concat = pd.concat([user1,user2]).drop_duplicates()
+    friendship2 = friendship[['user2_id','user1_id']].rename(columns = {'user2_id':'user1_id','user1_id':'user2_id'})
+    concat = pd.concat([friendship,friendship2]).drop_duplicates()
 
+    merge = pd.merge(friendship,concat, on = 'user1_id').merge(concat, left_on = ['user2_id_x','user2_id_y'], right_on = ['user1_id','user2_id'])
+    merge = merge[merge['user2_id_x'] != merge['user2_id_y']]
+    merge = merge.groupby(['user1_id_x','user2_id_x'],as_index = False).user2_id_y.nunique()
+    merge = merge[merge['user2_id_y'] >= 3].rename(columns = {'user1_id_x':'user1_id','user2_id_x':'user2_id','user2_id_y':'common_friend'})
 
-    merge = pd.merge(friendship,concat, left_on = 'user1_id', right_on = 'user_id').merge(concat, left_on = 'user2_id', right_on = 'user_id')
-    merge = merge.query("friend_x != user2_id and friend_x == friend_y")
-
-    summary = merge.groupby(['user1_id','user2_id'], as_index = False).friend_x.nunique()
-    return summary.query("friend_x >= 3").rename(columns = {'friend_x':'common_friend'})
+    return merge
