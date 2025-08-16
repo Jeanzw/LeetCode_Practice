@@ -1,6 +1,7 @@
 select 
     school_id,
-    case when score is null then -1 else score end as score
+    ifnull(score,-1) as score
+    -- case when score is null then -1 else score end as score
 from
 (select 
     s.school_id,
