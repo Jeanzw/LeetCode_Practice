@@ -22,11 +22,12 @@ case when (select count(distinct student_id) from NewYork where score >= 90) > (
 import pandas as pd
 
 def find_winner(new_york: pd.DataFrame, california: pd.DataFrame) -> pd.DataFrame:
-    new_york = new_york.query("score >= 90").student_id.nunique()
-    california = california.query("score >= 90").student_id.nunique()
+    new_york = new_york[new_york['score'] >= 90].student_id.nunique()
+    california = california[california['score'] >= 90].student_id.nunique()
     if new_york > california:
-        return pd.DataFrame({'winner':['New York University']})
+        winner = 'New York University'
     elif new_york < california:
-        return pd.DataFrame({'winner':['California University']})
+        winner = 'California University'
     else:
-        return pd.DataFrame({'winner':['No Winner']})
+        winner = 'No Winner'
+    return pd.DataFrame({'winner':[winner]})
