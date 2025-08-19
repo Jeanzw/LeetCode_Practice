@@ -100,3 +100,15 @@ def drop_specific_orders(orders: pd.DataFrame) -> pd.DataFrame:
     merge = pd.merge(orders,type_0,on = 'customer_id', how = 'left')
     merge = merge[(merge['flg'].isna()) | (merge['order_type'] == 0)]
     return merge[['order_id','customer_id','order_type']].drop_duplicates()
+
+----------------------------
+
+-- 另外的做法
+import pandas as pd
+
+def drop_specific_orders(orders: pd.DataFrame) -> pd.DataFrame:
+    orders['total_order'] = orders.groupby(['customer_id']).order_id.transform('nunique')
+    orders['total_type_1_order'] = orders.groupby(['customer_id']).order_type.transform('sum')
+
+    orders = orders[(orders['total_order'] == orders['total_type_1_order']) | ((orders['total_order'] > orders['total_type_1_order']) & (orders['order_type'] == 0))]
+    return orders[['order_id','customer_id','order_type']]
