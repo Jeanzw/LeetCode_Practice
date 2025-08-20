@@ -50,3 +50,21 @@ def longest_winning_streak(matches: pd.DataFrame) -> pd.DataFrame:
     merge = merge.groupby(['player_id'],as_index = False).match_day_y.max().fillna(0)
 
     return merge.rename(columns = {'match_day_y':'longest_streak'})
+
+-------------------------------------
+
+import pandas as pd
+
+def longest_winning_streak(matches: pd.DataFrame) -> pd.DataFrame:
+    matches['rnk1'] = matches.groupby(['player_id']).match_day.rank()
+    matches['rnk2'] = matches.groupby(['player_id','result']).match_day.rank()
+    matches['bridge'] = matches['rnk1'] - matches['rnk2']
+    match = matches[matches['result'] == 'Win']
+    match = match.groupby(['player_id','bridge'],as_index = False).match_day.nunique()
+    match.sort_values(['player_id','match_day'], ascending = [1,0], inplace = True)
+    match = match.groupby(['player_id']).head(1)
+    
+    frame = matches[['player_id']].drop_duplicates()
+    res = pd.merge(frame, match, on = 'player_id', how = 'left').fillna(0)
+    
+    return res[['player_id','match_day']].rename(columns= {'match_day':'longest_streak'})
