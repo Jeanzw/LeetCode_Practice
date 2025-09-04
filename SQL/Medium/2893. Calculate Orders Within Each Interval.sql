@@ -33,3 +33,15 @@ from frame a
 left join Orders b on b.minute between a.start and a.end
 group by 1
 
+-------------------------------------------------------
+-- Python
+
+import pandas as pd
+
+def calculate_runs(orders: pd.DataFrame) -> pd.DataFrame:
+    frame = pd.DataFrame({'interval_no':range(1, ceil(orders['minute'].max()/6) + 1)})
+    orders['interval_no'] = ((orders['minute'] - 1) // 6) + 1
+
+    res = pd.merge(frame, orders, on = 'interval_no', how = 'left').fillna(0)
+    res = res.groupby(['interval_no'],as_index = False).order_count.sum()
+    return res.rename(columns = {'order_count':'total_orders'}).sort_values('interval_no')
