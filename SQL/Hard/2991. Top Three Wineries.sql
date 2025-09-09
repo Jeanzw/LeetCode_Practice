@@ -16,6 +16,27 @@ order by 1
 
 -------------------------------
 
+with cte as
+(select
+country, 
+winery,
+sum(points) as points,
+row_number() over (partition by country order by sum(points) desc, winery) as rnk
+from Wineries
+group by 1,2)
+
+select 
+a.country,
+concat(a.winery, ' (',a.points,')') as top_winery,
+case when b.winery is not null then concat(b.winery, ' (',b.points,')') else 'No second winery' end as second_winery,
+case when c.winery is not null then concat(c.winery, ' (',c.points,')') else 'No third winery' end as third_winery
+from cte a 
+left join cte b on a.country = b.country and b.rnk = 2
+left join cte c on a.country = c.country and c.rnk = 3
+where a.rnk = 1
+order by 1
+-------------------------------
+
 -- Python
 import pandas as pd
 
