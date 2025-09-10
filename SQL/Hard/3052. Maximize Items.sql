@@ -112,3 +112,27 @@ def maximize_items(inventory: pd.DataFrame) -> pd.DataFrame:
 
     res = pd.concat([prime_eligible[['item_type','item_count']],nonprime_eligible[['item_type','item_count']]])
     return res
+
+--另外做法
+import pandas as pd
+
+def maximize_items(inventory: pd.DataFrame) -> pd.DataFrame:
+    inventory = inventory.groupby(['item_type'],as_index = False).agg(
+        square_footage = ('square_footage','sum'),
+        item_cnt = ('item_id','nunique')
+    )
+
+    prime_eligible = inventory[inventory['item_type'] == 'prime_eligible']
+    prime_eligible['unit'] = floor(500000 / prime_eligible['square_footage'])
+    prime_eligible['item_count'] = floor(500000 / prime_eligible['square_footage']) * prime_eligible[['item_cnt']]
+    prime_eligible['tt_square'] = floor(500000 / prime_eligible['square_footage']) * prime_eligible['square_footage']
+    prime_eligible['remaining'] = 500000 - prime_eligible['tt_square']
+    remaining_total = int(prime_eligible['remaining'].sum())
+--  # 将 remaining 作为标量（如果 prime 只有一行）
+--  # 若 prime 可能有多行，需要按业务决定如何分配 remaining（这里取 sum）
+
+    not_prime = inventory[inventory['item_type'] == 'not_prime']
+    not_prime['unit'] = floor(remaining_total / not_prime['square_footage'])
+    not_prime['item_count'] = not_prime['unit'] * not_prime['item_cnt']
+    
+    return pd.concat([prime_eligible[['item_type','item_count']], not_prime[['item_type','item_count']]]).sort_values('item_count', ascending = False)
