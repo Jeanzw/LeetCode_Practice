@@ -32,18 +32,6 @@ and ((timestampdiff(hour, a.session_start,b.session_start) between 0 and 12)
     or (timestampdiff(hour, a.session_end,b.session_start) between 0 and 12))
 order by 1
 
----------------------------
-
--- Python
-import pandas as pd
-
-def user_activities(sessions: pd.DataFrame) -> pd.DataFrame:
-    sessions['rnk'] = sessions.groupby(['user_id']).session_start.rank()
-
-    merge = pd.merge(sessions,sessions,on = ['user_id','session_type'])
-    merge = merge[(merge['rnk_x'] < merge['rnk_y']) & ((merge['session_start_y'] - merge['session_end_x']).dt.total_seconds() <= 12 * 60 * 60) ]
-
-    return merge[['user_id']].drop_duplicates().sort_values('user_id')
 
 ---------------------------
 
