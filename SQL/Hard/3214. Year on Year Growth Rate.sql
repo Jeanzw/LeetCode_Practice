@@ -1,4 +1,4 @@
-with cal_summary as
+cwith cal_summary as
 (select
 year(transaction_date) as year,
 product_id,
@@ -55,12 +55,11 @@ def calculate_yoy_growth(user_transactions: pd.DataFrame) -> pd.DataFrame:
 -- 也可以这么做
 -- 但是这么做的前提在于我们知道每一年都有数
 import pandas as pd
-import numpy as np
 
 def calculate_yoy_growth(user_transactions: pd.DataFrame) -> pd.DataFrame:
     user_transactions['year'] = user_transactions.transaction_date.dt.year
     user_transactions = user_transactions.groupby(['year','product_id'],as_index = False).spend.sum()
-    user_transactions.sort_values(['product_id','year'], ascending = [1,1],inplace = True)
+    user_transactions.sort_values(['product_id','year'], ascending = [1,1], inplace = True)
     user_transactions['prev_year_spend'] = user_transactions.groupby(['product_id']).spend.shift(1)
-    user_transactions['yoy_rate'] = np.where(user_transactions['prev_year_spend'].isna(), None, round(100 * (user_transactions['spend'] - user_transactions['prev_year_spend'])/user_transactions['prev_year_spend'],2))
+    user_transactions['yoy_rate'] = round(100 * (user_transactions['spend'] - user_transactions['prev_year_spend'])/user_transactions['prev_year_spend'],2)
     return user_transactions.rename(columns = {'spend':'curr_year_spend'})
