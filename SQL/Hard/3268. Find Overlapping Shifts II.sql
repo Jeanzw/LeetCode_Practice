@@ -48,3 +48,22 @@ def calculate_shift_overlaps(employee_shifts: pd.DataFrame) -> pd.DataFrame:
     res = pd.merge(user_list,merge, on = 'employee_id', how = 'left').fillna(0)
     res['max_overlapping_shifts'] = res['max_overlapping_shifts'] + 1
     return res.sort_values('employee_id')
+
+
+-- 感觉没有这么多限制吧……
+import pandas as pd
+import numpy as np
+
+def calculate_shift_overlaps(employee_shifts: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(employee_shifts,employee_shifts, on = 'employee_id')
+    merge = merge[(merge['start_time_x'] >= merge['start_time_y']) & (merge['start_time_x'] <= merge['end_time_y'])]
+    merge['total_overlap_duration'] = np.where(merge['start_time_x'] == merge['start_time_y'], 0, (merge['end_time_y'] - merge['start_time_x']).dt.total_seconds()/60)
+    merge = merge.groupby(['employee_id','start_time_x'],as_index = False).agg(
+        max_overlapping_shifts = ('start_time_x','size'),
+        total_overlap_duration = ('total_overlap_duration','sum')
+    )
+    merge = merge.groupby(['employee_id'],as_index = False).agg(
+        max_overlapping_shifts = ('max_overlapping_shifts','max'),
+        total_overlap_duration = ('total_overlap_duration','sum')
+    )
+    return merge.sort_values(['employee_id'])
