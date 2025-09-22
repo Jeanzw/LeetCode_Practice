@@ -1,29 +1,28 @@
 -- 因为count Window Function没有办法count distinct所以我们先写一个cte把project对应有多少skill求出来
-with project_skill_required as
-(select project_id, count(distinct skill) as skills_required from Projects group by 1)
-
-,cte as
+with project as
+(select
+*, count(skill) over (partition by project_id) as total_skill
+from Projects)
+, summary as
 (select
 a.project_id,
+a.total_skill,
 b.candidate_id,
-c.skills_required,
-count(distinct b.skill) as candidate_has,
--- 这个题目出的不好，没有说如果proficiency = importance就赋值0这个条件
-100 + sum(case when proficiency > importance then 10 when proficiency < importance then -5 else 0 end) as score,
-row_number() over (partition by a.project_id order by 100 + sum(case when proficiency > importance then 10 when proficiency < importance then -5 else 0 end) desc, candidate_id) as rnk
-from Projects a
+count(distinct b.skill) as skill_have,
+sum(case when proficiency > importance then 10 
+     when proficiency < importance then -5
+     else 0 end) as points_change,
+row_number() over (partition by a.project_id order by sum(case when proficiency > importance then 10 
+     when proficiency < importance then -5
+     else 0 end) desc, b.candidate_id) as rnk
+from project a
 left join Candidates b on a.skill = b.skill
-left join project_skill_required c on a.project_id = c.project_id
 group by 1,2,3
-having skills_required = candidate_has)
+having total_skill = skill_have)
 
-
-select
-project_id,
-candidate_id,
-score
-from cte
-where rnk = 1 and skills_required <= candidate_has
+select project_id, candidate_id, 100 + points_change as score 
+from summary 
+where rnk = 1
 order by 1
 
 ---------------------
