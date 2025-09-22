@@ -15,3 +15,12 @@ def find_cities(cities: pd.DataFrame) -> pd.DataFrame:
     cities = cities.sort_values(['state','city'])
     cities = cities.groupby(['state'],as_index = False).agg(cities = ('city',', '.join))
     return cities
+
+-- 另外的做法
+import pandas as pd
+
+def find_cities(cities: pd.DataFrame) -> pd.DataFrame:
+    cities = cities.groupby(['state'],as_index = False).agg(
+        cities = ('city', lambda x: ', '.join(sorted(x)))
+    )
+    return cities.sort_values(['state'])
