@@ -7,7 +7,7 @@ a.pass_to,
 b.team_name,
 b.team_name as from_team,
 c.team_name as to_team,
-case when b.team_name = c.team_name then 0 else 1 end as break_flg, -- 其实这一行要不要不影响结果，我们的bridge是下面的group_id
+-- case when b.team_name = c.team_name then 0 else 1 end as break_flg, -- 其实这一行要不要不影响结果，我们的bridge是下面的group_id
 SUM(case when b.team_name = c.team_name then 0 else 1 end) OVER (PARTITION BY b.team_name ORDER BY time_stamp) AS group_id
 from Passes a
 left join Teams b on a.pass_from = b.player_id
@@ -31,6 +31,28 @@ max(case when group_id = 0 then cnt else cnt - 1 end) as longest_streak
 from summary
 group by 1
 having longest_streak > 0
+order by 1
+
+-- 对上面的query进行修改：
+with cte as
+(select
+b.team_name as pass_from,
+c.team_name as pass_to,time_stamp
+, sum(case when b.team_name = c.team_name then 0 else 1 end) over (partition by b.team_name order by a.time_stamp) as flg
+from Passes a
+left join Teams b on a.pass_from = b.player_id 
+left join Teams c on a.pass_to = c.player_id)
+, summary as
+(select
+pass_from as team_name,
+flg,
+count(*) as longest_streak
+from cte
+where pass_from = pass_to
+-- 当bridge发生变动的时候，那一行其实是不能要的，所以我们这里加个where来确定这种情况
+group by 1,2)
+
+select team_name, max(longest_streak) as longest_streak from summary group by 1
 order by 1
 
 -----------------------
@@ -66,3 +88,19 @@ def calculate_longest_streaks(teams: pd.DataFrame, passes: pd.DataFrame) -> pd.D
     merge.sort_values(['team_name_x','size'], ascending = [1,0], inplace = True)
     merge = merge.groupby(['team_name_x']).head(1)
     return merge[merge['size'] > 0][['team_name_x','size']].rename(columns = {'team_name_x':'team_name','size':'longest_streak'})
+
+
+-- 另外的做法
+import pandas as pd
+import numpy as np
+
+def calculate_longest_streaks(teams: pd.DataFrame, passes: pd.DataFrame) -> pd.DataFrame:
+    merge = pd.merge(passes, teams, left_on = 'pass_from', right_on = 'player_id').merge(teams, left_on = 'pass_to', right_on = 'player_id')
+    merge['flg'] = np.where(merge['team_name_x'] == merge['team_name_y'], 0, 1)
+    merge.sort_values(['team_name_x','time_stamp'], inplace = True)
+    merge['flg'] = merge.groupby(['team_name_x']).flg.cumsum()
+    merge = merge[merge['team_name_x'] == merge['team_name_y']]
+    merge = merge.groupby(['team_name_x','flg'],as_index = False).size()
+    merge.sort_values(['team_name_x','size'], ascending = [1,0], inplace = True)
+    merge = merge.groupby(['team_name_x']).head(1)
+    return merge[['team_name_x','size']].rename(columns = {'team_name_x':'team_name','size':'longest_streak'})
