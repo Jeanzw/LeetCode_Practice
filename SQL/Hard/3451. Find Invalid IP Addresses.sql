@@ -11,7 +11,7 @@ from logs)
 select ip, count(*) as invalid_count
 from cte
 where first_ip > 255 or second_ip > 255 or third_ip > 255 or fourth_ip > 255
-or ip like '%.0%'
+or left(first_ip,1) = 0 or left(second_ip,1) = 0 or left(third_ip,1) = 0 or left(fourth_ip,1) = 0
 or length(ip) - length(replace(ip,'.','')) != 3
 group by 1
 order by 2 desc, 1 desc

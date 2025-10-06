@@ -15,13 +15,9 @@ WITH RECURSIVE level_cte AS
 -- 这是每个employee最真实的等级
 -- 当我们选定了manager_id IS NULL也就是说，当这个员工连接到了最大的老板那么对应的level就是其所在的level
 (
-  SELECT a.employee_id, a.employee_name, a.salary, b.level
-  FROM Employees a
-  JOIN (
-    SELECT employee_id, level
-    FROM level_cte
-    WHERE manager_id IS NULL
-  ) b ON a.employee_id = b.employee_id
+  select employee_id, employee_name, level, salary 
+  from cte 
+  where manager_id is null
 )
 , team_size_budget as
 -- 计算每个manager下面的team size以及budget（不包含自己）
